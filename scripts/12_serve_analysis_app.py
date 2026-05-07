@@ -1166,6 +1166,10 @@ def build_home_html() -> str:
     .radio-choice { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; border: 1px solid var(--line); border-radius: 6px; padding: 0 10px; background: #fbfcfa; color: var(--ink); cursor: pointer; font-weight: 700; }
     .radio-choice input { width: auto; min-height: auto; }
     .radio-choice:has(input:checked) { border-color: var(--accent); background: #eaf5f1; color: var(--accent); }
+    .review-subtabs { display: flex; gap: 8px; flex-wrap: wrap; }
+    .review-subtab { border: 1px solid var(--line); background: #fff; border-radius: 6px; min-height: 34px; padding: 0 12px; cursor: pointer; font-weight: 800; }
+    .review-subtab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .review-subpanel.hidden { display: none; }
     body.modal-open { overflow: hidden; }
     .image-modal { position: fixed; inset: 0; z-index: 1000; display: none; grid-template-rows: auto 1fr; background: rgba(12, 17, 14, .94); color: #fff; }
     .image-modal.open { display: grid; }
@@ -1175,6 +1179,7 @@ def build_home_html() -> str:
     .modal-actions button { border-color: rgba(255,255,255,.22); background: rgba(255,255,255,.08); color: #fff; min-width: 42px; }
     .zoom-label { min-width: 56px; text-align: center; color: rgba(255,255,255,.78); font-weight: 800; }
     .image-modal-stage { min-width: 0; min-height: 0; display: grid; place-items: center; overflow: hidden; touch-action: none; cursor: grab; }
+    .image-modal.ball-mode .image-modal-stage { cursor: crosshair; }
     .image-modal-stage.dragging { cursor: grabbing; }
     .modal-image { max-width: 96vw; max-height: calc(100vh - 76px); transform-origin: center center; will-change: transform; user-select: none; -webkit-user-drag: none; box-shadow: 0 18px 60px rgba(0,0,0,.45); }
     .feedback-modal { position: fixed; inset: 0; z-index: 1100; display: none; place-items: center; padding: 20px; background: rgba(12, 17, 14, .45); }
@@ -1282,7 +1287,16 @@ def build_home_html() -> str:
 
   <div id="reviewTab" class="hidden">
     <section class="panel">
-      <h2>人工校验：球员身份</h2>
+      <h2>人工校验</h2>
+      <div class="content">
+        <div class="review-subtabs">
+          <button class="review-subtab active" data-review-subtab="identity">球员身份/位置标注</button>
+          <button class="review-subtab" data-review-subtab="ball">球位置标注</button>
+        </div>
+      </div>
+    </section>
+    <section id="identityReviewSubtab" class="panel review-subpanel">
+      <h2>人工校验：球员身份/位置标注</h2>
       <div class="content">
         <div class="inline-status">
           <div class="status" id="reviewStatus">请先完成场地标定并生成校验包，或在历史分析里选择一个比赛。</div>
@@ -1297,7 +1311,7 @@ def build_home_html() -> str:
       </div>
       <div id="reviewItems" class="review-grid"></div>
     </section>
-    <section class="panel">
+    <section id="ballReviewSubtab" class="panel review-subpanel hidden">
       <h2>人工校验：球位置标注</h2>
       <div class="content">
         <div class="inline-status">
@@ -1325,6 +1339,7 @@ def build_home_html() -> str:
             <button id="ballInvisible">球不可见</button>
             <button id="skipBallFrame">跳过</button>
             <button id="resetBallPoint">清除本张</button>
+            <button id="openBallZoom">放大标注</button>
           </div>
           <label>备注<input id="ballNote" placeholder="可选"></label>
         </aside>
@@ -1387,6 +1402,8 @@ let modalDragStartX = 0;
 let modalDragStartY = 0;
 let modalOriginX = 0;
 let modalOriginY = 0;
+let modalMoved = false;
+let modalPurpose = 'view';
 
 function $(id) { return document.getElementById(id); }
 function slug(value) {
@@ -1474,11 +1491,13 @@ function zoomModal(multiplier, event=null) {
   updateModalTransform();
 }
 
-function openImageModal(src, title='') {
+function openImageModal(src, title='', purpose='view') {
+  modalPurpose = purpose;
   $('modalImage').src = src;
   $('modalTitle').textContent = title;
   $('imageModal').classList.add('open');
   $('imageModal').classList.remove('hidden');
+  $('imageModal').classList.toggle('ball-mode', purpose === 'ball');
   $('imageModal').setAttribute('aria-hidden', 'false');
   document.body.classList.add('modal-open');
   resetModalView();
@@ -1487,10 +1506,13 @@ function openImageModal(src, title='') {
 function closeImageModal() {
   $('imageModal').classList.remove('open');
   $('imageModal').classList.add('hidden');
+  $('imageModal').classList.remove('ball-mode');
   $('imageModal').setAttribute('aria-hidden', 'true');
   $('modalImage').src = '';
   document.body.classList.remove('modal-open');
   modalDragging = false;
+  modalMoved = false;
+  modalPurpose = 'view';
 }
 
 function showFeedback(title, lines) {
@@ -1515,9 +1537,22 @@ function showCalibration(matchId) {
   showTab('calibration');
 }
 
-function showReview(matchId) {
+function showReviewSubtab(name) {
+  const target = name === 'ball' ? 'ball' : 'identity';
+  document.querySelectorAll('.review-subtab').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.reviewSubtab === target);
+  });
+  $('identityReviewSubtab').classList.toggle('hidden', target !== 'identity');
+  $('ballReviewSubtab').classList.toggle('hidden', target !== 'ball');
+  if (!currentMatchId) return;
+  if (target === 'identity') loadHumanReview(currentMatchId);
+  if (target === 'ball') loadBallReview(currentMatchId);
+}
+
+function showReview(matchId, subtab='identity') {
   currentMatchId = matchId;
   showTab('review');
+  showReviewSubtab(subtab);
 }
 
 function renderMetrics(selected = BOOT.default_metrics) {
@@ -1651,7 +1686,7 @@ async function pollJob() {
       } else if (result.name === 'prepare_ball_review') {
         setWorkflow('球位置标注包已生成。请在人工校验页连续点击球的位置。', 'saved');
         if (currentMatchId) {
-          showReview(currentMatchId);
+          showReview(currentMatchId, 'ball');
           loadBallReview(currentMatchId);
         }
       } else if (result.name === 'final_report') {
@@ -1892,6 +1927,27 @@ function renderBallMarker(item) {
   marker.classList.remove('hidden');
 }
 
+function ballFrameSrc(item) {
+  return item ? `/asset?path=${encodeURIComponent(item.frame_image)}` : '';
+}
+
+function ballModalTitle(item) {
+  if (!item) return '';
+  return `${ballIndex + 1} / ${ballItems.length} · ${item.timestamp || ''} · 单击球心标注`;
+}
+
+function syncBallModal() {
+  if (!$('imageModal').classList.contains('open') || modalPurpose !== 'ball') return;
+  const item = currentBallItem();
+  if (!item) {
+    closeImageModal();
+    return;
+  }
+  $('modalImage').src = ballFrameSrc(item);
+  $('modalTitle').textContent = ballModalTitle(item);
+  resetModalView();
+}
+
 function renderBallItem() {
   const item = currentBallItem();
   if (!item) return;
@@ -1900,8 +1956,10 @@ function renderBallItem() {
   $('ballProgress').textContent = `${ballIndex + 1} / ${ballItems.length} · ${item.timestamp || ''}`;
   $('ballMeta').textContent = `原因: ${item.reason || ''}；系统球: ${systemBall.visible ? `可见，置信度 ${systemBall.confidence}` : '未识别到球'}；人工状态: ${human.status || 'pending'}`;
   $('ballNote').value = human.note || '';
-  $('ballImage').src = `/asset?path=${encodeURIComponent(item.frame_image)}`;
-  $('ballImage').onload = () => renderBallMarker(item);
+  $('ballImage').src = ballFrameSrc(item);
+  $('ballImage').onload = () => {
+    if (currentBallItem() === item) renderBallMarker(item);
+  };
   renderBallMarker(item);
 }
 
@@ -1916,6 +1974,30 @@ function clickToBallImageXY(event) {
   ];
 }
 
+function modalEventToImageXY(event) {
+  const image = $('modalImage');
+  if (!image.naturalWidth || !image.naturalHeight) return null;
+  const rect = image.getBoundingClientRect();
+  if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) {
+    return null;
+  }
+  const x = (event.clientX - rect.left) * image.naturalWidth / rect.width;
+  const y = (event.clientY - rect.top) * image.naturalHeight / rect.height;
+  return [
+    Math.max(0, Math.min(image.naturalWidth - 1, Math.round(x * 10) / 10)),
+    Math.max(0, Math.min(image.naturalHeight - 1, Math.round(y * 10) / 10))
+  ];
+}
+
+function advanceAfterBallDecision() {
+  if (ballIndex < ballItems.length - 1) {
+    nextBallFrame();
+  } else {
+    renderBallItem();
+    syncBallModal();
+  }
+}
+
 function markBallVisible(point) {
   const item = currentBallItem();
   if (!item) return;
@@ -1926,7 +2008,7 @@ function markBallVisible(point) {
   human.note = $('ballNote').value || '';
   renderBallMarker(item);
   scheduleBallAutoSave();
-  nextBallFrame();
+  advanceAfterBallDecision();
 }
 
 function markBallInvisible() {
@@ -1938,7 +2020,7 @@ function markBallInvisible() {
   human.review_image_xy = null;
   human.note = $('ballNote').value || '';
   scheduleBallAutoSave();
-  nextBallFrame();
+  advanceAfterBallDecision();
 }
 
 function skipBallFrame() {
@@ -1950,7 +2032,7 @@ function skipBallFrame() {
   human.review_image_xy = null;
   human.note = $('ballNote').value || '';
   scheduleBallAutoSave();
-  nextBallFrame();
+  advanceAfterBallDecision();
 }
 
 function useSystemBallPoint() {
@@ -1976,6 +2058,7 @@ function nextBallFrame() {
   if (ballIndex < ballItems.length - 1) {
     ballIndex += 1;
     renderBallItem();
+    syncBallModal();
   }
 }
 
@@ -1983,7 +2066,14 @@ function prevBallFrame() {
   if (ballIndex > 0) {
     ballIndex -= 1;
     renderBallItem();
+    syncBallModal();
   }
+}
+
+function openBallZoomModal() {
+  const item = currentBallItem();
+  if (!item) return;
+  openImageModal(ballFrameSrc(item), ballModalTitle(item), 'ball');
 }
 
 function collectBallReviewItems() {
@@ -2068,6 +2158,7 @@ async function loadHistory() {
     const row = document.createElement('div');
     row.className = 'history-row';
     const report = item.report_ready ? `<a href="/report?path=${encodeURIComponent(item.report_html)}" target="_blank">HTML</a> · <a href="/report?path=${encodeURIComponent(item.report_md)}" target="_blank">MD</a>` : '未生成';
+    const reviewSubtab = String(item.status || '').includes('球') ? 'ball' : 'identity';
     row.innerHTML = `
       <div><strong>${item.name}</strong><br><span class="status"><code>${item.match_id}</code></span></div>
       <div>${item.team_name || ''}</div>
@@ -2076,14 +2167,14 @@ async function loadHistory() {
       <div class="row-actions">
         <button data-edit="${item.match_id}">调整设置</button>
         <button data-cal="${item.match_id}">场地标定</button>
-        <button data-review="${item.match_id}">人工校验</button>
+        <button data-review="${item.match_id}" data-review-subtab="${reviewSubtab}">人工校验</button>
         <button class="primary" data-run="${item.match_id}">生成校验</button>
       </div>`;
     box.appendChild(row);
   });
   box.querySelectorAll('[data-edit]').forEach(btn => btn.addEventListener('click', () => loadMatchForEdit(btn.dataset.edit)));
   box.querySelectorAll('[data-cal]').forEach(btn => btn.addEventListener('click', () => showCalibration(btn.dataset.cal)));
-  box.querySelectorAll('[data-review]').forEach(btn => btn.addEventListener('click', () => showReview(btn.dataset.review)));
+  box.querySelectorAll('[data-review]').forEach(btn => btn.addEventListener('click', () => showReview(btn.dataset.review, btn.dataset.reviewSubtab || 'identity')));
   box.querySelectorAll('[data-run]').forEach(btn => btn.addEventListener('click', () => runAnalysis(btn.dataset.run)));
 }
 
@@ -2153,6 +2244,9 @@ function resetForm() {
 }
 
 document.querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => showTab(btn.dataset.tab)));
+document.querySelectorAll('.review-subtab').forEach(btn => {
+  btn.addEventListener('click', () => showReviewSubtab(btn.dataset.reviewSubtab));
+});
 $('addPlayer').addEventListener('click', () => { players.push({ name: '', number: '', role: 'substitute', visual_hint: '' }); renderPlayers(); });
 $('submitMatch').addEventListener('click', submitMatch);
 $('resetForm').addEventListener('click', resetForm);
@@ -2176,6 +2270,7 @@ $('useSystemBall').addEventListener('click', useSystemBallPoint);
 $('ballInvisible').addEventListener('click', markBallInvisible);
 $('skipBallFrame').addEventListener('click', skipBallFrame);
 $('resetBallPoint').addEventListener('click', resetBallPoint);
+$('openBallZoom').addEventListener('click', openBallZoomModal);
 $('ballNote').addEventListener('input', () => {
   const item = currentBallItem();
   if (!item) return;
@@ -2196,6 +2291,7 @@ $('modalStage').addEventListener('wheel', event => {
 $('modalStage').addEventListener('pointerdown', event => {
   if (!$('imageModal').classList.contains('open')) return;
   modalDragging = true;
+  modalMoved = false;
   modalDragStartX = event.clientX;
   modalDragStartY = event.clientY;
   modalOriginX = modalX;
@@ -2206,17 +2302,26 @@ $('modalStage').addEventListener('pointerdown', event => {
 });
 $('modalStage').addEventListener('pointermove', event => {
   if (!modalDragging) return;
+  const dx = event.clientX - modalDragStartX;
+  const dy = event.clientY - modalDragStartY;
+  if (Math.abs(dx) > 4 || Math.abs(dy) > 4) modalMoved = true;
   modalX = modalOriginX + event.clientX - modalDragStartX;
   modalY = modalOriginY + event.clientY - modalDragStartY;
   updateModalTransform();
 });
 $('modalStage').addEventListener('pointerup', event => {
+  const shouldMarkBall = modalPurpose === 'ball' && !modalMoved;
   modalDragging = false;
   $('modalStage').classList.remove('dragging');
   try { $('modalStage').releasePointerCapture(event.pointerId); } catch (error) {}
+  if (shouldMarkBall) {
+    const point = modalEventToImageXY(event);
+    if (point) markBallVisible(point);
+  }
 });
 $('modalStage').addEventListener('pointercancel', () => {
   modalDragging = false;
+  modalMoved = false;
   $('modalStage').classList.remove('dragging');
 });
 $('modalImage').addEventListener('dblclick', event => {
@@ -2228,10 +2333,20 @@ document.addEventListener('keydown', event => {
     return;
   }
   if (!$('imageModal').classList.contains('open')) return;
-  if (event.key === 'Escape') closeImageModal();
+  const key = event.key.toLowerCase();
+  if (event.key === 'Escape') {
+    closeImageModal();
+    return;
+  }
   if (event.key === '+' || event.key === '=') zoomModal(1.25);
   if (event.key === '-') zoomModal(0.8);
   if (event.key === '0') resetModalView();
+  if (modalPurpose === 'ball') {
+    if (event.key === 'ArrowRight') nextBallFrame();
+    if (event.key === 'ArrowLeft') prevBallFrame();
+    if (key === 'n') markBallInvisible();
+    if (key === 's') skipBallFrame();
+  }
 });
 document.addEventListener('keydown', event => {
   if ($('imageModal').classList.contains('open') || $('feedbackModal').classList.contains('open')) return;
