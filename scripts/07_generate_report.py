@@ -18,9 +18,9 @@ import yaml
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 METRIC_STATUS = {
-    "shot": ("射门", "候选片段", "当前依赖足球小目标检测，只输出可能射门时刻，暂不计入正式评分。"),
-    "pass": ("传球", "待增强", "足球连续轨迹覆盖不足，暂不输出正式传球次数。"),
-    "pass_success": ("传球成功率", "待增强", "需要稳定球权链路；当前报告会说明该指标未达到正式统计置信度。"),
+    "shot": ("射门", "候选片段", "结合人工/系统球点与前场球权归属输出可能射门时刻，暂不计入正式评分。"),
+    "pass": ("传球", "候选片段", "结合人工/系统球点、短缺口插值和红队球权转移输出候选传球，暂不作为正式次数。"),
+    "pass_success": ("传球成功率", "待增强", "需要更稳定的连续球权链路；当前只给参考值或样本不足提示。"),
     "steal": ("抢断", "候选片段", "可结合近距离压迫和球权转换做候选，但当前不作为正式抢断统计。"),
     "1v1_attack_defense": ("1v1 攻防", "待增强", "需要更稳定的持球人/防守人关系识别；当前以压迫距离和对抗距离作为前置代理。"),
     "positional_discipline": ("站位纪律", "已输出代理指标", "通过角色区域占比、平均位置和进攻/防守区域参与度衡量。"),
@@ -343,6 +343,12 @@ def separated_count(timestamps: Iterable[float], min_gap_s: float) -> int:
     return count
 
 
+def in_field_mask(points: pd.DataFrame, config: Dict[str, Any], margin_m: float = 0.75) -> pd.Series:
+    length = float(config.get("field", {}).get("length_m", 40.0))
+    width = float(config.get("field", {}).get("width_m", 20.0))
+    return points["field_x_m"].between(-margin_m, length + margin_m) & points["field_y_m"].between(-margin_m, width + margin_m)
+
+
 def manual_ball_points(config: Dict[str, Any]) -> pd.DataFrame:
     review_dir = resolve_path(config["match"].get("review_dir", "review"))
     points_path = review_dir / "ball_review" / "ball_review_points.csv"
@@ -351,38 +357,138 @@ def manual_ball_points(config: Dict[str, Any]) -> pd.DataFrame:
     points = pd.read_csv(points_path)
     if points.empty or "ball_visible" not in points.columns:
         return pd.DataFrame()
-    visible = points[points["ball_visible"].astype(str).str.lower().isin({"true", "1", "yes"})].copy()
     required = {"frame_idx", "timestamp_sec", "field_x_m", "field_y_m"}
-    if visible.empty or not required.issubset(visible.columns):
+    if not required.issubset(points.columns):
+        return pd.DataFrame()
+    visible_mask = points["ball_visible"].astype(str).str.lower().isin({"true", "1", "yes"})
+    if "status" in points.columns:
+        visible_mask &= points["status"].astype(str).eq("marked")
+    visible = points[visible_mask].copy()
+    if visible.empty:
         return pd.DataFrame()
     visible = visible.dropna(subset=["field_x_m", "field_y_m"])
     if visible.empty:
         return pd.DataFrame()
+    if "ball_in_play" in visible.columns:
+        in_play = visible["ball_in_play"].astype(str).str.lower().isin({"true", "1", "yes"})
+        visible = visible[in_play].copy()
+    else:
+        visible = visible[in_field_mask(visible, config)].copy()
+    if visible.empty:
+        return pd.DataFrame()
     visible["conf"] = 1.0
     visible["class_name"] = "sports ball"
+    visible["ball_source"] = "human"
+    visible["source_priority"] = 2
     return visible
 
 
-def ball_ownership_candidates(red: pd.DataFrame, tracks: pd.DataFrame, config: Dict[str, Any], max_distance_m: float = 4.0) -> pd.DataFrame:
-    manual_ball = manual_ball_points(config)
-    ball_source = "human" if not manual_ball.empty else "system"
-    ball = manual_ball if not manual_ball.empty else tracks[tracks["class_name"] == "sports ball"].copy()
+def system_ball_points(tracks: pd.DataFrame, config: Dict[str, Any]) -> pd.DataFrame:
     required = {"frame_idx", "timestamp_sec", "field_x_m", "field_y_m", "conf"}
-    if ball.empty or red.empty or not required.issubset(ball.columns):
+    if tracks.empty or not required.issubset(tracks.columns):
         return pd.DataFrame()
-    ball = ball.dropna(subset=["field_x_m", "field_y_m"])
+    ball = tracks[tracks["class_name"] == "sports ball"].copy()
     if ball.empty:
         return pd.DataFrame()
-    ball = ball.sort_values(["frame_idx", "conf"], ascending=[True, False]).drop_duplicates("frame_idx", keep="first")
-    red_by_frame = {frame: group for frame, group in red.groupby("frame_idx")}
+    ball = ball.dropna(subset=["field_x_m", "field_y_m"])
+    ball = ball[in_field_mask(ball, config)].copy()
+    if ball.empty:
+        return pd.DataFrame()
+    ball["ball_source"] = "system"
+    ball["source_priority"] = 1
+    return ball
+
+
+def combined_ball_points(tracks: pd.DataFrame, config: Dict[str, Any]) -> pd.DataFrame:
+    manual_ball = manual_ball_points(config)
+    system_ball = system_ball_points(tracks, config)
+    parts = [part for part in [manual_ball, system_ball] if not part.empty]
+    if not parts:
+        return pd.DataFrame()
+    ball = pd.concat(parts, ignore_index=True, sort=False)
+    required = {"frame_idx", "timestamp_sec", "field_x_m", "field_y_m", "conf"}
+    if not required.issubset(ball.columns):
+        return pd.DataFrame()
+    ball = ball.dropna(subset=["field_x_m", "field_y_m"])
+    ball = ball.sort_values(
+        ["frame_idx", "source_priority", "conf"],
+        ascending=[True, False, False],
+    ).drop_duplicates("frame_idx", keep="first")
+    ball = ball.sort_values("timestamp_sec").copy()
+    ball.attrs["manual_ball_count"] = int(len(manual_ball))
+    ball.attrs["system_ball_count"] = int(len(system_ball))
+    ball.attrs["ball_source"] = "human+system" if not manual_ball.empty else "system"
+    return ball
+
+
+def interpolate_ball_points(ball: pd.DataFrame, red: pd.DataFrame, max_gap_s: float = 2.5, max_speed_mps: float = 18.0) -> pd.DataFrame:
+    if ball.empty:
+        return ball
+    if red.empty:
+        return ball
+    timestamps = sorted(float(value) for value in red["timestamp_sec"].dropna().unique())
+    if len(timestamps) < 2:
+        return ball
+    diffs = [b - a for a, b in zip(timestamps, timestamps[1:]) if 0 < b - a <= 2.0]
+    step = float(np.median(diffs)) if diffs else 0.5
+    rows = [row._asdict() for row in ball.itertuples(index=False)]
+    existing_ts = {round(float(row["timestamp_sec"]), 3) for row in rows}
+    base_rows = sorted(rows, key=lambda row: float(row["timestamp_sec"]))
+    for current, nxt in zip(base_rows, base_rows[1:]):
+        start_ts = float(current["timestamp_sec"])
+        end_ts = float(nxt["timestamp_sec"])
+        gap = end_ts - start_ts
+        if gap <= step * 1.5 or gap > max_gap_s:
+            continue
+        dx = float(nxt["field_x_m"]) - float(current["field_x_m"])
+        dy = float(nxt["field_y_m"]) - float(current["field_y_m"])
+        if math.sqrt(dx * dx + dy * dy) / max(gap, 1e-6) > max_speed_mps:
+            continue
+        t = start_ts + step
+        while t < end_ts - step / 2.0:
+            key = round(t, 3)
+            if key not in existing_ts:
+                ratio = (t - start_ts) / gap
+                rows.append(
+                    {
+                        **current,
+                        "frame_idx": -1,
+                        "timestamp_sec": round(t, 3),
+                        "timestamp": format_ts(t),
+                        "field_x_m": float(current["field_x_m"]) + dx * ratio,
+                        "field_y_m": float(current["field_y_m"]) + dy * ratio,
+                        "conf": min(float(current.get("conf", 1.0)), float(nxt.get("conf", 1.0))) * 0.8,
+                        "ball_source": "interpolated",
+                        "source_priority": 0.5,
+                    }
+                )
+                existing_ts.add(key)
+            t += step
+    out = pd.DataFrame(rows).sort_values("timestamp_sec")
+    out.attrs.update(ball.attrs)
+    return out
+
+
+def ball_ownership_candidates(
+    red: pd.DataFrame,
+    tracks: pd.DataFrame,
+    config: Dict[str, Any],
+    max_distance_m: float = 5.5,
+    time_tolerance_s: float = 0.6,
+) -> pd.DataFrame:
+    ball = combined_ball_points(tracks, config)
+    if ball.empty or red.empty:
+        return pd.DataFrame()
+    ball = interpolate_ball_points(ball, red)
     rows: List[Dict[str, Any]] = []
     for row in ball.itertuples(index=False):
-        group = red_by_frame.get(row.frame_idx)
+        timestamp_sec = float(row.timestamp_sec)
+        group = red[(red["timestamp_sec"] - timestamp_sec).abs() <= time_tolerance_s]
         if group is None or group.empty:
             rows.append(
                 {
-                    "frame_idx": int(row.frame_idx),
-                    "timestamp_sec": float(row.timestamp_sec),
+                    "frame_idx": int(getattr(row, "frame_idx", -1)),
+                    "timestamp_sec": timestamp_sec,
                     "ball_x_m": float(row.field_x_m),
                     "ball_y_m": float(row.field_y_m),
                     "owner_player_id": "",
@@ -400,8 +506,8 @@ def ball_ownership_candidates(red: pd.DataFrame, tracks: pd.DataFrame, config: D
         owner_id = str(nearest["assigned_player_id"]) if distance <= max_distance_m else ""
         rows.append(
             {
-                "frame_idx": int(row.frame_idx),
-                "timestamp_sec": float(row.timestamp_sec),
+                "frame_idx": int(getattr(row, "frame_idx", -1)),
+                "timestamp_sec": timestamp_sec,
                 "ball_x_m": float(row.field_x_m),
                 "ball_y_m": float(row.field_y_m),
                 "owner_player_id": owner_id,
@@ -410,8 +516,9 @@ def ball_ownership_candidates(red: pd.DataFrame, tracks: pd.DataFrame, config: D
             }
         )
     out = pd.DataFrame(rows).sort_values("timestamp_sec")
-    out.attrs["ball_source"] = ball_source
-    out.attrs["ball_review_count"] = int(len(manual_ball)) if ball_source == "human" else 0
+    out.attrs["ball_source"] = ball.attrs.get("ball_source", "system")
+    out.attrs["ball_review_count"] = int(ball.attrs.get("manual_ball_count", 0))
+    out.attrs["system_ball_count"] = int(ball.attrs.get("system_ball_count", 0))
     return out
 
 
@@ -424,21 +531,33 @@ def pass_reference_counts(ownership: pd.DataFrame, max_gap_s: float = 4.0) -> Tu
     for row in ownership.sort_values("timestamp_sec").itertuples(index=False):
         owner = str(row.owner_player_id or "")
         timestamp_sec = float(row.timestamp_sec)
-        if segments and segments[-1]["owner"] == owner:
+        if segments and segments[-1]["owner"] == owner and timestamp_sec - float(segments[-1]["end_ts"]) <= max_gap_s:
             segments[-1]["end_ts"] = timestamp_sec
             continue
         segments.append({"owner": owner, "start_ts": timestamp_sec, "end_ts": timestamp_sec})
 
-    for current, nxt in zip(segments, segments[1:]):
+    for index, current in enumerate(segments):
         owner = current["owner"]
         if not owner:
             continue
-        if float(nxt["start_ts"]) - float(current["end_ts"]) > max_gap_s:
-            continue
-        attempts[owner] = attempts.get(owner, 0) + 1
-        next_owner = str(nxt["owner"] or "")
-        if next_owner and next_owner != owner:
+        blank_after_owner = False
+        for nxt in segments[index + 1 :]:
+            gap = float(nxt["start_ts"]) - float(current["end_ts"])
+            if gap > max_gap_s:
+                break
+            next_owner = str(nxt["owner"] or "")
+            if not next_owner:
+                blank_after_owner = True
+                continue
+            if next_owner == owner:
+                blank_after_owner = False
+                break
+            attempts[owner] = attempts.get(owner, 0) + 1
             successes[owner] = successes.get(owner, 0) + 1
+            blank_after_owner = False
+            break
+        if blank_after_owner:
+            attempts[owner] = attempts.get(owner, 0) + 1
     return attempts, successes
 
 
@@ -449,7 +568,7 @@ def bounded_pct(value: float) -> float:
 def technical_reference_table(metrics: pd.DataFrame, red: pd.DataFrame, tracks: pd.DataFrame, config: Dict[str, Any]) -> pd.DataFrame:
     field_length = float(config.get("field", {}).get("length_m", 40.0))
     ownership = ball_ownership_candidates(red, tracks, config)
-    ball_source = ownership.attrs.get("ball_source", "system")
+    ball_source = str(ownership.attrs.get("ball_source", "system"))
     ball_review_count = int(ownership.attrs.get("ball_review_count", 0))
     pass_attempts, pass_successes = pass_reference_counts(ownership)
 
@@ -469,7 +588,7 @@ def technical_reference_table(metrics: pd.DataFrame, red: pd.DataFrame, tracks: 
         duel_candidates = separated_count(group.loc[duel_mask, "timestamp_sec"], 8.0) if not group.empty else 0
         attempts = pass_attempts.get(player_id, 0)
         successes = pass_successes.get(player_id, 0)
-        pass_success_text = f"{round(100.0 * successes / attempts, 1)}%" if attempts else "样本不足"
+        pass_success_text = f"{round(100.0 * successes / attempts, 1)}%" if attempts >= 2 else "样本不足"
 
         movement_norm = min(float(row["distance_per_min"]) / 120.0 * 100.0, 100.0)
         high_speed_norm = min(float(row["high_speed_pct"]) / 6.0 * 100.0, 100.0)
@@ -498,7 +617,7 @@ def technical_reference_table(metrics: pd.DataFrame, red: pd.DataFrame, tracks: 
                 "无球跑动指数": off_ball_index,
                 "防守无球跑动指数": defensive_off_ball_index,
                 "创造空间指数": space_creation_index,
-                "置信度": f"中（人工球点{ball_review_count}帧）" if ball_source == "human" else ("低" if attempts or shot_counts.get(player_id, 0) else "低/样本少"),
+                "置信度": f"中（人工球点{ball_review_count}帧）" if "human" in ball_source and ball_review_count else ("低" if attempts or shot_counts.get(player_id, 0) else "低/样本少"),
             }
         )
     return pd.DataFrame(rows)
@@ -655,7 +774,7 @@ def markdown_report(
         f"- 视频片段：{format_ts(summary['segment']['start_sec'])} - {format_ts(summary['segment']['start_sec'] + summary['segment']['duration_sec'])}",
         f"- 采样：{summary['segment']['sample_fps']} fps，共 {summary['segment']['processed_frames']} 帧",
         f"- MVP：{mvp_text}",
-        "- 重要说明：当前报告主要基于人物检测、轨迹、站位和对抗距离。通用 YOLO 对足球覆盖率较低，因此传球、射门、抢断只能给出候选时刻，不能作为正式技术统计。",
+        "- 重要说明：当前报告主要基于人物检测、轨迹、站位和对抗距离，并结合人工球点与系统球点生成传球、射门候选；由于球权链路仍非逐帧稳定识别，传球、射门、抢断暂不作为正式技术统计。",
         "",
         "## 本次勾选指标覆盖状态",
         "",
@@ -665,7 +784,7 @@ def markdown_report(
         "",
         "### 评分规则说明",
         "",
-        "- 总分为 10 分制，是“业余五人制球员能力评估”的 MVP 初版代理评分；当前不把传球、射门、抢断计入正式评分，因为足球小目标检测覆盖不足。",
+        "- 总分为 10 分制，是“业余五人制球员能力评估”的 MVP 初版代理评分；当前不把传球、射门、抢断计入正式评分，因为球权链路置信度还未达到正式统计标准。",
         "- 基础分为 4.5 分，再根据角色加权后的表现分上浮；表现分由跑动参与、压迫参与、进攻三区参与、位置纪律、高速移动和可观察度组成。",
         "- 跑动参与：按每分钟估算跑动距离评分；高速移动：按高速跑帧占比评分；压迫参与：在进攻半场且距离最近对手 3.5 米内的帧占比；进攻三区参与：进入球场前 1/3 区域的帧占比；位置纪律：球员是否稳定出现在其角色对应区域；可观察度：检测到该球员的帧覆盖率。",
         "- 观察覆盖率：该球员被自动识别并绑定成功的去重帧数 / 本次采样处理总帧数 × 100%。它反映本场可评价样本量，不等同真实出勤率；低覆盖率通常意味着遮挡、远景、号码不清或身份绑定需要人工校验。",
@@ -685,7 +804,7 @@ def markdown_report(
         "",
         "### 重点指标参考值（低置信）",
         "",
-        "- 以下指标是低置信参考值，用于先观察趋势，不进入当前正式评分。射门、传球、传球成功率主要依赖足球小目标检测和最近球员归属；如果候选值为 0 且置信度为“低/样本少”，表示当前视频中足球检测样本不足，不能等同于真实比赛没有发生。抢断和 1v1 主要依赖近距离对抗与压迫代理；无球、防守无球和创造空间为 0-100 的代理指数。",
+        "- 以下指标是低置信参考值，用于先观察趋势，不进入当前正式评分。射门、传球、传球成功率主要依赖人工/系统球点、场内有效球点筛选和最近球员归属；如果候选值为 0 且置信度为“低/样本少”，表示当前球权链路样本不足，不能等同于真实比赛没有发生。抢断和 1v1 主要依赖近距离对抗与压迫代理；无球、防守无球和创造空间为 0-100 的代理指数。",
         "",
         markdown_table(reference_metrics),
         "",
@@ -708,18 +827,6 @@ def markdown_report(
                 f"{row['event_type']}，{row['reason']}。"
             )
 
-    lines.extend(
-        [
-            "",
-            "## 输出文件",
-            "",
-            f"- `player_metrics.csv`：球员评分与移动/站位指标",
-            f"- `reference_metrics.csv`：低置信重点指标参考值",
-            f"- `key_timestamps.csv`：关键候选片段",
-            f"- `report.html`：可浏览报告",
-            f"- 报告目录：`{output_dir}`",
-        ]
-    )
     return "\n".join(lines) + "\n"
 
 

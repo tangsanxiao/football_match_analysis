@@ -528,7 +528,7 @@ def ball_review_summary(match_id: str) -> Dict[str, Any]:
     for item in items:
         review_id = str(item.get("review_id") or "")
         human = correction_items.get(review_id) or item.get("human_review") or {}
-        if human.get("status") in {"marked", "invisible", "skipped"}:
+        if human.get("status") in {"marked", "invisible", "out_of_play", "skipped"}:
             reviewed += 1
     return {
         "status": status,
@@ -907,6 +907,14 @@ def calibration_homography(config: Dict[str, Any]) -> List[List[float]]:
     return calibration.get("homography_image_to_field") or []
 
 
+def ball_in_field(config: Dict[str, Any], field_x: Optional[float], field_y: Optional[float], margin_m: float = 0.75) -> bool:
+    if field_x is None or field_y is None:
+        return False
+    length = float(config.get("field", {}).get("length_m", 40.0))
+    width = float(config.get("field", {}).get("width_m", 20.0))
+    return -margin_m <= float(field_x) <= length + margin_m and -margin_m <= float(field_y) <= width + margin_m
+
+
 def write_ball_review(match_id: str, reviewed_items: List[Dict[str, Any]], submit: bool) -> Dict[str, Any]:
     config_path = PROJECT_ROOT / "matches" / match_id / "config" / "match.yaml"
     if not config_path.exists():
@@ -928,11 +936,14 @@ def write_ball_review(match_id: str, reviewed_items: List[Dict[str, Any]], submi
             continue
         item = item_by_id[review_id]
         status = str(payload_item.get("status") or "pending")
-        ball_visible = bool(payload_item.get("ball_visible")) and status == "marked"
+        if status not in {"pending", "marked", "invisible", "out_of_play", "skipped"}:
+            status = "pending"
         review_xy = payload_item.get("review_image_xy")
         source_xy = None
         field_x = field_y = None
-        if ball_visible and isinstance(review_xy, list) and len(review_xy) == 2:
+        has_review_xy = isinstance(review_xy, list) and len(review_xy) == 2
+        ball_visible = bool(payload_item.get("ball_visible")) and status in {"marked", "out_of_play"} and has_review_xy
+        if ball_visible:
             scale_x = float(item.get("review_to_source_scale_x") or 1.0)
             scale_y = float(item.get("review_to_source_scale_y") or 1.0)
             source_x = float(review_xy[0]) * scale_x
@@ -942,10 +953,12 @@ def write_ball_review(match_id: str, reviewed_items: List[Dict[str, Any]], submi
             if mapped_x is not None and mapped_y is not None:
                 field_x = round(mapped_x, 3)
                 field_y = round(mapped_y, 3)
+        ball_in_play = status == "marked" and ball_visible and ball_in_field(config, field_x, field_y)
 
         correction = {
             "status": status,
             "ball_visible": ball_visible,
+            "ball_in_play": ball_in_play,
             "review_image_xy": [round(float(review_xy[0]), 2), round(float(review_xy[1]), 2)] if isinstance(review_xy, list) and len(review_xy) == 2 else None,
             "source_image_xy": source_xy,
             "field_xy": [field_x, field_y] if field_x is not None and field_y is not None else None,
@@ -953,7 +966,7 @@ def write_ball_review(match_id: str, reviewed_items: List[Dict[str, Any]], submi
         }
         corrections[review_id] = correction
         item["human_review"] = {**(item.get("human_review") or {}), **correction}
-        if status in {"marked", "invisible", "skipped"}:
+        if status in {"marked", "invisible", "out_of_play", "skipped"}:
             points_rows.append(
                 {
                     "review_id": review_id,
@@ -961,6 +974,7 @@ def write_ball_review(match_id: str, reviewed_items: List[Dict[str, Any]], submi
                     "timestamp_sec": float(item.get("timestamp_sec") or 0.0),
                     "timestamp": item.get("timestamp") or "",
                     "ball_visible": ball_visible,
+                    "ball_in_play": ball_in_play,
                     "review_image_x": correction["review_image_xy"][0] if correction["review_image_xy"] else "",
                     "review_image_y": correction["review_image_xy"][1] if correction["review_image_xy"] else "",
                     "source_image_x": source_xy[0] if source_xy else "",
@@ -993,6 +1007,7 @@ def write_ball_review(match_id: str, reviewed_items: List[Dict[str, Any]], submi
         "timestamp_sec",
         "timestamp",
         "ball_visible",
+        "ball_in_play",
         "review_image_x",
         "review_image_y",
         "source_image_x",
@@ -1173,7 +1188,9 @@ def build_home_html() -> str:
     body.modal-open { overflow: hidden; }
     .image-modal { position: fixed; inset: 0; z-index: 1000; display: none; grid-template-rows: auto 1fr; background: rgba(12, 17, 14, .94); color: #fff; }
     .image-modal.open { display: grid; }
+    .image-modal.ball-mode { grid-template-columns: minmax(0, 1fr) 320px; grid-template-rows: auto 1fr; }
     .image-modal-toolbar { min-height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,.16); background: rgba(12, 17, 14, .92); }
+    .image-modal.ball-mode .image-modal-toolbar { grid-column: 1 / -1; }
     .modal-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 800; }
     .modal-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .modal-actions button { border-color: rgba(255,255,255,.22); background: rgba(255,255,255,.08); color: #fff; min-width: 42px; }
@@ -1182,6 +1199,13 @@ def build_home_html() -> str:
     .image-modal.ball-mode .image-modal-stage { cursor: crosshair; }
     .image-modal-stage.dragging { cursor: grabbing; }
     .modal-image { max-width: 96vw; max-height: calc(100vh - 76px); transform-origin: center center; will-change: transform; user-select: none; -webkit-user-drag: none; box-shadow: 0 18px 60px rgba(0,0,0,.45); }
+    .ball-modal-side { min-height: 0; display: none; gap: 10px; align-content: start; padding: 12px; border-left: 1px solid rgba(255,255,255,.16); background: rgba(12, 17, 14, .92); overflow: auto; }
+    .image-modal.ball-mode .ball-modal-side { display: grid; }
+    .ball-modal-side .button-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .ball-modal-side label { color: rgba(255,255,255,.82); font-weight: 800; }
+    .ball-modal-side input { background: rgba(255,255,255,.08); color: #fff; border-color: rgba(255,255,255,.22); }
+    .ball-modal-side .status { color: rgba(255,255,255,.72); }
+    .ball-modal-side .ball-progress { color: #fff; }
     .feedback-modal { position: fixed; inset: 0; z-index: 1100; display: none; place-items: center; padding: 20px; background: rgba(12, 17, 14, .45); }
     .feedback-modal.open { display: grid; }
     .feedback-card { width: min(560px, 100%); background: #fff; border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 18px 60px rgba(0,0,0,.24); overflow: hidden; }
@@ -1196,6 +1220,7 @@ def build_home_html() -> str:
     .ball-side .button-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .ball-progress { color: var(--muted); font-weight: 800; }
     @media (max-width: 980px) { .ball-workspace { grid-template-columns: 1fr; } .ball-side { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 980px) { .image-modal.ball-mode { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr) auto; } .ball-modal-side { border-left: 0; border-top: 1px solid rgba(255,255,255,.16); max-height: 34vh; } }
     @media (max-width: 980px) { .grid, .metrics { grid-template-columns: 1fr 1fr; } .history-row { grid-template-columns: 1fr; } }
     @media (max-width: 980px) { .review-grid { grid-template-columns: 1fr; } }
     @media (max-width: 640px) { .grid, .metrics { grid-template-columns: 1fr; } .wide { grid-column: auto; } header { align-items: flex-start; flex-direction: column; } }
@@ -1337,6 +1362,7 @@ def build_home_html() -> str:
             <button id="nextBallFrame">下一张</button>
             <button id="useSystemBall">采用系统点</button>
             <button id="ballInvisible">球不可见</button>
+            <button id="ballOutOfPlay">球在界外</button>
             <button id="skipBallFrame">跳过</button>
             <button id="resetBallPoint">清除本张</button>
             <button id="openBallZoom">放大标注</button>
@@ -1369,6 +1395,21 @@ def build_home_html() -> str:
   <div id="modalStage" class="image-modal-stage">
     <img id="modalImage" class="modal-image" alt="">
   </div>
+  <aside id="ballModalSide" class="ball-modal-side">
+    <div id="ballModalProgress" class="ball-progress"></div>
+    <div id="ballModalMeta" class="status"></div>
+    <div class="button-grid">
+      <button id="modalPrevBallFrame">上一张</button>
+      <button id="modalNextBallFrame">下一张</button>
+      <button id="modalUseSystemBall">采用系统点</button>
+      <button id="modalBallInvisible">球不可见</button>
+      <button id="modalBallOutOfPlay">球在界外</button>
+      <button id="modalSkipBallFrame">跳过</button>
+      <button id="modalResetBallPoint">清除本张</button>
+      <button id="modalSaveBallReview">保存草稿</button>
+    </div>
+    <label>备注<input id="ballModalNote" placeholder="可选"></label>
+  </aside>
 </div>
 
 <div id="feedbackModal" class="feedback-modal hidden" aria-hidden="true">
@@ -1936,6 +1977,36 @@ function ballModalTitle(item) {
   return `${ballIndex + 1} / ${ballItems.length} · ${item.timestamp || ''} · 单击球心标注`;
 }
 
+function ballStatusLabel(status) {
+  const labels = {
+    pending: '待处理',
+    marked: '已标球心',
+    invisible: '球不可见',
+    out_of_play: '球在界外',
+    skipped: '已跳过'
+  };
+  return labels[status] || status || '待处理';
+}
+
+function ballNoteValue() {
+  if ($('imageModal').classList.contains('open') && modalPurpose === 'ball') return $('ballModalNote').value || '';
+  return $('ballNote').value || '';
+}
+
+function setBallNoteValue(value) {
+  $('ballNote').value = value || '';
+  $('ballModalNote').value = value || '';
+}
+
+function updateBallModalSide(item) {
+  if (!item) return;
+  const human = ballHuman(item);
+  const systemBall = item.system_labels && item.system_labels.ball || {};
+  $('ballModalProgress').textContent = `${ballIndex + 1} / ${ballItems.length} · ${item.timestamp || ''}`;
+  $('ballModalMeta').textContent = `原因: ${item.reason || ''}；系统球: ${systemBall.visible ? `可见，置信度 ${systemBall.confidence}` : '未识别到球'}；人工状态: ${ballStatusLabel(human.status)}`;
+  $('ballModalNote').value = human.note || '';
+}
+
 function syncBallModal() {
   if (!$('imageModal').classList.contains('open') || modalPurpose !== 'ball') return;
   const item = currentBallItem();
@@ -1945,6 +2016,7 @@ function syncBallModal() {
   }
   $('modalImage').src = ballFrameSrc(item);
   $('modalTitle').textContent = ballModalTitle(item);
+  updateBallModalSide(item);
   resetModalView();
 }
 
@@ -1954,8 +2026,9 @@ function renderBallItem() {
   const human = ballHuman(item);
   const systemBall = item.system_labels && item.system_labels.ball || {};
   $('ballProgress').textContent = `${ballIndex + 1} / ${ballItems.length} · ${item.timestamp || ''}`;
-  $('ballMeta').textContent = `原因: ${item.reason || ''}；系统球: ${systemBall.visible ? `可见，置信度 ${systemBall.confidence}` : '未识别到球'}；人工状态: ${human.status || 'pending'}`;
-  $('ballNote').value = human.note || '';
+  $('ballMeta').textContent = `原因: ${item.reason || ''}；系统球: ${systemBall.visible ? `可见，置信度 ${systemBall.confidence}` : '未识别到球'}；人工状态: ${ballStatusLabel(human.status)}`;
+  setBallNoteValue(human.note || '');
+  updateBallModalSide(item);
   $('ballImage').src = ballFrameSrc(item);
   $('ballImage').onload = () => {
     if (currentBallItem() === item) renderBallMarker(item);
@@ -2005,7 +2078,7 @@ function markBallVisible(point) {
   human.status = 'marked';
   human.ball_visible = true;
   human.review_image_xy = point;
-  human.note = $('ballNote').value || '';
+  human.note = ballNoteValue();
   renderBallMarker(item);
   scheduleBallAutoSave();
   advanceAfterBallDecision();
@@ -2018,7 +2091,19 @@ function markBallInvisible() {
   human.status = 'invisible';
   human.ball_visible = false;
   human.review_image_xy = null;
-  human.note = $('ballNote').value || '';
+  human.note = ballNoteValue();
+  scheduleBallAutoSave();
+  advanceAfterBallDecision();
+}
+
+function markBallOutOfPlay() {
+  const item = currentBallItem();
+  if (!item) return;
+  const human = ballHuman(item);
+  human.status = 'out_of_play';
+  human.ball_visible = false;
+  human.review_image_xy = null;
+  human.note = ballNoteValue();
   scheduleBallAutoSave();
   advanceAfterBallDecision();
 }
@@ -2030,7 +2115,7 @@ function skipBallFrame() {
   human.status = 'skipped';
   human.ball_visible = false;
   human.review_image_xy = null;
-  human.note = $('ballNote').value || '';
+  human.note = ballNoteValue();
   scheduleBallAutoSave();
   advanceAfterBallDecision();
 }
@@ -2049,7 +2134,7 @@ function useSystemBallPoint() {
 function resetBallPoint() {
   const item = currentBallItem();
   if (!item) return;
-  item.human_review = { status: 'pending', ball_visible: null, review_image_xy: null, note: $('ballNote').value || '' };
+  item.human_review = { status: 'pending', ball_visible: null, review_image_xy: null, note: ballNoteValue() };
   renderBallItem();
   scheduleBallAutoSave();
 }
@@ -2268,6 +2353,7 @@ $('prevBallFrame').addEventListener('click', prevBallFrame);
 $('nextBallFrame').addEventListener('click', nextBallFrame);
 $('useSystemBall').addEventListener('click', useSystemBallPoint);
 $('ballInvisible').addEventListener('click', markBallInvisible);
+$('ballOutOfPlay').addEventListener('click', markBallOutOfPlay);
 $('skipBallFrame').addEventListener('click', skipBallFrame);
 $('resetBallPoint').addEventListener('click', resetBallPoint);
 $('openBallZoom').addEventListener('click', openBallZoomModal);
@@ -2275,6 +2361,22 @@ $('ballNote').addEventListener('input', () => {
   const item = currentBallItem();
   if (!item) return;
   ballHuman(item).note = $('ballNote').value || '';
+  $('ballModalNote').value = $('ballNote').value || '';
+  scheduleBallAutoSave();
+});
+$('modalPrevBallFrame').addEventListener('click', prevBallFrame);
+$('modalNextBallFrame').addEventListener('click', nextBallFrame);
+$('modalUseSystemBall').addEventListener('click', useSystemBallPoint);
+$('modalBallInvisible').addEventListener('click', markBallInvisible);
+$('modalBallOutOfPlay').addEventListener('click', markBallOutOfPlay);
+$('modalSkipBallFrame').addEventListener('click', skipBallFrame);
+$('modalResetBallPoint').addEventListener('click', resetBallPoint);
+$('modalSaveBallReview').addEventListener('click', () => saveBallReview(false));
+$('ballModalNote').addEventListener('input', () => {
+  const item = currentBallItem();
+  if (!item) return;
+  ballHuman(item).note = $('ballModalNote').value || '';
+  $('ballNote').value = $('ballModalNote').value || '';
   scheduleBallAutoSave();
 });
 $('modalClose').addEventListener('click', closeImageModal);
@@ -2345,6 +2447,7 @@ document.addEventListener('keydown', event => {
     if (event.key === 'ArrowRight') nextBallFrame();
     if (event.key === 'ArrowLeft') prevBallFrame();
     if (key === 'n') markBallInvisible();
+    if (key === 'o') markBallOutOfPlay();
     if (key === 's') skipBallFrame();
   }
 });
@@ -2356,6 +2459,7 @@ document.addEventListener('keydown', event => {
   if (event.key === 'ArrowRight') nextBallFrame();
   if (event.key === 'ArrowLeft') prevBallFrame();
   if (event.key.toLowerCase() === 'n') markBallInvisible();
+  if (event.key.toLowerCase() === 'o') markBallOutOfPlay();
   if (event.key.toLowerCase() === 's') skipBallFrame();
 });
 $('teamName').addEventListener('input', renderPlayers);
