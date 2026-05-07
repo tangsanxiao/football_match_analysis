@@ -623,27 +623,75 @@ def technical_reference_table(metrics: pd.DataFrame, red: pd.DataFrame, tracks: 
     return pd.DataFrame(rows)
 
 
-def suggestion(row: pd.Series) -> str:
+def reference_for_player(reference_metrics: pd.DataFrame, row: pd.Series) -> pd.Series:
+    if reference_metrics.empty:
+        return pd.Series(dtype=object)
+    mask = reference_metrics["球员"].astype(str).eq(str(row["name"]))
+    if "号码" in reference_metrics.columns:
+        mask &= reference_metrics["号码"].astype(str).eq(str(row["number"]))
+    matched = reference_metrics[mask]
+    if matched.empty:
+        return pd.Series(dtype=object)
+    return matched.iloc[0]
+
+
+def ref_num(ref: pd.Series, key: str, default: float = 0.0) -> float:
+    if ref.empty or key not in ref:
+        return default
+    value = ref.get(key)
+    try:
+        if value is None or value == "":
+            return default
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def ref_text(ref: pd.Series, key: str, default: str = "样本不足") -> str:
+    if ref.empty or key not in ref:
+        return default
+    value = str(ref.get(key) or "").strip()
+    return value or default
+
+
+def suggestion(row: pd.Series, ref: pd.Series) -> str:
     role = row["role"]
     if row["observed_frames"] == 0:
         return "本次自动检测未稳定捕捉到该球员，先补身份绑定再评价。"
+    shots = int(ref_num(ref, "射门候选"))
+    passes = int(ref_num(ref, "传球候选"))
+    steals = int(ref_num(ref, "抢断候选"))
+    duels = int(ref_num(ref, "1v1攻防候选"))
+    pass_success = ref_text(ref, "传球成功率参考")
+    space_index = ref_num(ref, "创造空间指数")
+    defensive_index = ref_num(ref, "防守无球跑动指数")
+    off_ball_index = ref_num(ref, "无球跑动指数")
+
     if role == "goalkeeper":
         if row["role_zone_pct"] < 80:
-            return "门前站位可再稳定，优先练习出击后快速回到中路保护位置。"
+            return "门前站位可再稳定，优先练习出击后快速回到中路保护位置；出球候选样本显示仍有参与后场组织的空间，训练中把接球后观察两侧前锋作为固定动作。"
+        if passes >= 6:
+            return f"门前站位非常稳定，传球候选 {passes} 次、成功率参考 {pass_success}，说明他是后场重启进攻的重要起点；训练重点放在接球后 2 秒内判断短传给中路还是快速找边路，减少无准备的大脚处理。"
         return "门将站位整体稳定，下一步重点补充开球选择和防守转换后的第一传。"
     if role == "defender":
         if row["role_zone_pct"] < 55:
-            return "防守保护区离开较多，建议练 2v2 延缓、身后保护和攻转守第一步回收。"
+            return f"防守保护区离开较多，1v1 候选 {duels} 次，建议练 2v2 延缓、身后保护和攻转守第一步回收；出球时优先找弱侧边锋，避免在中路被反抢。"
         if row["pressing_pct"] < 8:
-            return "防守站位较稳，但主动压迫偏少，建议增加对持球人第一下限制。"
-        return "防守覆盖不错，继续提升抢断后向前出球的速度。"
+            return f"防守站位较稳，传球候选 {passes} 次、成功率参考 {pass_success}，可以作为后场出球点；短板是主动压迫偏少，建议把对手背身接球、边线停球作为上抢触发点，抢断后第一脚尽量找 TYX/ZMC 的前插。"
+        return f"防守覆盖不错，抢断候选 {steals} 次、1v1 候选 {duels} 次，继续提升抢断后向前出球速度；训练中加入夺回球后 3 秒内完成第一传的限制条件。"
     if row["pressing_pct"] < 10:
-        return "前场压迫触发偏少，建议练习失球后 3 秒内的夹抢和封中路路线。"
+        return f"前场压迫触发偏少，但射门候选 {shots} 次、传球候选 {passes} 次，说明进攻参与不低；建议练习失球后 3 秒内的夹抢和封中路路线，把进攻终结后的第一步反抢固定下来。"
     if row["final_third_pct"] < 20:
-        return "进入终结区域比例偏低，建议增加斜插后点、二点球跟进和门前补位。"
+        return f"进入终结区域比例偏低，当前创造空间指数 {space_index:.1f}，建议增加斜插后点、二点球跟进和门前补位；接应后优先完成一脚回做或转移。"
     if row["role_zone_pct"] < 45:
-        return "活动范围很大但位置纪律一般，建议明确边/中职责，减少同线重叠。"
-    return "跑动和压迫参与度较好，下一步把无球跑动和接应后的第一脚处理连起来。"
+        return f"活动范围很大但位置纪律一般，传球候选 {passes} 次、射门候选 {shots} 次，说明他参与了不少关键回合；建议明确边/中职责，减少同线重叠，把跑动终点固定到可接应或可终结的位置。"
+    if role == "center_forward":
+        return f"中路终结参与突出，射门候选 {shots} 次、传球候选 {passes} 次、成功率参考 {pass_success}；下一步重点练背身接应后的第一脚分边，以及禁区前沿接球后快速调整射门，避免只停留在跑到位。"
+    if role == "right_forward":
+        return f"右路压迫和创造空间表现最好，抢断候选 {steals} 次、创造空间指数 {space_index:.1f}、传球成功率参考 {pass_success}；训练重点是压迫成功后的第一选择：能直塞就第一时间给中路，不能直塞就转移到弱侧，减少带球停顿。"
+    if role == "left_forward":
+        return f"左路推进和串联价值明显，传球候选 {passes} 次、射门候选 {shots} 次、无球跑动指数 {off_ball_index:.1f}；建议继续保持斜向冲刺，同时加强最后一传和射门前的身体朝向，避免高强度跑动后处理球质量下降。"
+    return f"跑动和压迫参与度较好，传球候选 {passes} 次、1v1 候选 {duels} 次、防守无球指数 {defensive_index:.1f}；下一步把无球跑动和接应后的第一脚处理连起来。"
 
 
 def role_label(role: str) -> str:
@@ -812,9 +860,10 @@ def markdown_report(
         "",
     ]
     for _, row in metrics.sort_values("number").iterrows():
+        ref = reference_for_player(reference_metrics, row)
         lines.append(
             f"- {row['name']}（{int(row['number'])}号，{role_label(row['role'])}）：评分 {row['rating']}，"
-            f"身份置信度 {confidence_label(row['confidence'])}。{suggestion(row)}"
+            f"身份置信度 {confidence_label(row['confidence'])}。{suggestion(row, ref)}"
         )
 
     lines.extend(["", "## 关键片段时间戳", ""])
