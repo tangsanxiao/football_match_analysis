@@ -479,6 +479,20 @@ def review_paths(match_id: str) -> Dict[str, Path]:
     }
 
 
+def ball_review_paths(match_id: str) -> Dict[str, Path]:
+    project_dir = PROJECT_ROOT / "matches" / match_id
+    review_dir = project_dir / "review"
+    ball_dir = review_dir / "ball_review"
+    return {
+        "project_dir": project_dir,
+        "review_dir": review_dir,
+        "ball_dir": ball_dir,
+        "manifest": ball_dir / "ball_review_manifest.yaml",
+        "corrections": ball_dir / "corrections.yaml",
+        "points_csv": ball_dir / "ball_review_points.csv",
+    }
+
+
 def human_review_summary(match_id: str) -> Dict[str, Any]:
     paths = review_paths(match_id)
     manifest = load_yaml(paths["manifest"])
@@ -500,6 +514,30 @@ def human_review_summary(match_id: str) -> Dict[str, Any]:
         "pending_count": sum(1 for item in items if (item.get("human_review") or {}).get("status") == "pending"),
         "manifest_path": project_relative(paths["manifest"]),
         "corrections_path": project_relative(paths["corrections"]),
+    }
+
+
+def ball_review_summary(match_id: str) -> Dict[str, Any]:
+    paths = ball_review_paths(match_id)
+    manifest = load_yaml(paths["manifest"])
+    corrections = load_yaml(paths["corrections"])
+    status = corrections.get("status") or manifest.get("status") or ("pending" if manifest else "not_ready")
+    items = manifest.get("items") or []
+    reviewed = 0
+    correction_items = corrections.get("items") or {}
+    for item in items:
+        review_id = str(item.get("review_id") or "")
+        human = correction_items.get(review_id) or item.get("human_review") or {}
+        if human.get("status") in {"marked", "invisible", "skipped"}:
+            reviewed += 1
+    return {
+        "status": status,
+        "ready": bool(manifest),
+        "submitted": status == "submitted",
+        "item_count": len(items),
+        "reviewed_count": reviewed,
+        "pending_count": max(0, len(items) - reviewed),
+        "points_csv": project_relative(paths["points_csv"]),
     }
 
 
@@ -525,8 +563,11 @@ def match_summary(config_path: Path) -> Dict[str, Any]:
         or has_minimum_info
     )
     human_review = human_review_summary(match_id)
+    ball_review = ball_review_summary(match_id)
     if human_review["ready"] and not human_review["submitted"]:
         status = f"待人工校验 {human_review['pending_count']}/{human_review['item_count']}"
+    elif ball_review["ready"] and not ball_review["submitted"]:
+        status = f"待标注球 {ball_review['pending_count']}/{ball_review['item_count']}"
     elif human_review["submitted"] and not report_ready:
         status = "待生成最终报告"
     elif report_ready:
@@ -556,6 +597,9 @@ def match_summary(config_path: Path) -> Dict[str, Any]:
         "human_review_ready": human_review["ready"],
         "human_review_submitted": human_review["submitted"],
         "human_review_item_count": human_review["item_count"],
+        "ball_review_ready": ball_review["ready"],
+        "ball_review_submitted": ball_review["submitted"],
+        "ball_review_item_count": ball_review["item_count"],
         "report_ready": report_ready,
         "report_md": project_relative(report_dir / "report.md"),
         "report_html": project_relative(report_dir / "report.html"),
@@ -811,6 +855,161 @@ def write_human_review(match_id: str, reviewed_items: List[Dict[str, Any]], subm
     return human_review_summary(match_id)
 
 
+def ball_review_payload(match_id: str) -> Dict[str, Any]:
+    paths = ball_review_paths(match_id)
+    manifest = load_yaml(paths["manifest"])
+    corrections = load_yaml(paths["corrections"])
+    if not manifest:
+        return {
+            "match_id": match_id,
+            "ready": False,
+            "status": "not_ready",
+            "message": "球位置标注包还没有生成。请先点击“生成球标注包”。",
+            "items": [],
+        }
+    correction_items = corrections.get("items") or {}
+    items = manifest.get("items") or []
+    for item in items:
+        review_id = str(item.get("review_id") or "")
+        if review_id in correction_items:
+            item["human_review"] = {**(item.get("human_review") or {}), **correction_items[review_id]}
+    summary = ball_review_summary(match_id)
+    return {
+        "match_id": match_id,
+        "ready": True,
+        "status": summary["status"],
+        "submitted": summary["submitted"],
+        "item_count": summary["item_count"],
+        "reviewed_count": summary["reviewed_count"],
+        "pending_count": summary["pending_count"],
+        "points_csv": summary["points_csv"],
+        "items": items,
+    }
+
+
+def apply_homography(matrix: List[List[float]], x: float, y: float) -> Tuple[Optional[float], Optional[float]]:
+    if not matrix or len(matrix) < 3:
+        return None, None
+    den = matrix[2][0] * x + matrix[2][1] * y + matrix[2][2]
+    if abs(den) < 1e-9:
+        return None, None
+    field_x = (matrix[0][0] * x + matrix[0][1] * y + matrix[0][2]) / den
+    field_y = (matrix[1][0] * x + matrix[1][1] * y + matrix[1][2]) / den
+    return field_x, field_y
+
+
+def calibration_homography(config: Dict[str, Any]) -> List[List[float]]:
+    calibration_path = resolve_path(config["match"]["interim_dir"]) / "calibration" / "calibration.json"
+    if not calibration_path.exists():
+        return []
+    with calibration_path.open("r", encoding="utf-8") as handle:
+        calibration = json.load(handle)
+    return calibration.get("homography_image_to_field") or []
+
+
+def write_ball_review(match_id: str, reviewed_items: List[Dict[str, Any]], submit: bool) -> Dict[str, Any]:
+    config_path = PROJECT_ROOT / "matches" / match_id / "config" / "match.yaml"
+    if not config_path.exists():
+        raise FileNotFoundError(f"Match config not found: {match_id}")
+    config = load_yaml(config_path)
+    paths = ball_review_paths(match_id)
+    manifest = load_yaml(paths["manifest"])
+    if not manifest:
+        raise FileNotFoundError("球位置标注包还没有生成，无法保存。")
+
+    item_by_id = {str(item.get("review_id")): item for item in manifest.get("items") or []}
+    homography = calibration_homography(config)
+    corrections: Dict[str, Any] = {}
+    points_rows: List[Dict[str, Any]] = []
+
+    for payload_item in reviewed_items:
+        review_id = str(payload_item.get("review_id") or "")
+        if review_id not in item_by_id:
+            continue
+        item = item_by_id[review_id]
+        status = str(payload_item.get("status") or "pending")
+        ball_visible = bool(payload_item.get("ball_visible")) and status == "marked"
+        review_xy = payload_item.get("review_image_xy")
+        source_xy = None
+        field_x = field_y = None
+        if ball_visible and isinstance(review_xy, list) and len(review_xy) == 2:
+            scale_x = float(item.get("review_to_source_scale_x") or 1.0)
+            scale_y = float(item.get("review_to_source_scale_y") or 1.0)
+            source_x = float(review_xy[0]) * scale_x
+            source_y = float(review_xy[1]) * scale_y
+            source_xy = [round(source_x, 2), round(source_y, 2)]
+            mapped_x, mapped_y = apply_homography(homography, source_x, source_y)
+            if mapped_x is not None and mapped_y is not None:
+                field_x = round(mapped_x, 3)
+                field_y = round(mapped_y, 3)
+
+        correction = {
+            "status": status,
+            "ball_visible": ball_visible,
+            "review_image_xy": [round(float(review_xy[0]), 2), round(float(review_xy[1]), 2)] if isinstance(review_xy, list) and len(review_xy) == 2 else None,
+            "source_image_xy": source_xy,
+            "field_xy": [field_x, field_y] if field_x is not None and field_y is not None else None,
+            "note": str(payload_item.get("note") or ""),
+        }
+        corrections[review_id] = correction
+        item["human_review"] = {**(item.get("human_review") or {}), **correction}
+        if status in {"marked", "invisible", "skipped"}:
+            points_rows.append(
+                {
+                    "review_id": review_id,
+                    "frame_idx": int(item.get("frame_idx") or 0),
+                    "timestamp_sec": float(item.get("timestamp_sec") or 0.0),
+                    "timestamp": item.get("timestamp") or "",
+                    "ball_visible": ball_visible,
+                    "review_image_x": correction["review_image_xy"][0] if correction["review_image_xy"] else "",
+                    "review_image_y": correction["review_image_xy"][1] if correction["review_image_xy"] else "",
+                    "source_image_x": source_xy[0] if source_xy else "",
+                    "source_image_y": source_xy[1] if source_xy else "",
+                    "field_x_m": field_x if field_x is not None else "",
+                    "field_y_m": field_y if field_y is not None else "",
+                    "source": "human",
+                    "status": status,
+                    "note": correction["note"],
+                }
+            )
+
+    manifest["status"] = "submitted" if submit else "draft"
+    manifest["updated_at"] = now_iso()
+    write_yaml(paths["manifest"], manifest)
+    write_yaml(
+        paths["corrections"],
+        {
+            "status": "submitted" if submit else "draft",
+            "updated_at": now_iso(),
+            "submitted_at": now_iso() if submit else None,
+            "items": corrections,
+        },
+    )
+
+    paths["points_csv"].parent.mkdir(parents=True, exist_ok=True)
+    fieldnames = [
+        "review_id",
+        "frame_idx",
+        "timestamp_sec",
+        "timestamp",
+        "ball_visible",
+        "review_image_x",
+        "review_image_y",
+        "source_image_x",
+        "source_image_y",
+        "field_x_m",
+        "field_y_m",
+        "source",
+        "status",
+        "note",
+    ]
+    with paths["points_csv"].open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(sorted(points_rows, key=lambda row: float(row["timestamp_sec"])))
+    return ball_review_summary(match_id)
+
+
 def start_job(match_id: str, name: str, command: List[str]) -> Dict[str, Any]:
     project_dir = PROJECT_ROOT / "matches" / match_id
     log_dir = project_dir / "review" / "jobs"
@@ -872,6 +1071,16 @@ def start_final_report(match_id: str) -> Dict[str, Any]:
         "mvp_initial",
     ]
     return start_job(match_id, "final_report", command)
+
+
+def start_prepare_ball_review(match_id: str) -> Dict[str, Any]:
+    command = [
+        sys.executable,
+        "scripts/15_prepare_ball_review.py",
+        "--config",
+        f"matches/{match_id}/config/match.yaml",
+    ]
+    return start_job(match_id, "prepare_ball_review", command)
 
 
 def start_analysis(match_id: str, device: str = "mps") -> Dict[str, Any]:
@@ -974,6 +1183,14 @@ def build_home_html() -> str:
     .feedback-card h2 { border-bottom: 1px solid var(--line); }
     .feedback-body { padding: 14px; display: grid; gap: 10px; color: var(--ink); line-height: 1.5; }
     .feedback-body ul { margin: 0; padding-left: 20px; }
+    .ball-workspace { padding: 12px; display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 12px; }
+    .ball-stage { position: relative; min-height: 420px; display: grid; place-items: center; background: #20251f; border-radius: 8px; overflow: hidden; cursor: crosshair; }
+    .ball-stage img { width: 100%; height: 100%; max-height: 72vh; object-fit: contain; display: block; }
+    .ball-marker { position: absolute; width: 24px; height: 24px; border: 3px solid #ffe066; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 2px rgba(0,0,0,.55); pointer-events: none; }
+    .ball-side { display: grid; gap: 10px; align-content: start; }
+    .ball-side .button-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .ball-progress { color: var(--muted); font-weight: 800; }
+    @media (max-width: 980px) { .ball-workspace { grid-template-columns: 1fr; } .ball-side { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 980px) { .grid, .metrics { grid-template-columns: 1fr 1fr; } .history-row { grid-template-columns: 1fr; } }
     @media (max-width: 980px) { .review-grid { grid-template-columns: 1fr; } }
     @media (max-width: 640px) { .grid, .metrics { grid-template-columns: 1fr; } .wide { grid-column: auto; } header { align-items: flex-start; flex-direction: column; } }
@@ -1065,7 +1282,7 @@ def build_home_html() -> str:
 
   <div id="reviewTab" class="hidden">
     <section class="panel">
-      <h2>人工校验</h2>
+      <h2>人工校验：球员身份</h2>
       <div class="content">
         <div class="inline-status">
           <div class="status" id="reviewStatus">请先完成场地标定并生成校验包，或在历史分析里选择一个比赛。</div>
@@ -1079,6 +1296,39 @@ def build_home_html() -> str:
         <div id="reviewSheets" class="sheet-links"></div>
       </div>
       <div id="reviewItems" class="review-grid"></div>
+    </section>
+    <section class="panel">
+      <h2>人工校验：球位置标注</h2>
+      <div class="content">
+        <div class="inline-status">
+          <div class="status" id="ballReviewStatus">球位置标注包还没有加载。</div>
+          <div class="row-actions">
+            <button id="prepareBallReview">生成球标注包</button>
+            <button id="refreshBallReview">刷新球标注</button>
+            <button id="saveBallReview">保存球点草稿</button>
+            <button id="submitBallReview" class="primary">提交球点并重算报告</button>
+          </div>
+        </div>
+      </div>
+      <div id="ballWorkspace" class="ball-workspace hidden">
+        <div id="ballStage" class="ball-stage">
+          <img id="ballImage" alt="ball review frame">
+          <div id="ballMarker" class="ball-marker hidden"></div>
+        </div>
+        <aside class="ball-side">
+          <div id="ballProgress" class="ball-progress"></div>
+          <div id="ballMeta" class="status"></div>
+          <div class="button-grid">
+            <button id="prevBallFrame">上一张</button>
+            <button id="nextBallFrame">下一张</button>
+            <button id="useSystemBall">采用系统点</button>
+            <button id="ballInvisible">球不可见</button>
+            <button id="skipBallFrame">跳过</button>
+            <button id="resetBallPoint">清除本张</button>
+          </div>
+          <label>备注<input id="ballNote" placeholder="可选"></label>
+        </aside>
+      </div>
     </section>
   </div>
 
@@ -1125,6 +1375,9 @@ let currentJobId = null;
 let players = [];
 let reviewItems = [];
 let reviewPlayers = [];
+let ballItems = [];
+let ballIndex = 0;
+let ballAutoSaveTimer = null;
 let jobPollTimer = null;
 let modalScale = 1;
 let modalX = 0;
@@ -1161,7 +1414,10 @@ function showTab(name) {
   $('calibrationTab').classList.toggle('hidden', name !== 'calibration');
   $('reviewTab').classList.toggle('hidden', name !== 'review');
   $('historyTab').classList.toggle('hidden', name !== 'history');
-  if (name === 'review' && currentMatchId) loadHumanReview(currentMatchId);
+  if (name === 'review' && currentMatchId) {
+    loadHumanReview(currentMatchId);
+    loadBallReview(currentMatchId);
+  }
   if (name === 'history') loadHistory();
 }
 
@@ -1262,7 +1518,6 @@ function showCalibration(matchId) {
 function showReview(matchId) {
   currentMatchId = matchId;
   showTab('review');
-  loadHumanReview(matchId);
 }
 
 function renderMetrics(selected = BOOT.default_metrics) {
@@ -1393,6 +1648,12 @@ async function pollJob() {
       } else if (result.name === 'prepare_human_review') {
         setWorkflow('人工校验包已生成。已切换到人工校验页，请确认或修正系统预标注。', 'saved');
         if (currentMatchId) showReview(currentMatchId);
+      } else if (result.name === 'prepare_ball_review') {
+        setWorkflow('球位置标注包已生成。请在人工校验页连续点击球的位置。', 'saved');
+        if (currentMatchId) {
+          showReview(currentMatchId);
+          loadBallReview(currentMatchId);
+        }
       } else if (result.name === 'final_report') {
         setWorkflow('最终报告已生成。', 'saved');
         showFeedback('最终报告已生成', [
@@ -1582,6 +1843,219 @@ async function saveHumanReview(submit=false) {
   }
 }
 
+async function loadBallReview(matchId) {
+  try {
+    const result = await api(`/api/ball_review?match_id=${encodeURIComponent(matchId)}`);
+    renderBallReview(result.ball_review);
+  } catch (error) {
+    $('ballReviewStatus').textContent = `加载失败: ${error.message}`;
+    $('ballWorkspace').classList.add('hidden');
+  }
+}
+
+function renderBallReview(data) {
+  ballItems = data.items || [];
+  ballIndex = Math.min(ballIndex, Math.max(0, ballItems.length - 1));
+  $('ballReviewStatus').textContent = data.ready
+    ? `当前项目: ${data.match_id}，状态: ${data.status}，已处理: ${data.reviewed_count || 0}/${data.item_count || ballItems.length}`
+    : (data.message || '球位置标注包还没有生成。');
+  $('ballWorkspace').classList.toggle('hidden', !data.ready || !ballItems.length);
+  if (data.ready && ballItems.length) renderBallItem();
+}
+
+function currentBallItem() {
+  return ballItems[ballIndex] || null;
+}
+
+function ballHuman(item) {
+  item.human_review = item.human_review || {};
+  return item.human_review;
+}
+
+function markerPositionFor(item) {
+  const human = item.human_review || {};
+  if (human.ball_visible && Array.isArray(human.review_image_xy)) return human.review_image_xy;
+  const systemBall = item.system_labels && item.system_labels.ball;
+  if (systemBall && Array.isArray(systemBall.review_image_xy)) return systemBall.review_image_xy;
+  return null;
+}
+
+function renderBallMarker(item) {
+  const marker = $('ballMarker');
+  const point = markerPositionFor(item);
+  if (!point || !$('ballImage').naturalWidth || !$('ballImage').naturalHeight) {
+    marker.classList.add('hidden');
+    return;
+  }
+  marker.style.left = `${100 * Number(point[0]) / $('ballImage').naturalWidth}%`;
+  marker.style.top = `${100 * Number(point[1]) / $('ballImage').naturalHeight}%`;
+  marker.classList.remove('hidden');
+}
+
+function renderBallItem() {
+  const item = currentBallItem();
+  if (!item) return;
+  const human = ballHuman(item);
+  const systemBall = item.system_labels && item.system_labels.ball || {};
+  $('ballProgress').textContent = `${ballIndex + 1} / ${ballItems.length} · ${item.timestamp || ''}`;
+  $('ballMeta').textContent = `原因: ${item.reason || ''}；系统球: ${systemBall.visible ? `可见，置信度 ${systemBall.confidence}` : '未识别到球'}；人工状态: ${human.status || 'pending'}`;
+  $('ballNote').value = human.note || '';
+  $('ballImage').src = `/asset?path=${encodeURIComponent(item.frame_image)}`;
+  $('ballImage').onload = () => renderBallMarker(item);
+  renderBallMarker(item);
+}
+
+function clickToBallImageXY(event) {
+  const image = $('ballImage');
+  const rect = image.getBoundingClientRect();
+  const x = (event.clientX - rect.left) * image.naturalWidth / rect.width;
+  const y = (event.clientY - rect.top) * image.naturalHeight / rect.height;
+  return [
+    Math.max(0, Math.min(image.naturalWidth - 1, Math.round(x * 10) / 10)),
+    Math.max(0, Math.min(image.naturalHeight - 1, Math.round(y * 10) / 10))
+  ];
+}
+
+function markBallVisible(point) {
+  const item = currentBallItem();
+  if (!item) return;
+  const human = ballHuman(item);
+  human.status = 'marked';
+  human.ball_visible = true;
+  human.review_image_xy = point;
+  human.note = $('ballNote').value || '';
+  renderBallMarker(item);
+  scheduleBallAutoSave();
+  nextBallFrame();
+}
+
+function markBallInvisible() {
+  const item = currentBallItem();
+  if (!item) return;
+  const human = ballHuman(item);
+  human.status = 'invisible';
+  human.ball_visible = false;
+  human.review_image_xy = null;
+  human.note = $('ballNote').value || '';
+  scheduleBallAutoSave();
+  nextBallFrame();
+}
+
+function skipBallFrame() {
+  const item = currentBallItem();
+  if (!item) return;
+  const human = ballHuman(item);
+  human.status = 'skipped';
+  human.ball_visible = false;
+  human.review_image_xy = null;
+  human.note = $('ballNote').value || '';
+  scheduleBallAutoSave();
+  nextBallFrame();
+}
+
+function useSystemBallPoint() {
+  const item = currentBallItem();
+  if (!item) return;
+  const systemBall = item.system_labels && item.system_labels.ball || {};
+  if (!Array.isArray(systemBall.review_image_xy)) {
+    $('ballReviewStatus').textContent = '当前帧没有系统球点可采用。';
+    return;
+  }
+  markBallVisible(systemBall.review_image_xy);
+}
+
+function resetBallPoint() {
+  const item = currentBallItem();
+  if (!item) return;
+  item.human_review = { status: 'pending', ball_visible: null, review_image_xy: null, note: $('ballNote').value || '' };
+  renderBallItem();
+  scheduleBallAutoSave();
+}
+
+function nextBallFrame() {
+  if (ballIndex < ballItems.length - 1) {
+    ballIndex += 1;
+    renderBallItem();
+  }
+}
+
+function prevBallFrame() {
+  if (ballIndex > 0) {
+    ballIndex -= 1;
+    renderBallItem();
+  }
+}
+
+function collectBallReviewItems() {
+  return ballItems.map(item => {
+    const human = item.human_review || {};
+    return {
+      review_id: item.review_id,
+      status: human.status || 'pending',
+      ball_visible: Boolean(human.ball_visible),
+      review_image_xy: Array.isArray(human.review_image_xy) ? human.review_image_xy : null,
+      note: human.note || ''
+    };
+  });
+}
+
+function scheduleBallAutoSave() {
+  if (ballAutoSaveTimer) clearTimeout(ballAutoSaveTimer);
+  ballAutoSaveTimer = setTimeout(() => saveBallReview(false, true), 450);
+}
+
+async function saveBallReview(submit=false, silent=false) {
+  if (!currentMatchId) {
+    if (!silent) alert('请先选择比赛。');
+    return;
+  }
+  try {
+    const result = await api('/api/save_ball_review', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ match_id: currentMatchId, submit, items: collectBallReviewItems() })
+    });
+    if (!silent) {
+      $('ballReviewStatus').textContent = submit ? '球位置标注已提交，正在重算报告。' : '球位置标注草稿已保存。';
+    }
+    if (result.job) {
+      currentJobId = result.job.job_id;
+      renderJob(result.job);
+      showFeedback('球位置标注已提交', [
+        `当前状态：${currentMatchId} 的球点已保存。`,
+        '后台任务：正在使用人工球点重算传球、射门、1v1 等低置信参考指标。',
+        '接下来：任务完成后，到“查看历史分析”打开最新报告。'
+      ]);
+      pollJob();
+    } else if (!silent) {
+      loadBallReview(currentMatchId);
+    }
+    loadHistory();
+  } catch (error) {
+    if (!silent) $('ballReviewStatus').textContent = `保存失败: ${error.message}`;
+  }
+}
+
+async function prepareBallReview() {
+  if (!currentMatchId) {
+    alert('请先选择比赛。');
+    return;
+  }
+  try {
+    const result = await api('/api/start_ball_review', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ match_id: currentMatchId })
+    });
+    currentJobId = result.job.job_id;
+    renderJob(result.job);
+    $('ballReviewStatus').textContent = '正在生成球位置标注包...';
+    pollJob();
+  } catch (error) {
+    $('ballReviewStatus').textContent = `启动失败: ${error.message}`;
+  }
+}
+
 async function loadHistory() {
   const result = await api('/api/matches');
   const box = $('historyRows');
@@ -1688,6 +2162,26 @@ $('refreshReview').addEventListener('click', () => { if (currentMatchId) loadHum
 $('confirmAllReview').addEventListener('click', confirmAllReviewItems);
 $('saveReview').addEventListener('click', () => saveHumanReview(false));
 $('submitReview').addEventListener('click', () => saveHumanReview(true));
+$('prepareBallReview').addEventListener('click', prepareBallReview);
+$('refreshBallReview').addEventListener('click', () => { if (currentMatchId) loadBallReview(currentMatchId); });
+$('saveBallReview').addEventListener('click', () => saveBallReview(false));
+$('submitBallReview').addEventListener('click', () => saveBallReview(true));
+$('ballStage').addEventListener('click', event => {
+  if (!currentBallItem() || event.target.id !== 'ballImage') return;
+  markBallVisible(clickToBallImageXY(event));
+});
+$('prevBallFrame').addEventListener('click', prevBallFrame);
+$('nextBallFrame').addEventListener('click', nextBallFrame);
+$('useSystemBall').addEventListener('click', useSystemBallPoint);
+$('ballInvisible').addEventListener('click', markBallInvisible);
+$('skipBallFrame').addEventListener('click', skipBallFrame);
+$('resetBallPoint').addEventListener('click', resetBallPoint);
+$('ballNote').addEventListener('input', () => {
+  const item = currentBallItem();
+  if (!item) return;
+  ballHuman(item).note = $('ballNote').value || '';
+  scheduleBallAutoSave();
+});
 $('modalClose').addEventListener('click', closeImageModal);
 $('modalZoomIn').addEventListener('click', () => zoomModal(1.25));
 $('modalZoomOut').addEventListener('click', () => zoomModal(0.8));
@@ -1739,6 +2233,16 @@ document.addEventListener('keydown', event => {
   if (event.key === '-') zoomModal(0.8);
   if (event.key === '0') resetModalView();
 });
+document.addEventListener('keydown', event => {
+  if ($('imageModal').classList.contains('open') || $('feedbackModal').classList.contains('open')) return;
+  if ($('reviewTab').classList.contains('hidden') || !currentBallItem()) return;
+  const tag = String(document.activeElement && document.activeElement.tagName || '').toLowerCase();
+  if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+  if (event.key === 'ArrowRight') nextBallFrame();
+  if (event.key === 'ArrowLeft') prevBallFrame();
+  if (event.key.toLowerCase() === 'n') markBallInvisible();
+  if (event.key.toLowerCase() === 's') skipBallFrame();
+});
 $('teamName').addEventListener('input', renderPlayers);
 $('teamColor').addEventListener('input', renderPlayers);
 window.addEventListener('message', event => {
@@ -1787,6 +2291,10 @@ class Handler(BaseHTTPRequestHandler):
             if parsed.path == "/api/human_review":
                 match_id = self.query_one(parsed, "match_id")
                 self.send_json({"ok": True, "review": human_review_payload(match_id)})
+                return
+            if parsed.path == "/api/ball_review":
+                match_id = self.query_one(parsed, "match_id")
+                self.send_json({"ok": True, "ball_review": ball_review_payload(match_id)})
                 return
             if parsed.path == "/api/job":
                 job_id = self.query_one(parsed, "job_id")
@@ -1846,6 +2354,27 @@ class Handler(BaseHTTPRequestHandler):
                 submit = bool(payload.get("submit"))
                 summary = write_human_review(match_id, items, submit=submit)
                 response: Dict[str, Any] = {"ok": True, "review": summary}
+                if submit:
+                    response["job"] = start_final_report(match_id)
+                self.send_json(response)
+                return
+            if parsed.path == "/api/start_ball_review":
+                match_id = str(payload.get("match_id") or "").strip()
+                if not match_id:
+                    raise ValueError("match_id is required.")
+                job = start_prepare_ball_review(match_id)
+                self.send_json({"ok": True, "job": job})
+                return
+            if parsed.path == "/api/save_ball_review":
+                match_id = str(payload.get("match_id") or "").strip()
+                if not match_id:
+                    raise ValueError("match_id is required.")
+                items = payload.get("items")
+                if not isinstance(items, list):
+                    raise ValueError("items must be a list.")
+                submit = bool(payload.get("submit"))
+                summary = write_ball_review(match_id, items, submit=submit)
+                response: Dict[str, Any] = {"ok": True, "ball_review": summary}
                 if submit:
                     response["job"] = start_final_report(match_id)
                 self.send_json(response)

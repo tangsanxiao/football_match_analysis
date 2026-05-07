@@ -159,3 +159,7 @@ review:
 ```
 
 当前代码先写入该配置和设计文档；下一步实现时，应把 `提交打标并开启分析` 调整为“生成校验包”，校验提交后再启动最终报告生成。
+
+球位置人工标注增强见:
+
+- `docs/football-video-analysis-mvp/07-ball-position-review-design.md`

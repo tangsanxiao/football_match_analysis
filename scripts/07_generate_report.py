@@ -343,8 +343,30 @@ def separated_count(timestamps: Iterable[float], min_gap_s: float) -> int:
     return count
 
 
-def ball_ownership_candidates(red: pd.DataFrame, tracks: pd.DataFrame, max_distance_m: float = 4.0) -> pd.DataFrame:
-    ball = tracks[tracks["class_name"] == "sports ball"].copy()
+def manual_ball_points(config: Dict[str, Any]) -> pd.DataFrame:
+    review_dir = resolve_path(config["match"].get("review_dir", "review"))
+    points_path = review_dir / "ball_review" / "ball_review_points.csv"
+    if not points_path.exists():
+        return pd.DataFrame()
+    points = pd.read_csv(points_path)
+    if points.empty or "ball_visible" not in points.columns:
+        return pd.DataFrame()
+    visible = points[points["ball_visible"].astype(str).str.lower().isin({"true", "1", "yes"})].copy()
+    required = {"frame_idx", "timestamp_sec", "field_x_m", "field_y_m"}
+    if visible.empty or not required.issubset(visible.columns):
+        return pd.DataFrame()
+    visible = visible.dropna(subset=["field_x_m", "field_y_m"])
+    if visible.empty:
+        return pd.DataFrame()
+    visible["conf"] = 1.0
+    visible["class_name"] = "sports ball"
+    return visible
+
+
+def ball_ownership_candidates(red: pd.DataFrame, tracks: pd.DataFrame, config: Dict[str, Any], max_distance_m: float = 4.0) -> pd.DataFrame:
+    manual_ball = manual_ball_points(config)
+    ball_source = "human" if not manual_ball.empty else "system"
+    ball = manual_ball if not manual_ball.empty else tracks[tracks["class_name"] == "sports ball"].copy()
     required = {"frame_idx", "timestamp_sec", "field_x_m", "field_y_m", "conf"}
     if ball.empty or red.empty or not required.issubset(ball.columns):
         return pd.DataFrame()
@@ -387,7 +409,10 @@ def ball_ownership_candidates(red: pd.DataFrame, tracks: pd.DataFrame, max_dista
                 "distance_to_owner_m": round(distance, 2),
             }
         )
-    return pd.DataFrame(rows).sort_values("timestamp_sec")
+    out = pd.DataFrame(rows).sort_values("timestamp_sec")
+    out.attrs["ball_source"] = ball_source
+    out.attrs["ball_review_count"] = int(len(manual_ball)) if ball_source == "human" else 0
+    return out
 
 
 def pass_reference_counts(ownership: pd.DataFrame, max_gap_s: float = 4.0) -> Tuple[Dict[str, int], Dict[str, int]]:
@@ -423,7 +448,9 @@ def bounded_pct(value: float) -> float:
 
 def technical_reference_table(metrics: pd.DataFrame, red: pd.DataFrame, tracks: pd.DataFrame, config: Dict[str, Any]) -> pd.DataFrame:
     field_length = float(config.get("field", {}).get("length_m", 40.0))
-    ownership = ball_ownership_candidates(red, tracks)
+    ownership = ball_ownership_candidates(red, tracks, config)
+    ball_source = ownership.attrs.get("ball_source", "system")
+    ball_review_count = int(ownership.attrs.get("ball_review_count", 0))
     pass_attempts, pass_successes = pass_reference_counts(ownership)
 
     shot_counts: Dict[str, int] = {}
@@ -471,7 +498,7 @@ def technical_reference_table(metrics: pd.DataFrame, red: pd.DataFrame, tracks: 
                 "无球跑动指数": off_ball_index,
                 "防守无球跑动指数": defensive_off_ball_index,
                 "创造空间指数": space_creation_index,
-                "置信度": "低" if attempts or shot_counts.get(player_id, 0) else "低/样本少",
+                "置信度": f"中（人工球点{ball_review_count}帧）" if ball_source == "human" else ("低" if attempts or shot_counts.get(player_id, 0) else "低/样本少"),
             }
         )
     return pd.DataFrame(rows)
