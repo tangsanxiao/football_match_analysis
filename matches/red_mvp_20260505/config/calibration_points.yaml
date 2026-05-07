@@ -1,0 +1,72 @@
+calibration:
+  image_path: matches/red_mvp_20260505/data/interim/sample_frames/sample_019_frame_00017875.jpg
+points:
+- name: top_left_corner
+  enabled: false
+  note: Not a reliable visible corner in the frame; excluded from homography.
+  field_xy:
+  - 0.0
+  - 0.0
+  image_xy:
+  - 743
+  - 367
+- name: top_right_corner
+  field_xy:
+  - 40.0
+  - 0.0
+  image_xy:
+  - 2037
+  - 338
+- name: bottom_right_corner
+  enabled: false
+  note: Not fully visible in the frame; excluded from homography.
+  field_xy:
+  - 40.0
+  - 20.0
+  image_xy:
+  - 2684
+  - 600
+- name: bottom_left_corner
+  enabled: false
+  note: Not fully visible in the frame; excluded from homography.
+  field_xy:
+  - 0.0
+  - 20.0
+  image_xy:
+  - 2
+  - 1080
+- name: halfway_top_touchline
+  field_xy:
+  - 20.0
+  - 0.0
+  image_xy:
+  - 1528
+  - 299
+- name: halfway_bottom_touchline
+  field_xy:
+  - 20.0
+  - 20.0
+  image_xy:
+  - 2378
+  - 714
+- name: center_mark
+  field_xy:
+  - 20.0
+  - 10.0
+  image_xy:
+  - 1761
+  - 399
+- name: left_goal_center
+  field_xy:
+  - 0.0
+  - 10.0
+  image_xy:
+  - 504
+  - 526
+- name: right_goal_center
+  field_xy:
+  - 40.0
+  - 10.0
+  image_xy:
+  - 2341
+  - 437

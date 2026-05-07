@@ -1,0 +1,304 @@
+status: submitted
+updated_at: '2026-05-06T22:47:29+08:00'
+submitted_at: '2026-05-06T22:47:29+08:00'
+items:
+  identity_0001:
+    status: corrected
+    player_id: 红队_tyx
+    report_action: keep
+    note: ''
+  identity_0002:
+    status: corrected
+    player_id: 红队_tyx
+    report_action: keep
+    note: ''
+  identity_0003:
+    status: corrected
+    player_id: 红队_lxy
+    report_action: keep
+    note: ''
+  identity_0004:
+    status: pending
+    player_id: 红队_jyn
+    report_action: keep
+    note: ''
+  identity_0005:
+    status: corrected
+    player_id: 红队_lxy
+    report_action: keep
+    note: ''
+  identity_0006:
+    status: corrected
+    player_id: 红队_zmc
+    report_action: keep
+    note: ''
+  identity_0007:
+    status: pending
+    player_id: 红队_zmc
+    report_action: keep
+    note: ''
+  identity_0008:
+    status: ignored
+    player_id: 红队_jyn
+    report_action: keep
+    note: ''
+  identity_0009:
+    status: corrected
+    player_id: 红队_zmc
+    report_action: keep
+    note: ''
+  identity_0010:
+    status: corrected
+    player_id: 红队_jyn
+    report_action: keep
+    note: ''
+  identity_0011:
+    status: corrected
+    player_id: 红队_lxy
+    report_action: keep
+    note: ''
+  identity_0012:
+    status: corrected
+    player_id: 红队_zmc
+    report_action: keep
+    note: ''
+  identity_0013:
+    status: corrected
+    player_id: 红队_lxy
+    report_action: keep
+    note: ''
+  identity_0014:
+    status: pending
+    player_id: 红队_tyx
+    report_action: keep
+    note: ''
+  identity_0015:
+    status: pending
+    player_id: 红队_tyx
+    report_action: keep
+    note: ''
+  identity_0016:
+    status: corrected
+    player_id: 红队_jyn
+    report_action: keep
+    note: ''
+  identity_0017:
+    status: corrected
+    player_id: 红队_zmc
+    report_action: keep
+    note: ''
+  identity_0018:
+    status: corrected
+    player_id: 红队_jyn
+    report_action: keep
+    note: ''
+  identity_0019:
+    status: pending
+    player_id: 红队_zmc
+    report_action: keep
+    note: ''
+  identity_0020:
+    status: corrected
+    player_id: 红队_lxy
+    report_action: keep
+    note: ''
+  identity_0021:
+    status: corrected
+    player_id: 红队_zmc
+    report_action: keep
+    note: ''
+  identity_0022:
+    status: corrected
+    player_id: 红队_lxy
+    report_action: keep
+    note: ''
+  identity_0023:
+    status: corrected
+    player_id: 红队_jyn
+    report_action: keep
+    note: ''
+  identity_0024:
+    status: corrected
+    player_id: 红队_zmc
+    report_action: keep
+    note: ''
+  identity_0025:
+    status: corrected
+    player_id: 红队_tyx
+    report_action: keep
+    note: ''
+  identity_0026:
+    status: pending
+    player_id: 红队_lxy
+    report_action: keep
+    note: ''
+  identity_0027:
+    status: corrected
+    player_id: 红队_jyn
+    report_action: keep
+    note: ''
+  identity_0028:
+    status: corrected
+    player_id: 红队_jyn
+    report_action: keep
+    note: ''
+  identity_0029:
+    status: corrected
+    player_id: 红队_zmc
+    report_action: keep
+    note: ''
+  identity_0030:
+    status: corrected
+    player_id: 红队_tyx
+    report_action: keep
+    note: ''
+  identity_0031:
+    status: corrected
+    player_id: 红队_jyn
+    report_action: keep
+    note: ''
+  identity_0032:
+    status: pending
+    player_id: 红队_lxy
+    report_action: keep
+    note: ''
+  identity_0033:
+    status: corrected
+    player_id: 红队_lxy
+    report_action: keep
+    note: ''
+  identity_0034:
+    status: corrected
+    player_id: 红队_zmc
+    report_action: keep
+    note: ''
+  identity_0035:
+    status: corrected
+    player_id: 红队_jyn
+    report_action: keep
+    note: ''
+  identity_0036:
+    status: corrected
+    player_id: 红队_lxy
+    report_action: keep
+    note: ''
+  identity_0037:
+    status: corrected
+    player_id: 红队_jyn
+    report_action: keep
+    note: ''
+  identity_0038:
+    status: corrected
+    player_id: 红队_jyn
+    report_action: keep
+    note: ''
+  identity_0039:
+    status: corrected
+    player_id: 红队_lxy
+    report_action: keep
+    note: ''
+  identity_0040:
+    status: pending
+    player_id: 红队_lxy
+    report_action: keep
+    note: ''
+  identity_0041:
+    status: ignored
+    player_id: 红队_zmc
+    report_action: keep
+    note: ''
+  identity_0042:
+    status: corrected
+    player_id: 红队_lxy
+    report_action: keep
+    note: ''
+  identity_0043:
+    status: corrected
+    player_id: 红队_zmc
+    report_action: keep
+    note: ''
+  identity_0044:
+    status: ignored
+    player_id: 红队_jyn
+    report_action: keep
+    note: ''
+  identity_0045:
+    status: corrected
+    player_id: 红队_jyn
+    report_action: keep
+    note: ''
+  identity_0046:
+    status: pending
+    player_id: 红队_lxy
+    report_action: keep
+    note: ''
+  identity_0047:
+    status: corrected
+    player_id: 红队_tyx
+    report_action: keep
+    note: ''
+  identity_0048:
+    status: pending
+    player_id: 红队_zmc
+    report_action: keep
+    note: ''
+  identity_0049:
+    status: ignored
+    player_id: 红队_jyn
+    report_action: keep
+    note: ''
+  identity_0050:
+    status: pending
+    player_id: 红队_lxy
+    report_action: keep
+    note: ''
+  identity_0051:
+    status: corrected
+    player_id: 红队_tyx
+    report_action: keep
+    note: ''
+  identity_0052:
+    status: ignored
+    player_id: 红队_tyx
+    report_action: keep
+    note: ''
+  identity_0053:
+    status: ignored
+    player_id: 红队_jyn
+    report_action: keep
+    note: ''
+  identity_0054:
+    status: pending
+    player_id: 红队_lxy
+    report_action: keep
+    note: ''
+  identity_0055:
+    status: ignored
+    player_id: 红队_jyn
+    report_action: keep
+    note: ''
+  identity_0056:
+    status: ignored
+    player_id: 红队_tyx
+    report_action: keep
+    note: ''
+  identity_0057:
+    status: corrected
+    player_id: 红队_lxy
+    report_action: keep
+    note: ''
+  identity_0058:
+    status: pending
+    player_id: 红队_lxy
+    report_action: keep
+    note: ''
+  identity_0059:
+    status: corrected
+    player_id: 红队_lxy
+    report_action: keep
+    note: ''
+  identity_0060:
+    status: corrected
+    player_id: 红队_tyx
+    report_action: keep
+    note: ''

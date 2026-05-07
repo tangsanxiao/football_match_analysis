@@ -1,0 +1,135 @@
+review_required: false
+human_review:
+  status: submitted
+  source_detections_dir: matches/中青赛_1_20260506_213657/data/interim/detections/segment_0000_0579_2fps
+  updated_at: '2026-05-06T22:47:29+08:00'
+  submitted_at: '2026-05-06T22:47:29+08:00'
+  review_item_count: 60
+  corrected_item_count: 39
+  ignored_item_count: 8
+instructions:
+- 由 Home / 人工校验 Tab 写入。
+- 最终报告会使用这些 track_id 到球员的绑定。
+assignments:
+  红队_hda:
+    name: HDA
+    number: 1
+    role: goalkeeper
+    confidence: 0.88
+    reason: human review submitted
+    track_ids:
+    - 11
+    - 56
+    - 395
+    - 1610
+    - 2169
+    - 2306
+    - 2526
+    - 3045
+    - 3625
+    - 4042
+    - 4209
+    - 4768
+    - 5223
+    - 5575
+    - 5918
+    - 6135
+    - 6333
+  红队_tyx:
+    name: TYX
+    number: 18
+    role: right_forward
+    confidence: 0.824
+    reason: human review submitted
+    track_ids:
+    - 38
+    - 201
+    - 447
+    - 1192
+    - 1559
+    - 1592
+    - 2292
+    - 2326
+    - 2728
+    - 2863
+    - 2890
+    - 2923
+    - 5197
+  红队_jyn:
+    name: JYN
+    number: 9
+    role: center_forward
+    confidence: 0.784
+    reason: human review submitted
+    track_ids:
+    - 276
+    - 311
+    - 557
+    - 603
+    - 778
+    - 1276
+    - 1396
+    - 1877
+    - 3064
+    - 3394
+    - 3517
+    - 3855
+    - 4215
+    - 4492
+    - 4663
+    - 4844
+    - 5099
+    - 5864
+    - 6087
+    - 6164
+    - 6246
+    - 6667
+  红队_lxy:
+    name: LXY
+    number: 2
+    role: defender
+    confidence: 0.903
+    reason: human review submitted
+    track_ids:
+    - 9
+    - 10
+    - 634
+    - 1132
+    - 1235
+    - 1389
+    - 1729
+    - 2390
+    - 2721
+    - 3245
+    - 3481
+    - 3616
+    - 4225
+    - 4297
+    - 4508
+    - 4645
+    - 5012
+    - 5094
+    - 5400
+    - 5555
+    - 6251
+  红队_zmc:
+    name: ZMC
+    number: 28
+    role: left_forward
+    confidence: 0.891
+    reason: human review submitted
+    track_ids:
+    - 12
+    - 314
+    - 693
+    - 927
+    - 1358
+    - 1368
+    - 1943
+    - 2507
+    - 3117
+    - 3578
+    - 3852
+    - 5588
+    - 5876
+    - 5991

@@ -1,0 +1,59 @@
+# Manual calibration points for red_mvp_20260505.
+#
+# How to fill this file:
+# 1. Open the calibration image below.
+# 2. Pick visible pitch landmarks.
+# 3. Fill image_xy as [pixel_x, pixel_y].
+# 4. Keep at least 4 points, preferably 8+ points spread across the pitch.
+#
+# Coordinate convention:
+# - field_xy is in meters.
+# - x=0 is the left goal line in the video view; x=40 is the right goal line.
+# - y=0 is the far/top touchline; y=20 is the near/bottom touchline.
+# - Update field length/width in configs/match_red_mvp.yaml if the real pitch size differs.
+
+calibration:
+  image_path: data/interim/red_mvp_20260505/sample_frames/sample_010_frame_00008938.jpg
+
+points:
+  - name: top_left_corner
+    enabled: false
+    note: Not a reliable visible corner in the frame; excluded from homography.
+    field_xy: [0.0, 0.0]
+    image_xy: [743, 367]
+
+  - name: top_right_corner
+    field_xy: [40.0, 0.0]
+    image_xy: [2037, 338]
+
+  - name: bottom_right_corner
+    enabled: false
+    note: Not fully visible in the frame; excluded from homography.
+    field_xy: [40.0, 20.0]
+    image_xy: [2684, 600]
+
+  - name: bottom_left_corner
+    enabled: false
+    note: Not fully visible in the frame; excluded from homography.
+    field_xy: [0.0, 20.0]
+    image_xy: [2, 1080]
+
+  - name: halfway_top_touchline
+    field_xy: [20.0, 0.0]
+    image_xy: [1528, 299]
+
+  - name: halfway_bottom_touchline
+    field_xy: [20.0, 20.0]
+    image_xy: [2378, 714]
+
+  - name: center_mark
+    field_xy: [20.0, 10.0]
+    image_xy: [1761, 399]
+
+  - name: left_goal_center
+    field_xy: [0.0, 10.0]
+    image_xy: [504, 526]
+
+  - name: right_goal_center
+    field_xy: [40.0, 10.0]
+    image_xy: [2341, 437]

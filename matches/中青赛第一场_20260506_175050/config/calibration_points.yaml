@@ -1,0 +1,82 @@
+calibration:
+  image_path: matches/中青赛第一场_20260506_175050/data/interim/sample_frames/sample_019_frame_00017875.jpg
+  labeling_status: submitted
+  labeling_submitted: true
+  note: image_path is filled by scripts/09_prepare_match_review.py after sample extraction.
+  labeling_submitted_at: '2026-05-06T17:56:14+08:00'
+  labeling_submitted_point_count: 9
+  labeling_enabled_point_count: 9
+  labeling_required_min_points: 4
+points:
+- name: top_left_corner
+  field_xy:
+  - 0.0
+  - 0.0
+  image_xy:
+  - 740
+  - 368
+  enabled: true
+- name: top_right_corner
+  field_xy:
+  - 40.0
+  - 0.0
+  image_xy:
+  - 2047
+  - 340
+  enabled: true
+- name: bottom_left_corner
+  field_xy:
+  - 0.0
+  - 20.0
+  image_xy:
+  - 2
+  - 1076
+  enabled: true
+- name: bottom_right_corner
+  field_xy:
+  - 40.0
+  - 20.0
+  image_xy:
+  - 2686
+  - 576
+  enabled: true
+- name: center_mark
+  field_xy:
+  - 20.0
+  - 10.0
+  image_xy:
+  - 1757
+  - 396
+  enabled: true
+- name: halfway_top_touchline
+  field_xy:
+  - 20.0
+  - 0.0
+  image_xy:
+  - 1526
+  - 299
+  enabled: true
+- name: halfway_bottom_touchline
+  field_xy:
+  - 20.0
+  - 20.0
+  image_xy:
+  - 2377
+  - 713
+  enabled: true
+- name: left_goal_center
+  field_xy:
+  - 0.0
+  - 10.0
+  image_xy:
+  - 499
+  - 529
+  enabled: true
+- name: right_goal_center
+  field_xy:
+  - 40.0
+  - 10.0
+  image_xy:
+  - 2334
+  - 438
+  enabled: true

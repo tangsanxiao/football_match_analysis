@@ -1,0 +1,98 @@
+match:
+  id: red_mvp_20260505
+  name: Red Team MVP Analysis
+  video_path: videos/raw/dji_export_20260505_234303_1777995783034_editor.mp4
+  output_dir: reports/red_mvp_20260505
+  interim_dir: data/interim/red_mvp_20260505
+  review_dir: data/interim/red_mvp_20260505/review
+
+calibration:
+  points_path: configs/calibration_points_red_mvp.yaml
+  picker_port: 8765
+
+field:
+  # Default 5-a-side size. Replace with the real pitch size once measured.
+  length_m: 40.0
+  width_m: 20.0
+
+sampling:
+  sample_frame_count: 36
+  jpg_quality: 92
+
+teams:
+  analyze_team: red
+  red:
+    display_name: 红队
+    team_color: pink_red
+    kit:
+      field_colors:
+        - pink_red
+      goalkeeper_colors:
+        - yellow
+    players:
+      - player_id: red_hda
+        name: HDA
+        number: 1
+        role: goalkeeper
+        visual_hint: yellow shirt
+      - player_id: red_lxy
+        name: LXY
+        number: 2
+        role: defender
+        visual_hint: number 2
+      - player_id: red_tyx
+        name: TYX
+        number: 18
+        role: right_forward
+        visual_hint: number 18, green boots
+      - player_id: red_jyn
+        name: JYN
+        number: 9
+        role: center_forward
+        visual_hint: number 9
+      - player_id: red_zmc
+        name: ZMC
+        number: 28
+        role: left_forward
+        visual_hint: number 28
+    substitutions: []
+  blue:
+    analyze_individuals: false
+
+analysis:
+  target_events:
+    - shot
+    - pass
+    - steal
+    - positional_discipline
+    - pressing_intensity
+    - off_ball_movement
+  report_formats:
+    - markdown
+    - csv
+    - html
+
+detection:
+  # Start with a small general model for MVP smoke tests.
+  # Later we can swap this for a football-specific model.
+  model: yolo11n.pt
+  tracker: bytetrack.yaml
+  classes:
+    # COCO class ids used by YOLO general models.
+    # 0 = person, 32 = sports ball
+    - 0
+    - 32
+  conf: 0.18
+  iou: 0.5
+  imgsz: 1280
+  sample_fps: 2.0
+  smoke_test:
+    start_sec: 120.0
+    duration_sec: 10.0
+    max_frames: 24
+  field_filter:
+    enabled: true
+    # Keep player detections near the touchline because calibration error is still around 1m.
+    person_margin_m: 1.5
+    # Ball detections outside the pitch are often spare balls near the bench.
+    ball_margin_m: 0.2

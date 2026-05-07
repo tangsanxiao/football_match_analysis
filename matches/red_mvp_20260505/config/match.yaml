@@ -1,0 +1,100 @@
+match:
+  id: red_mvp_20260505
+  name: Red Team MVP Analysis
+  project_dir: matches/red_mvp_20260505
+  video_path: videos/raw/dji_export_20260505_234303_1777995783034_editor.mp4
+  output_dir: matches/red_mvp_20260505/reports
+  interim_dir: matches/red_mvp_20260505/data/interim
+  review_dir: matches/red_mvp_20260505/review
+field:
+  length_m: 40.0
+  width_m: 20.0
+calibration:
+  points_path: matches/red_mvp_20260505/config/calibration_points.yaml
+  picker_port: 8765
+sampling:
+  sample_frame_count: 36
+  jpg_quality: 92
+teams:
+  analyze_team: red
+  red:
+    display_name: 红队
+    team_color: pink_red
+    kit:
+      field_colors:
+      - pink_red
+      goalkeeper_colors:
+      - yellow
+    players:
+    - player_id: red_hda
+      name: HDA
+      number: 1
+      role: goalkeeper
+      visual_hint: yellow shirt
+    - player_id: red_lxy
+      name: LXY
+      number: 2
+      role: defender
+      visual_hint: number 2
+    - player_id: red_tyx
+      name: TYX
+      number: 18
+      role: right_forward
+      visual_hint: number 18, green boots
+    - player_id: red_jyn
+      name: JYN
+      number: 9
+      role: center_forward
+      visual_hint: number 9
+    - player_id: red_zmc
+      name: ZMC
+      number: 28
+      role: left_forward
+      visual_hint: number 28
+    substitutions: []
+  opponent:
+    display_name: Opponent
+    analyze_individuals: false
+analysis:
+  target_events: &id001
+  - shot
+  - pass
+  - steal
+  - positional_discipline
+  - pressing_intensity
+  - off_ball_movement
+  - 1v1_attack_defense
+  - defensive_off_ball_movement
+  - space_creation
+  - pass_success
+  target_metrics: *id001
+  report_formats:
+  - markdown
+  - csv
+  - html
+review:
+  initial_recognition:
+    start_sec: 120.0
+    duration_sec: 120.0
+    sample_fps: 2.0
+    max_frames: 240
+    top_n: 60
+  manual_identity_path: matches/red_mvp_20260505/review/identity_review.yaml
+detection:
+  model: yolo11n.pt
+  tracker: bytetrack.yaml
+  classes:
+  - 0
+  - 32
+  conf: 0.18
+  iou: 0.5
+  imgsz: 1280
+  sample_fps: 2.0
+  smoke_test:
+    start_sec: 120.0
+    duration_sec: 10.0
+    max_frames: 24
+  field_filter:
+    enabled: true
+    person_margin_m: 1.5
+    ball_margin_m: 0.2

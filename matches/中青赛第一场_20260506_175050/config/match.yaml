@@ -1,0 +1,106 @@
+match:
+  id: 中青赛第一场_20260506_175050
+  name: 中青赛第一场
+  project_dir: matches/中青赛第一场_20260506_175050
+  video_path: videos/raw/dji_export_20260505_234303_1777995783034_editor.mp4
+  output_dir: matches/中青赛第一场_20260506_175050/reports
+  interim_dir: matches/中青赛第一场_20260506_175050/data/interim
+  review_dir: matches/中青赛第一场_20260506_175050/review
+field:
+  length_m: 40.0
+  width_m: 20.0
+calibration:
+  points_path: matches/中青赛第一场_20260506_175050/config/calibration_points.yaml
+  picker_port: 8765
+sampling:
+  sample_frame_count: 36
+  jpg_quality: 92
+teams:
+  analyze_team: 红队
+  红队:
+    display_name: 红队
+    team_color: pink_red
+    kit:
+      field_colors:
+      - pink_red
+      goalkeeper_colors:
+      - yellow
+    players:
+    - player_id: 红队_hda
+      name: HDA
+      number: 1
+      role: goalkeeper
+      visual_hint: 黄色门将服
+    - player_id: 红队_lxy
+      name: LXY
+      number: 2
+      role: defender
+      visual_hint: ''
+    - player_id: 红队_tyx
+      name: TYX
+      number: 18
+      role: right_forward
+      visual_hint: 绿色球鞋
+    - player_id: 红队_jyn
+      name: JYN
+      number: 9
+      role: center_forward
+      visual_hint: ''
+    - player_id: 红队_zmc
+      name: ZMC
+      number: 28
+      role: left_forward
+      visual_hint: ''
+    substitutions: []
+  opponent:
+    display_name: Opponent
+    analyze_individuals: false
+analysis:
+  target_events: &id001
+  - shot
+  - pass
+  - pass_success
+  - steal
+  - 1v1_attack_defense
+  - positional_discipline
+  - pressing_intensity
+  - off_ball_movement
+  - defensive_off_ball_movement
+  - space_creation
+  target_metrics: *id001
+  report_formats:
+  - markdown
+  - csv
+  - html
+review:
+  match_info:
+    status: confirmed
+    confirmed: true
+    confirmed_at: '2026-05-06T17:50:50+08:00'
+    player_count: 5
+    target_metric_count: 10
+  initial_recognition:
+    start_sec: 120.0
+    duration_sec: 120.0
+    sample_fps: 2.0
+    max_frames: 240
+    top_n: 60
+  manual_identity_path: matches/中青赛第一场_20260506_175050/review/identity_review.yaml
+detection:
+  model: yolo11n.pt
+  tracker: bytetrack.yaml
+  classes:
+  - 0
+  - 32
+  conf: 0.18
+  iou: 0.5
+  imgsz: 1280
+  sample_fps: 2.0
+  smoke_test:
+    start_sec: 120.0
+    duration_sec: 10.0
+    max_frames: 24
+  field_filter:
+    enabled: true
+    person_margin_m: 1.5
+    ball_margin_m: 0.2

@@ -1,0 +1,2110 @@
+status: submitted
+generated_at: '2026-05-06T22:10:57+08:00'
+match_id: 中青赛_1_20260506_213657
+source_detections_dir: matches/中青赛_1_20260506_213657/data/interim/detections/segment_0000_0579_2fps
+total_identity_tracklets: 95
+review_item_count: 60
+contact_sheet: matches/中青赛_1_20260506_213657/data/interim/detections/segment_0000_0579_2fps/tracklet_contact_sheet.jpg
+candidate_contact_sheet: matches/中青赛_1_20260506_213657/data/interim/detections/segment_0000_0579_2fps/analyze_candidate_contact_sheet.jpg
+items:
+- review_id: identity_0001
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 20.0
+  timestamp: 00:20
+  frame_idx: 1200
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0001.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_jyn
+      name: JYN
+      number: '9'
+      role: center_forward
+      track_id: 201
+      confidence: 0.447
+      bbox_xyxy:
+      - 2261
+      - 387
+      - 2303
+      - 437
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_tyx
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0002
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 41.0
+  timestamp: 00:41
+  frame_idx: 2460
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0002.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_jyn
+      name: JYN
+      number: '9'
+      role: center_forward
+      track_id: 447
+      confidence: 0.447
+      bbox_xyxy:
+      - 2241
+      - 389
+      - 2273
+      - 436
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_tyx
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0003
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 55.0
+  timestamp: 00:55
+  frame_idx: 3300
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0003.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_jyn
+      name: JYN
+      number: '9'
+      role: center_forward
+      track_id: 634
+      confidence: 0.447
+      bbox_xyxy:
+      - 1647
+      - 327
+      - 1688
+      - 399
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_lxy
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0004
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 158.5
+  timestamp: 02:38
+  frame_idx: 9510
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0004.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_jyn
+      name: JYN
+      number: '9'
+      role: center_forward
+      track_id: 1396
+      confidence: 0.447
+      bbox_xyxy:
+      - 2285
+      - 426
+      - 2317
+      - 470
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: pending
+    player_id: 红队_jyn
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0005
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 154.5
+  timestamp: 02:34
+  frame_idx: 9270
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0005.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_jyn
+      name: JYN
+      number: '9'
+      role: center_forward
+      track_id: 1729
+      confidence: 0.447
+      bbox_xyxy:
+      - 2109
+      - 390
+      - 2149
+      - 447
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_lxy
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0006
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 217.0
+  timestamp: 03:37
+  frame_idx: 13020
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0006.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_lxy
+      name: LXY
+      number: '2'
+      role: defender
+      track_id: 2507
+      confidence: 0.447
+      bbox_xyxy:
+      - 1627
+      - 368
+      - 1668
+      - 458
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_zmc
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0007
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 281.0
+  timestamp: 04:41
+  frame_idx: 16860
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0007.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_zmc
+      name: ZMC
+      number: '28'
+      role: left_forward
+      track_id: 3117
+      confidence: 0.447
+      bbox_xyxy:
+      - 1978
+      - 329
+      - 2002
+      - 373
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: pending
+    player_id: 红队_zmc
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0008
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 305.5
+  timestamp: 05:06
+  frame_idx: 18330
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0008.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_jyn
+      name: JYN
+      number: '9'
+      role: center_forward
+      track_id: 3364
+      confidence: 0.447
+      bbox_xyxy:
+      - 2081
+      - 391
+      - 2114
+      - 447
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: ignored
+    player_id: 红队_jyn
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0009
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 349.0
+  timestamp: 05:49
+  frame_idx: 20940
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0009.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_lxy
+      name: LXY
+      number: '2'
+      role: defender
+      track_id: 3852
+      confidence: 0.447
+      bbox_xyxy:
+      - 1425
+      - 295
+      - 1447
+      - 353
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_zmc
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0010
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 447.5
+  timestamp: 07:28
+  frame_idx: 26850
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0010.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_lxy
+      name: LXY
+      number: '2'
+      role: defender
+      track_id: 5099
+      confidence: 0.447
+      bbox_xyxy:
+      - 1288
+      - 298
+      - 1315
+      - 357
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_jyn
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0011
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 472.5
+  timestamp: 07:52
+  frame_idx: 28350
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0011.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_tyx
+      name: TYX
+      number: '18'
+      role: right_forward
+      track_id: 5400
+      confidence: 0.447
+      bbox_xyxy:
+      - 2139
+      - 451
+      - 2189
+      - 529
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_lxy
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0012
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 495.0
+  timestamp: 08:15
+  frame_idx: 29700
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0012.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_zmc
+      name: ZMC
+      number: '28'
+      role: left_forward
+      track_id: 5588
+      confidence: 0.447
+      bbox_xyxy:
+      - 1736
+      - 318
+      - 1761
+      - 371
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_zmc
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0013
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 120.5
+  timestamp: 02:00
+  frame_idx: 7230
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0013.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_zmc
+      name: ZMC
+      number: '28'
+      role: left_forward
+      track_id: 1389
+      confidence: 0.45
+      bbox_xyxy:
+      - 1892
+      - 312
+      - 1918
+      - 359
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_lxy
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0014
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 136.0
+  timestamp: 02:16
+  frame_idx: 8160
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0014.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_tyx
+      name: TYX
+      number: '18'
+      role: right_forward
+      track_id: 1559
+      confidence: 0.45
+      bbox_xyxy:
+      - 2382
+      - 452
+      - 2415
+      - 501
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: pending
+    player_id: 红队_tyx
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0015
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 254.0
+  timestamp: 04:14
+  frame_idx: 15240
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0015.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_tyx
+      name: TYX
+      number: '18'
+      role: right_forward
+      track_id: 2863
+      confidence: 0.45
+      bbox_xyxy:
+      - 2295
+      - 607
+      - 2408
+      - 712
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: pending
+    player_id: 红队_tyx
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0016
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 414.0
+  timestamp: 06:54
+  frame_idx: 24840
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0016.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_lxy
+      name: LXY
+      number: '2'
+      role: defender
+      track_id: 4663
+      confidence: 0.45
+      bbox_xyxy:
+      - 1346
+      - 446
+      - 1419
+      - 562
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_jyn
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0017
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 526.5
+  timestamp: 08:46
+  frame_idx: 31590
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0017.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_zmc
+      name: ZMC
+      number: '28'
+      role: left_forward
+      track_id: 5991
+      confidence: 0.45
+      bbox_xyxy:
+      - 1956
+      - 323
+      - 1981
+      - 369
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_zmc
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0018
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 51.0
+  timestamp: 00:51
+  frame_idx: 3060
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0018.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_zmc
+      name: ZMC
+      number: '28'
+      role: left_forward
+      track_id: 603
+      confidence: 0.453
+      bbox_xyxy:
+      - 1751
+      - 384
+      - 1785
+      - 448
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_jyn
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0019
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 77.5
+  timestamp: 01:18
+  frame_idx: 4650
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0019.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_zmc
+      name: ZMC
+      number: '28'
+      role: left_forward
+      track_id: 927
+      confidence: 0.453
+      bbox_xyxy:
+      - 1868
+      - 310
+      - 1898
+      - 362
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: pending
+    player_id: 红队_zmc
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0020
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 97.0
+  timestamp: 01:37
+  frame_idx: 5820
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0020.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_jyn
+      name: JYN
+      number: '9'
+      role: center_forward
+      track_id: 1132
+      confidence: 0.453
+      bbox_xyxy:
+      - 1884
+      - 351
+      - 1915
+      - 412
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_lxy
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0021
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 138.0
+  timestamp: 02:18
+  frame_idx: 8280
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0021.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_jyn
+      name: JYN
+      number: '9'
+      role: center_forward
+      track_id: 1368
+      confidence: 0.453
+      bbox_xyxy:
+      - 2166
+      - 357
+      - 2188
+      - 394
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_zmc
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0022
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 378.5
+  timestamp: 06:18
+  frame_idx: 22710
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0022.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_jyn
+      name: JYN
+      number: '9'
+      role: center_forward
+      track_id: 4225
+      confidence: 0.453
+      bbox_xyxy:
+      - 1786
+      - 343
+      - 1821
+      - 415
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_lxy
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0023
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 538.0
+  timestamp: 08:58
+  frame_idx: 32280
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0023.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_jyn
+      name: JYN
+      number: '9'
+      role: center_forward
+      track_id: 6087
+      confidence: 0.453
+      bbox_xyxy:
+      - 2344
+      - 417
+      - 2376
+      - 461
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_jyn
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0024
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 93.0
+  timestamp: 01:33
+  frame_idx: 5580
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0024.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_zmc
+      name: ZMC
+      number: '28'
+      role: left_forward
+      track_id: 693
+      confidence: 0.457
+      bbox_xyxy:
+      - 1975
+      - 338
+      - 2005
+      - 388
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_zmc
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0025
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 145.5
+  timestamp: 02:26
+  frame_idx: 8730
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0025.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_tyx
+      name: TYX
+      number: '18'
+      role: right_forward
+      track_id: 1592
+      confidence: 0.457
+      bbox_xyxy:
+      - 2398
+      - 457
+      - 2435
+      - 502
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_tyx
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0026
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 445.5
+  timestamp: 07:26
+  frame_idx: 26730
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0026.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_lxy
+      name: LXY
+      number: '2'
+      role: defender
+      track_id: 5012
+      confidence: 0.457
+      bbox_xyxy:
+      - 910
+      - 316
+      - 934
+      - 370
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: pending
+    player_id: 红队_lxy
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0027
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 549.5
+  timestamp: 09:10
+  frame_idx: 32970
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0027.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_lxy
+      name: LXY
+      number: '2'
+      role: defender
+      track_id: 6164
+      confidence: 0.457
+      bbox_xyxy:
+      - 1424
+      - 298
+      - 1455
+      - 362
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_jyn
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0028
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 575.0
+  timestamp: 09:35
+  frame_idx: 34500
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0028.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_jyn
+      name: JYN
+      number: '9'
+      role: center_forward
+      track_id: 6667
+      confidence: 0.457
+      bbox_xyxy:
+      - 2238
+      - 379
+      - 2261
+      - 420
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_jyn
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0029
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 177.0
+  timestamp: 02:57
+  frame_idx: 10620
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0029.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_lxy
+      name: LXY
+      number: '2'
+      role: defender
+      track_id: 1943
+      confidence: 0.46
+      bbox_xyxy:
+      - 1299
+      - 290
+      - 1323
+      - 357
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_zmc
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0030
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 470.5
+  timestamp: 07:50
+  frame_idx: 28230
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0030.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_tyx
+      name: TYX
+      number: '18'
+      role: right_forward
+      track_id: 5197
+      confidence: 0.46
+      bbox_xyxy:
+      - 2375
+      - 430
+      - 2438
+      - 504
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_tyx
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0031
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 77.5
+  timestamp: 01:18
+  frame_idx: 4650
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0031.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_jyn
+      name: JYN
+      number: '9'
+      role: center_forward
+      track_id: 778
+      confidence: 0.463
+      bbox_xyxy:
+      - 2280
+      - 394
+      - 2316
+      - 440
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_jyn
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0032
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 449.0
+  timestamp: 07:29
+  frame_idx: 26940
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0032.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_lxy
+      name: LXY
+      number: '2'
+      role: defender
+      track_id: 5094
+      confidence: 0.463
+      bbox_xyxy:
+      - 949
+      - 351
+      - 989
+      - 428
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: pending
+    player_id: 红队_lxy
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0033
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 484.5
+  timestamp: 08:04
+  frame_idx: 29070
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0033.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_zmc
+      name: ZMC
+      number: '28'
+      role: left_forward
+      track_id: 5555
+      confidence: 0.463
+      bbox_xyxy:
+      - 1621
+      - 288
+      - 1645
+      - 343
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_lxy
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0034
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 48.0
+  timestamp: 00:48
+  frame_idx: 2880
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0034.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_zmc
+      name: ZMC
+      number: '28'
+      role: left_forward
+      track_id: 314
+      confidence: 0.467
+      bbox_xyxy:
+      - 1815
+      - 351
+      - 1849
+      - 413
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_zmc
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0035
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 52.0
+  timestamp: 00:52
+  frame_idx: 3120
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0035.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_jyn
+      name: JYN
+      number: '9'
+      role: center_forward
+      track_id: 557
+      confidence: 0.467
+      bbox_xyxy:
+      - 2326
+      - 402
+      - 2362
+      - 451
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_jyn
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0036
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 328.0
+  timestamp: 05:28
+  frame_idx: 19680
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0036.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_jyn
+      name: JYN
+      number: '9'
+      role: center_forward
+      track_id: 3616
+      confidence: 0.467
+      bbox_xyxy:
+      - 1647
+      - 335
+      - 1681
+      - 406
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_lxy
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0037
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 353.5
+  timestamp: 05:54
+  frame_idx: 21210
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0037.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_lxy
+      name: LXY
+      number: '2'
+      role: defender
+      track_id: 3855
+      confidence: 0.467
+      bbox_xyxy:
+      - 1443
+      - 326
+      - 1470
+      - 398
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_jyn
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0038
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 400.5
+  timestamp: 06:40
+  frame_idx: 24030
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0038.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_jyn
+      name: JYN
+      number: '9'
+      role: center_forward
+      track_id: 4215
+      confidence: 0.467
+      bbox_xyxy:
+      - 2204
+      - 414
+      - 2242
+      - 462
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_jyn
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0039
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 385.5
+  timestamp: 06:26
+  frame_idx: 23130
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0039.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_jyn
+      name: JYN
+      number: '9'
+      role: center_forward
+      track_id: 4297
+      confidence: 0.467
+      bbox_xyxy:
+      - 2044
+      - 386
+      - 2096
+      - 450
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_lxy
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0040
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 417.0
+  timestamp: 06:57
+  frame_idx: 25020
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0040.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_lxy
+      name: LXY
+      number: '2'
+      role: defender
+      track_id: 4645
+      confidence: 0.467
+      bbox_xyxy:
+      - 605
+      - 436
+      - 660
+      - 516
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: pending
+    player_id: 红队_lxy
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0041
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 54.5
+  timestamp: 00:54
+  frame_idx: 3270
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0041.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_zmc
+      name: ZMC
+      number: '28'
+      role: left_forward
+      track_id: 309
+      confidence: 0.47
+      bbox_xyxy:
+      - 1933
+      - 345
+      - 1970
+      - 398
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: ignored
+    player_id: 红队_zmc
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0042
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 294.0
+  timestamp: 04:54
+  frame_idx: 17640
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0042.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_jyn
+      name: JYN
+      number: '9'
+      role: center_forward
+      track_id: 3245
+      confidence: 0.47
+      bbox_xyxy:
+      - 2008
+      - 359
+      - 2040
+      - 413
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_lxy
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0043
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 322.5
+  timestamp: 05:22
+  frame_idx: 19350
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0043.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_jyn
+      name: JYN
+      number: '9'
+      role: center_forward
+      track_id: 3578
+      confidence: 0.47
+      bbox_xyxy:
+      - 1826
+      - 359
+      - 1870
+      - 435
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_zmc
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0044
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 313.5
+  timestamp: 05:14
+  frame_idx: 18810
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0044.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_jyn
+      name: JYN
+      number: '9'
+      role: center_forward
+      track_id: 3425
+      confidence: 0.473
+      bbox_xyxy:
+      - 2293
+      - 400
+      - 2329
+      - 445
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: ignored
+    player_id: 红队_jyn
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0045
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 326.0
+  timestamp: 05:26
+  frame_idx: 19560
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0045.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_zmc
+      name: ZMC
+      number: '28'
+      role: left_forward
+      track_id: 3517
+      confidence: 0.473
+      bbox_xyxy:
+      - 1670
+      - 310
+      - 1695
+      - 366
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_jyn
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0046
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 545.0
+  timestamp: 09:05
+  frame_idx: 32700
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0046.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_lxy
+      name: LXY
+      number: '2'
+      role: defender
+      track_id: 6251
+      confidence: 0.473
+      bbox_xyxy:
+      - 1010
+      - 317
+      - 1045
+      - 384
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: pending
+    player_id: 红队_lxy
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0047
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 17.5
+  timestamp: 00:18
+  frame_idx: 1050
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0047.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_jyn
+      name: JYN
+      number: '9'
+      role: center_forward
+      track_id: 38
+      confidence: 0.477
+      bbox_xyxy:
+      - 2291
+      - 405
+      - 2329
+      - 457
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_tyx
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0048
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 1.5
+  timestamp: 00:02
+  frame_idx: 90
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0048.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_zmc
+      name: ZMC
+      number: '28'
+      role: left_forward
+      track_id: 12
+      confidence: 0.48
+      bbox_xyxy:
+      - 1634
+      - 301
+      - 1662
+      - 359
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: pending
+    player_id: 红队_zmc
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0049
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 505.5
+  timestamp: 08:26
+  frame_idx: 30330
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0049.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_jyn
+      name: JYN
+      number: '9'
+      role: center_forward
+      track_id: 5651
+      confidence: 0.48
+      bbox_xyxy:
+      - 2318
+      - 403
+      - 2354
+      - 448
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: ignored
+    player_id: 红队_jyn
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0050
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 3.0
+  timestamp: 00:03
+  frame_idx: 180
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0050.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_lxy
+      name: LXY
+      number: '2'
+      role: defender
+      track_id: 9
+      confidence: 0.483
+      bbox_xyxy:
+      - 1579
+      - 332
+      - 1616
+      - 403
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: pending
+    player_id: 红队_lxy
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0051
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 102.5
+  timestamp: 01:42
+  frame_idx: 6150
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0051.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_jyn
+      name: JYN
+      number: '9'
+      role: center_forward
+      track_id: 1192
+      confidence: 0.483
+      bbox_xyxy:
+      - 2071
+      - 355
+      - 2095
+      - 402
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_tyx
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0052
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 265.5
+  timestamp: 04:26
+  frame_idx: 15930
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0052.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_tyx
+      name: TYX
+      number: '18'
+      role: right_forward
+      track_id: 2836
+      confidence: 0.483
+      bbox_xyxy:
+      - 2300
+      - 480
+      - 2354
+      - 543
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: ignored
+    player_id: 红队_tyx
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0053
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 479.0
+  timestamp: 07:59
+  frame_idx: 28740
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0053.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_jyn
+      name: JYN
+      number: '9'
+      role: center_forward
+      track_id: 5499
+      confidence: 0.483
+      bbox_xyxy:
+      - 2285
+      - 394
+      - 2316
+      - 437
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: ignored
+    player_id: 红队_jyn
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0054
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 6.0
+  timestamp: 00:06
+  frame_idx: 360
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0054.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_lxy
+      name: LXY
+      number: '2'
+      role: defender
+      track_id: 10
+      confidence: 0.487
+      bbox_xyxy:
+      - 1184
+      - 338
+      - 1210
+      - 420
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: pending
+    player_id: 红队_lxy
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0055
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 97.5
+  timestamp: 01:38
+  frame_idx: 5850
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0055.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_jyn
+      name: JYN
+      number: '9'
+      role: center_forward
+      track_id: 1136
+      confidence: 0.487
+      bbox_xyxy:
+      - 2308
+      - 402
+      - 2342
+      - 449
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: ignored
+    player_id: 红队_jyn
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0056
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 155.0
+  timestamp: 02:35
+  frame_idx: 9300
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0056.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_tyx
+      name: TYX
+      number: '18'
+      role: right_forward
+      track_id: 1556
+      confidence: 0.487
+      bbox_xyxy:
+      - 2339
+      - 415
+      - 2379
+      - 472
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: ignored
+    player_id: 红队_tyx
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0057
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 113.5
+  timestamp: 01:54
+  frame_idx: 6810
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0057.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_zmc
+      name: ZMC
+      number: '28'
+      role: left_forward
+      track_id: 1235
+      confidence: 0.49
+      bbox_xyxy:
+      - 1861
+      - 310
+      - 1889
+      - 359
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_lxy
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0058
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 227.0
+  timestamp: 03:47
+  frame_idx: 13620
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0058.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_lxy
+      name: LXY
+      number: '2'
+      role: defender
+      track_id: 2390
+      confidence: 0.49
+      bbox_xyxy:
+      - 1865
+      - 448
+      - 1945
+      - 572
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: pending
+    player_id: 红队_lxy
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0059
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 242.5
+  timestamp: 04:02
+  frame_idx: 14550
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0059.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_tyx
+      name: TYX
+      number: '18'
+      role: right_forward
+      track_id: 2721
+      confidence: 0.49
+      bbox_xyxy:
+      - 2095
+      - 441
+      - 2145
+      - 515
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_lxy
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+- review_id: identity_0060
+  type: identity
+  reason: low_identity_confidence
+  timestamp_sec: 236.0
+  timestamp: 03:56
+  frame_idx: 14160
+  frame_image: matches/中青赛_1_20260506_213657/review/human_review/frames/identity_0060.jpg
+  system_labels:
+    player:
+      predicted_id: 红队_tyx
+      name: TYX
+      number: '18'
+      role: right_forward
+      track_id: 2728
+      confidence: 0.493
+      bbox_xyxy:
+      - 2367
+      - 418
+      - 2394
+      - 465
+    ball:
+      visible: null
+      confidence: null
+      center_xy: null
+    event:
+      type: 身份确认
+      confidence: 低
+      include_in_report: true
+  human_review:
+    status: corrected
+    player_id: 红队_tyx
+    ball_center_xy: null
+    event_valid: null
+    report_action: keep
+    note: ''
+updated_at: '2026-05-06T22:47:28+08:00'

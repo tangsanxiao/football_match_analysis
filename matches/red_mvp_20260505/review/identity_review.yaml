@@ -1,0 +1,61 @@
+review_required: true
+instructions:
+- Review track_ids against the contact sheet before full-report generation.
+- Move wrong track_ids to the correct player_id or remove them.
+- This file can be passed to scripts/06_assign_identities.py with --manual-bindings.
+assignments:
+  red_hda:
+    name: HDA
+    number: 1
+    role: goalkeeper
+    confidence: 0.88
+    reason: human reviewed or accepted auto binding
+    track_ids:
+    - 2
+    - 240
+    - 803
+    - 939
+    - 1159
+  red_jyn:
+    name: JYN
+    number: 9
+    role: center_forward
+    confidence: 0.519
+    reason: human reviewed or accepted auto binding
+    track_ids:
+    - 4
+    - 9
+    - 181
+    - 335
+    - 959
+    - 1361
+  red_lxy:
+    name: LXY
+    number: 2
+    role: defender
+    confidence: 0.466
+    reason: human reviewed or accepted auto binding
+    track_ids:
+    - 578
+    - 1023
+    - 1140
+  red_tyx:
+    name: TYX
+    number: 18
+    role: right_forward
+    confidence: 0.476
+    reason: human reviewed or accepted auto binding
+    track_ids:
+    - 184
+    - 222
+    - 925
+    - 1354
+    - 1355
+  red_zmc:
+    name: ZMC
+    number: 28
+    role: left_forward
+    confidence: 0.447
+    reason: human reviewed or accepted auto binding
+    track_ids:
+    - 3

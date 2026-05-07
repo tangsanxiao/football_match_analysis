@@ -1,0 +1,82 @@
+calibration:
+  image_path: matches/red_mvp_wizard_check/data/interim/sample_frames/sample_019_frame_00017875.jpg
+  note: image_path is filled by scripts/09_prepare_match_review.py after sample extraction.
+  labeling_status: submitted
+  labeling_submitted: true
+  labeling_submitted_at: '2026-05-06T21:19:29+08:00'
+  labeling_submitted_point_count: 9
+  labeling_enabled_point_count: 9
+  labeling_required_min_points: 4
+points:
+- name: top_left_corner
+  field_xy:
+  - 0.0
+  - 0.0
+  image_xy:
+  - 736
+  - 368
+  enabled: true
+- name: top_right_corner
+  field_xy:
+  - 40.0
+  - 0.0
+  image_xy:
+  - 2048
+  - 342
+  enabled: true
+- name: bottom_left_corner
+  field_xy:
+  - 0.0
+  - 20.0
+  image_xy:
+  - 0
+  - 1078
+  enabled: true
+- name: bottom_right_corner
+  field_xy:
+  - 40.0
+  - 20.0
+  image_xy:
+  - 2684
+  - 640
+  enabled: true
+- name: center_mark
+  field_xy:
+  - 20.0
+  - 10.0
+  image_xy:
+  - 1763
+  - 399
+  enabled: true
+- name: halfway_top_touchline
+  field_xy:
+  - 20.0
+  - 0.0
+  image_xy:
+  - 1528
+  - 298
+  enabled: true
+- name: halfway_bottom_touchline
+  field_xy:
+  - 20.0
+  - 20.0
+  image_xy:
+  - 2378
+  - 713
+  enabled: true
+- name: left_goal_center
+  field_xy:
+  - 0.0
+  - 10.0
+  image_xy:
+  - 501
+  - 529
+  enabled: true
+- name: right_goal_center
+  field_xy:
+  - 40.0
+  - 10.0
+  image_xy:
+  - 2338
+  - 440
+  enabled: true
