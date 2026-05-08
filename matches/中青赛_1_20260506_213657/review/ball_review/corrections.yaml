@@ -1,17 +1,25 @@
-status: submitted
-updated_at: '2026-05-07T18:19:31+08:00'
-submitted_at: '2026-05-07T18:19:31+08:00'
+status: draft
+updated_at: '2026-05-08T21:45:03+08:00'
+submitted_at: null
 items:
   ball_0001:
-    status: invisible
-    ball_visible: false
-    review_image_xy: null
-    source_image_xy: null
-    field_xy: null
+    status: marked
+    ball_visible: true
+    ball_in_play: true
+    review_image_xy:
+    - 423.3
+    - 245.5
+    source_image_xy:
+    - 711.14
+    - 412.44
+    field_xy:
+    - 0.981
+    - 6.708
     note: ''
   ball_0002:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -19,6 +27,7 @@ items:
   ball_0003:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -26,6 +35,7 @@ items:
   ball_0004:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -33,6 +43,7 @@ items:
   ball_0005:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1205.3
     - 223.6
@@ -46,6 +57,7 @@ items:
   ball_0006:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1145.0
     - 211.0
@@ -59,6 +71,7 @@ items:
   ball_0007:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1150.1
     - 206.5
@@ -72,6 +85,7 @@ items:
   ball_0008:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1151.7
     - 202.6
@@ -85,6 +99,7 @@ items:
   ball_0009:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1154.7
     - 198.5
@@ -98,6 +113,7 @@ items:
   ball_0010:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1153.0
     - 197.0
@@ -111,6 +127,7 @@ items:
   ball_0011:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1134.8
     - 194.1
@@ -124,6 +141,7 @@ items:
   ball_0012:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1139.4
     - 197.4
@@ -137,6 +155,7 @@ items:
   ball_0013:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1143.3
     - 201.2
@@ -150,6 +169,7 @@ items:
   ball_0014:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1209.7
     - 225.8
@@ -163,6 +183,7 @@ items:
   ball_0015:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1180.4
     - 221.6
@@ -176,6 +197,7 @@ items:
   ball_0016:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1177.5
     - 226.4
@@ -189,6 +211,7 @@ items:
   ball_0017:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1220.8
     - 243.2
@@ -202,6 +225,7 @@ items:
   ball_0018:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1228.8
     - 247.8
@@ -215,6 +239,7 @@ items:
   ball_0019:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1198.3
     - 240.0
@@ -228,6 +253,7 @@ items:
   ball_0020:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1136.3
     - 231.2
@@ -241,6 +267,7 @@ items:
   ball_0021:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1150.5
     - 233.4
@@ -254,6 +281,7 @@ items:
   ball_0022:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1184.3
     - 241.3
@@ -267,6 +295,7 @@ items:
   ball_0023:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1203.9
     - 246.6
@@ -280,6 +309,7 @@ items:
   ball_0024:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -287,6 +317,7 @@ items:
   ball_0025:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -294,6 +325,7 @@ items:
   ball_0026:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1184.1
     - 221.7
@@ -307,6 +339,7 @@ items:
   ball_0027:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1146.1
     - 206.9
@@ -320,6 +353,7 @@ items:
   ball_0028:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1096.7
     - 194.3
@@ -333,6 +367,7 @@ items:
   ball_0029:
     status: marked
     ball_visible: true
+    ball_in_play: false
     review_image_xy:
     - 1068.8
     - 186.5
@@ -346,6 +381,7 @@ items:
   ball_0030:
     status: marked
     ball_visible: true
+    ball_in_play: false
     review_image_xy:
     - 1083.7
     - 188.7
@@ -359,6 +395,7 @@ items:
   ball_0031:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1121.4
     - 196.2
@@ -372,6 +409,7 @@ items:
   ball_0032:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1192.4
     - 209.8
@@ -385,6 +423,7 @@ items:
   ball_0033:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1260.6
     - 219.3
@@ -398,6 +437,7 @@ items:
   ball_0034:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1218.4
     - 207.7
@@ -411,6 +451,7 @@ items:
   ball_0035:
     status: marked
     ball_visible: true
+    ball_in_play: false
     review_image_xy:
     - 1161.2
     - 187.8
@@ -424,6 +465,7 @@ items:
   ball_0036:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -431,6 +473,7 @@ items:
   ball_0037:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -438,6 +481,7 @@ items:
   ball_0038:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -445,6 +489,7 @@ items:
   ball_0039:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -452,6 +497,7 @@ items:
   ball_0040:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -459,6 +505,7 @@ items:
   ball_0041:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1170.0
     - 194.5
@@ -472,6 +519,7 @@ items:
   ball_0042:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1199.4
     - 203.1
@@ -485,6 +533,7 @@ items:
   ball_0043:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1200.1
     - 201.3
@@ -498,6 +547,7 @@ items:
   ball_0044:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -505,6 +555,7 @@ items:
   ball_0045:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -512,6 +563,7 @@ items:
   ball_0046:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1301.1
     - 236.9
@@ -525,6 +577,7 @@ items:
   ball_0047:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -532,6 +585,7 @@ items:
   ball_0048:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -539,6 +593,7 @@ items:
   ball_0049:
     status: marked
     ball_visible: true
+    ball_in_play: false
     review_image_xy:
     - 1351.9
     - 238.8
@@ -552,6 +607,7 @@ items:
   ball_0050:
     status: marked
     ball_visible: true
+    ball_in_play: false
     review_image_xy:
     - 1387.1
     - 251.3
@@ -565,6 +621,7 @@ items:
   ball_0051:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1372.6
     - 255.9
@@ -578,6 +635,7 @@ items:
   ball_0052:
     status: marked
     ball_visible: true
+    ball_in_play: false
     review_image_xy:
     - 1368.8
     - 199.1
@@ -591,6 +649,7 @@ items:
   ball_0053:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1291.8
     - 229.3
@@ -604,6 +663,7 @@ items:
   ball_0054:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1313.7
     - 259.7
@@ -617,6 +677,7 @@ items:
   ball_0055:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1352.5
     - 265.4
@@ -630,6 +691,7 @@ items:
   ball_0056:
     status: marked
     ball_visible: true
+    ball_in_play: false
     review_image_xy:
     - 1558.1
     - 300.7
@@ -643,6 +705,7 @@ items:
   ball_0057:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -650,6 +713,7 @@ items:
   ball_0058:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -657,6 +721,7 @@ items:
   ball_0059:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -664,6 +729,7 @@ items:
   ball_0060:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -671,6 +737,7 @@ items:
   ball_0061:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 535.8
     - 231.3
@@ -684,6 +751,7 @@ items:
   ball_0062:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 542.0
     - 229.8
@@ -697,6 +765,7 @@ items:
   ball_0063:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 536.6
     - 208.9
@@ -710,6 +779,7 @@ items:
   ball_0064:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 793.4
     - 221.3
@@ -723,6 +793,7 @@ items:
   ball_0065:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 948.3
     - 245.2
@@ -736,6 +807,7 @@ items:
   ball_0066:
     status: marked
     ball_visible: true
+    ball_in_play: false
     review_image_xy:
     - 1412.7
     - 423.1
@@ -749,6 +821,7 @@ items:
   ball_0067:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1031.3
     - 284.3
@@ -762,6 +835,7 @@ items:
   ball_0068:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1075.6
     - 259.1
@@ -775,6 +849,7 @@ items:
   ball_0069:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1051.5
     - 249.0
@@ -788,6 +863,7 @@ items:
   ball_0070:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 986.6
     - 249.0
@@ -801,6 +877,7 @@ items:
   ball_0071:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 927.4
     - 242.2
@@ -814,6 +891,7 @@ items:
   ball_0072:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -821,6 +899,7 @@ items:
   ball_0073:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -828,6 +907,7 @@ items:
   ball_0074:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -835,6 +915,7 @@ items:
   ball_0075:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -842,6 +923,7 @@ items:
   ball_0076:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -849,6 +931,7 @@ items:
   ball_0077:
     status: marked
     ball_visible: true
+    ball_in_play: false
     review_image_xy:
     - 1590.4
     - 366.3
@@ -862,6 +945,7 @@ items:
   ball_0078:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1434.2
     - 358.6
@@ -875,6 +959,7 @@ items:
   ball_0079:
     status: marked
     ball_visible: true
+    ball_in_play: false
     review_image_xy:
     - 1438.1
     - 468.4
@@ -888,6 +973,7 @@ items:
   ball_0080:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -895,6 +981,7 @@ items:
   ball_0081:
     status: marked
     ball_visible: true
+    ball_in_play: false
     review_image_xy:
     - 1386.0
     - 483.9
@@ -908,6 +995,7 @@ items:
   ball_0082:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1382.2
     - 426.0
@@ -921,6 +1009,7 @@ items:
   ball_0083:
     status: marked
     ball_visible: true
+    ball_in_play: false
     review_image_xy:
     - 1386.0
     - 429.9
@@ -934,6 +1023,7 @@ items:
   ball_0084:
     status: marked
     ball_visible: true
+    ball_in_play: false
     review_image_xy:
     - 1388.0
     - 429.9
@@ -947,6 +1037,7 @@ items:
   ball_0085:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1187.5
     - 271.8
@@ -960,6 +1051,7 @@ items:
   ball_0086:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1199.0
     - 256.4
@@ -973,6 +1065,7 @@ items:
   ball_0087:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1177.0
     - 229.1
@@ -986,6 +1079,7 @@ items:
   ball_0088:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1189.5
     - 220.8
@@ -999,6 +1093,7 @@ items:
   ball_0089:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -1006,6 +1101,7 @@ items:
   ball_0090:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1258.6
     - 218.4
@@ -1019,6 +1115,7 @@ items:
   ball_0091:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1203.4
     - 208.3
@@ -1032,6 +1129,7 @@ items:
   ball_0092:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1149.4
     - 192.4
@@ -1045,6 +1143,7 @@ items:
   ball_0093:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -1052,6 +1151,7 @@ items:
   ball_0094:
     status: marked
     ball_visible: true
+    ball_in_play: false
     review_image_xy:
     - 1118.2
     - 185.0
@@ -1065,6 +1165,7 @@ items:
   ball_0095:
     status: marked
     ball_visible: true
+    ball_in_play: false
     review_image_xy:
     - 1132.4
     - 189.5
@@ -1078,6 +1179,7 @@ items:
   ball_0096:
     status: marked
     ball_visible: true
+    ball_in_play: false
     review_image_xy:
     - 1136.2
     - 190.8
@@ -1091,6 +1193,7 @@ items:
   ball_0097:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1147.0
     - 195.8
@@ -1104,6 +1207,7 @@ items:
   ball_0098:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1152.2
     - 194.3
@@ -1117,6 +1221,7 @@ items:
   ball_0099:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -1124,6 +1229,7 @@ items:
   ball_0100:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1149.9
     - 194.9
@@ -1137,6 +1243,7 @@ items:
   ball_0101:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1196.8
     - 210.4
@@ -1150,6 +1257,7 @@ items:
   ball_0102:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1301.0
     - 262.9
@@ -1163,6 +1271,7 @@ items:
   ball_0103:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1309.1
     - 274.2
@@ -1176,6 +1285,7 @@ items:
   ball_0104:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1335.0
     - 271.3
@@ -1189,6 +1299,7 @@ items:
   ball_0105:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1353.2
     - 261.7
@@ -1202,6 +1313,7 @@ items:
   ball_0106:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1307.0
     - 239.4
@@ -1215,6 +1327,7 @@ items:
   ball_0107:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1283.0
     - 225.7
@@ -1228,6 +1341,7 @@ items:
   ball_0108:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -1235,6 +1349,7 @@ items:
   ball_0109:
     status: marked
     ball_visible: true
+    ball_in_play: false
     review_image_xy:
     - 1290.6
     - 221.8
@@ -1248,6 +1363,7 @@ items:
   ball_0110:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -1255,6 +1371,7 @@ items:
   ball_0111:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -1262,6 +1379,7 @@ items:
   ball_0112:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -1269,6 +1387,7 @@ items:
   ball_0113:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -1276,6 +1395,7 @@ items:
   ball_0114:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -1283,6 +1403,7 @@ items:
   ball_0115:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -1290,6 +1411,7 @@ items:
   ball_0116:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null
@@ -1297,6 +1419,7 @@ items:
   ball_0117:
     status: marked
     ball_visible: true
+    ball_in_play: false
     review_image_xy:
     - 1296.6
     - 221.9
@@ -1310,6 +1433,7 @@ items:
   ball_0118:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1297.4
     - 224.9
@@ -1323,6 +1447,7 @@ items:
   ball_0119:
     status: marked
     ball_visible: true
+    ball_in_play: true
     review_image_xy:
     - 1298.9
     - 225.3
@@ -1336,6 +1461,7 @@ items:
   ball_0120:
     status: invisible
     ball_visible: false
+    ball_in_play: false
     review_image_xy: null
     source_image_xy: null
     field_xy: null

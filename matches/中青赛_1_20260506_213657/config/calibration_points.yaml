@@ -16,6 +16,10 @@ points:
   - 747
   - 362
   enabled: true
+  label: 左上角
+  kind: calibration
+  required: true
+  help: 可见时优先标；用于场地透视标定。
 - name: top_right_corner
   field_xy:
   - 40.0
@@ -24,6 +28,10 @@ points:
   - 2061
   - 340
   enabled: true
+  label: 右上角
+  kind: calibration
+  required: true
+  help: 可见时优先标；用于场地透视标定。
 - name: bottom_left_corner
   field_xy:
   - 0.0
@@ -32,6 +40,10 @@ points:
   - 4
   - 1083
   enabled: true
+  label: 左下角（可选）
+  kind: calibration
+  required: false
+  help: 如果画面没拍全，不要猜；留空即可。
 - name: bottom_right_corner
   field_xy:
   - 40.0
@@ -40,6 +52,10 @@ points:
   - 2684
   - 561
   enabled: true
+  label: 右下角（可选）
+  kind: calibration
+  required: false
+  help: 如果画面没拍全，不要猜；留空即可。
 - name: center_mark
   field_xy:
   - 20.0
@@ -48,6 +64,10 @@ points:
   - 1757
   - 396
   enabled: true
+  label: 中点
+  kind: calibration
+  required: true
+  help: 中圈/中线中心点；用于场地透视标定。
 - name: halfway_top_touchline
   field_xy:
   - 20.0
@@ -56,6 +76,10 @@ points:
   - 1528
   - 295
   enabled: true
+  label: 中线-上边线
+  kind: calibration
+  required: true
+  help: 中线与上侧边线交点；用于场地透视标定。
 - name: halfway_bottom_touchline
   field_xy:
   - 20.0
@@ -64,6 +88,10 @@ points:
   - 2369
   - 711
   enabled: true
+  label: 中线-下边线
+  kind: calibration
+  required: true
+  help: 中线与下侧边线交点；用于场地透视标定。
 - name: left_goal_center
   field_xy:
   - 0.0
@@ -72,6 +100,10 @@ points:
   - 499
   - 527
   enabled: true
+  label: 左球门中心
+  kind: calibration
+  required: true
+  help: 左侧球门线中心；用于场地透视标定。
 - name: right_goal_center
   field_xy:
   - 40.0
@@ -80,3 +112,69 @@ points:
   - 2331
   - 437
   enabled: true
+  label: 右球门中心
+  kind: calibration
+  required: true
+  help: 右侧球门线中心；用于场地透视标定。
+- name: left_penalty_mark
+  label: 左侧点球点/白点（可选）
+  kind: static_field_mark
+  field_xy:
+  - 6.0
+  - 10.0
+  image_xy: null
+  enabled: true
+  required: false
+  use_for_homography: true
+  static_filter_radius_m: 0.65
+  static_filter_radius_px: 22
+  help: 用于过滤白点被识别成足球；如果确认是标准点球点，也会辅助标定。
+- name: right_penalty_mark
+  label: 右侧点球点/白点（可选）
+  kind: static_field_mark
+  field_xy:
+  - 34.0
+  - 10.0
+  image_xy: null
+  enabled: true
+  required: false
+  use_for_homography: true
+  static_filter_radius_m: 0.65
+  static_filter_radius_px: 22
+  help: 用于过滤白点被识别成足球；如果确认是标准点球点，也会辅助标定。
+- name: visible_area_top_left
+  label: 可见区域左上
+  kind: visible_area
+  field_xy: null
+  image_xy: null
+  enabled: true
+  required: false
+  use_for_homography: false
+  help: 沿画面里实际可见的球场区域按顺时针标；用于过滤画面外/边缘误检。
+- name: visible_area_top_right
+  label: 可见区域右上
+  kind: visible_area
+  field_xy: null
+  image_xy: null
+  enabled: true
+  required: false
+  use_for_homography: false
+  help: 沿画面里实际可见的球场区域按顺时针标；用于过滤画面外/边缘误检。
+- name: visible_area_bottom_right
+  label: 可见区域右下
+  kind: visible_area
+  field_xy: null
+  image_xy: null
+  enabled: true
+  required: false
+  use_for_homography: false
+  help: 沿画面里实际可见的球场区域按顺时针标；用于过滤画面外/边缘误检。
+- name: visible_area_bottom_left
+  label: 可见区域左下
+  kind: visible_area
+  field_xy: null
+  image_xy: null
+  enabled: true
+  required: false
+  use_for_homography: false
+  help: 沿画面里实际可见的球场区域按顺时针标；用于过滤画面外/边缘误检。
