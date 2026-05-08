@@ -10,7 +10,6 @@ try:
     from analysis_app_config import (
         DEFAULT_FIELD_LENGTH,
         DEFAULT_FIELD_WIDTH,
-        METRIC_DEFINITIONS,
         PROJECT_ROOT,
         ball_review_paths,
         load_yaml,
@@ -24,7 +23,6 @@ except ModuleNotFoundError:
     from scripts.analysis_app_config import (
         DEFAULT_FIELD_LENGTH,
         DEFAULT_FIELD_WIDTH,
-        METRIC_DEFINITIONS,
         PROJECT_ROOT,
         ball_review_paths,
         load_yaml,
@@ -34,6 +32,13 @@ except ModuleNotFoundError:
         review_paths,
     )
     from scripts.analysis_app_jobs import latest_job_for_match
+
+try:
+    from analysis_metrics import selected_metric_definitions
+    from analysis_report_runs import latest_report_record
+except ModuleNotFoundError:
+    from scripts.analysis_metrics import selected_metric_definitions
+    from scripts.analysis_report_runs import latest_report_record
 
 
 WORKFLOW_STEPS = [
@@ -118,11 +123,11 @@ def match_summary(config_path: Path) -> Dict[str, Any]:
     match_id = str(match.get("id") or config_path.parents[1].name)
     project_dir = resolve_path(match.get("project_dir", config_path.parents[1]))
     points_path = resolve_path(config.get("calibration", {}).get("points_path", project_dir / "config" / "calibration_points.yaml"))
-    report_dir = resolve_path(match.get("output_dir", project_dir / "reports")) / "mvp_initial"
+    latest_report = latest_report_record(config)
     analyze_team = str(config.get("teams", {}).get("analyze_team", ""))
     team = config.get("teams", {}).get(analyze_team, {})
     marked, enabled, calibration_submitted = point_counts(points_path)
-    report_ready = (report_dir / "report.md").exists() and (report_dir / "report.html").exists()
+    report_ready = bool(latest_report)
     review = config.get("review", {})
     players = team.get("players") or []
     metrics = config.get("analysis", {}).get("target_metrics") or config.get("analysis", {}).get("target_events") or []
@@ -176,8 +181,10 @@ def match_summary(config_path: Path) -> Dict[str, Any]:
         "ball_review_submitted": ball_review["submitted"],
         "ball_review_item_count": ball_review["item_count"],
         "report_ready": report_ready,
-        "report_md": project_relative(report_dir / "report.md"),
-        "report_html": project_relative(report_dir / "report.html"),
+        "report_md": latest_report.get("report_md", ""),
+        "report_html": latest_report.get("report_html", ""),
+        "report_dir": latest_report.get("report_dir", ""),
+        "report_source": latest_report.get("source", ""),
         "updated_at": datetime.fromtimestamp(config_path.stat().st_mtime).isoformat(timespec="seconds"),
     }
 
@@ -292,11 +299,7 @@ def match_state(match_id: str) -> Dict[str, Any]:
     analyze_team = str(config.get("teams", {}).get("analyze_team", ""))
     team = config.get("teams", {}).get(analyze_team, {})
     selected_metric_keys = config.get("analysis", {}).get("target_metrics") or config.get("analysis", {}).get("target_events") or []
-    metric_lookup = {item["key"]: item for item in METRIC_DEFINITIONS}
-    selected_metrics = [
-        metric_lookup.get(key, {"key": key, "label": key, "description": ""})
-        for key in selected_metric_keys
-    ]
+    selected_metrics = selected_metric_definitions(selected_metric_keys)
     return {
         "match_id": match_id,
         "summary": summary,

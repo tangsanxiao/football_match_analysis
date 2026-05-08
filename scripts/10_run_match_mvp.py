@@ -11,6 +11,11 @@ from typing import Any, Dict, List, Optional, Union
 
 import yaml
 
+try:
+    from analysis_report_runs import report_dir_for_output_name, write_latest_report
+except ModuleNotFoundError:
+    from scripts.analysis_report_runs import report_dir_for_output_name, write_latest_report
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -81,7 +86,7 @@ def main() -> None:
     parser.add_argument("--device", default=None)
     parser.add_argument("--save-annotated-every", type=int, default=60)
     parser.add_argument("--right-forward-y", choices=["high", "low"], default="high")
-    parser.add_argument("--output-name", default="mvp_initial")
+    parser.add_argument("--output-name", default=None)
     parser.add_argument("--manual-bindings", default=None, help="Optional identity review YAML for this exact full-run track set.")
     parser.add_argument(
         "--use-review-bindings",
@@ -172,7 +177,7 @@ def main() -> None:
         assign_cmd.extend(["--manual-bindings", project_relative(manual_path)])
     run_command(assign_cmd)
 
-    output_dir = resolve_path(config["match"]["output_dir"]) / args.output_name
+    output_dir = report_dir_for_output_name(config, args.output_name, prefix="full")
     run_command(
         [
             sys.executable,
@@ -184,6 +189,14 @@ def main() -> None:
             "--output-dir",
             project_relative(output_dir),
         ]
+    )
+    write_latest_report(
+        config,
+        output_dir,
+        {
+            "source": "full_pipeline",
+            "source_detections_dir": project_relative(detections_dir),
+        },
     )
 
     print("\nFull MVP report is ready.")

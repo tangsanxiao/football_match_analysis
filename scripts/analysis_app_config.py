@@ -10,6 +10,11 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import yaml
 
+try:
+    from analysis_metrics import DEFAULT_METRICS, METRIC_DEFINITIONS
+except ModuleNotFoundError:
+    from scripts.analysis_metrics import DEFAULT_METRICS, METRIC_DEFINITIONS
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 VIDEO_EXTENSIONS = {".mp4", ".mov", ".m4v", ".avi", ".mkv"}
@@ -17,76 +22,6 @@ ROLE_CHOICES = ["goalkeeper", "defender", "right_forward", "center_forward", "le
 DEFAULT_FIELD_LENGTH = 40.0
 DEFAULT_FIELD_WIDTH = 20.0
 DEFAULT_SAMPLE_FPS = 2.0
-DEFAULT_METRICS = [
-    "shot",
-    "pass",
-    "steal",
-    "positional_discipline",
-    "pressing_intensity",
-    "off_ball_movement",
-    "1v1_attack_defense",
-    "defensive_off_ball_movement",
-    "space_creation",
-    "pass_success",
-    "observed_coverage",
-]
-METRIC_DEFINITIONS = [
-    {
-        "key": "shot",
-        "label": "射门",
-        "description": "识别红队最后触球后球向球门或门区高速移动的候选片段；当前受足球检测覆盖率影响，先作为候选统计。",
-    },
-    {
-        "key": "pass",
-        "label": "传球",
-        "description": "尝试基于球权从一名本队球员转移到另一名本队球员的轨迹链路统计传球候选。",
-    },
-    {
-        "key": "pass_success",
-        "label": "传球成功率",
-        "description": "在可观察球权链路内估算成功传球占比；球检测不足时会降级为低置信候选。",
-    },
-    {
-        "key": "steal",
-        "label": "抢断",
-        "description": "识别对手控球后，本队球员近距离施压并导致球权转换的候选事件。",
-    },
-    {
-        "key": "1v1_attack_defense",
-        "label": "1v1 攻防",
-        "description": "统计持球人与最近防守人形成近距离对抗的次数、方向和成功倾向，是后续重点增强指标。",
-    },
-    {
-        "key": "positional_discipline",
-        "label": "站位纪律",
-        "description": "评估球员是否稳定出现在角色对应区域，以及攻防转换中是否保持合理纵深和宽度。",
-    },
-    {
-        "key": "pressing_intensity",
-        "label": "压迫强度",
-        "description": "统计球员在进攻半场或对手附近进入压迫距离的占比，并结合移动方向做压迫候选。",
-    },
-    {
-        "key": "off_ball_movement",
-        "label": "无球跑动",
-        "description": "评估非持球阶段的跑动距离、进入进攻三区、拉开宽度和接应路线等代理指标。",
-    },
-    {
-        "key": "defensive_off_ball_movement",
-        "label": "防守无球跑动",
-        "description": "关注回收、补位、封堵中路和协防距离变化，用于区分只站位和主动防守移动。",
-    },
-    {
-        "key": "space_creation",
-        "label": "创造空间",
-        "description": "观察无球跑动是否拉开防线、创造接应角度或带走防守人；第一版以空间代理指标输出。",
-    },
-    {
-        "key": "observed_coverage",
-        "label": "观察覆盖率",
-        "description": "该球员被自动识别并绑定成功的去重帧数 / 本次采样处理总帧数 × 100%。它反映本场可评价样本量，不等同真实上场时间；低覆盖率提示遮挡、远景或身份绑定需要人工校验。",
-    },
-]
 
 
 def resolve_path(path: Union[str, Path]) -> Path:
@@ -327,6 +262,26 @@ def build_config(info: Dict[str, Any], project_dir: Path, video_path_value: str)
                 "enabled": True,
                 "person_margin_m": 1.5,
                 "ball_margin_m": 0.2,
+            },
+            "ball_filter": {
+                "static_false_positive": {
+                    "enabled": True,
+                    "min_frames": 4,
+                    "min_duration_s": 1.5,
+                    "max_span_m": 0.45,
+                },
+            },
+            "identity_filter": {
+                "opponent_goalkeeper": {
+                    "enabled": True,
+                    "opponent_goal_zone_m": 4.5,
+                    "goal_y_margin_m": 4.2,
+                    "min_frames": 6,
+                    "max_span_x_m": 4.0,
+                    "max_span_y_m": 7.0,
+                    "strict_stationary_span_x_m": 1.8,
+                    "strict_stationary_span_y_m": 3.0,
+                },
             },
         },
     }

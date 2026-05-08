@@ -13,6 +13,11 @@ import numpy as np
 import pandas as pd
 import yaml
 
+try:
+    from analysis_detection_filters import is_likely_opponent_goalkeeper
+except ModuleNotFoundError:
+    from scripts.analysis_detection_filters import is_likely_opponent_goalkeeper
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -122,7 +127,7 @@ def analyze_team_kit(config: Dict) -> Dict[str, List[str]]:
     }
 
 
-def analyze_team_candidate(row: pd.Series, kit: Dict[str, List[str]]) -> Tuple[str, float, str]:
+def analyze_team_candidate(row: pd.Series, config: Dict, kit: Dict[str, List[str]]) -> Tuple[str, float, str]:
     color = row["primary_color"]
     mean_x = float(row["mean_x"])
     mean_y = float(row["mean_y"])
@@ -130,6 +135,9 @@ def analyze_team_candidate(row: pd.Series, kit: Dict[str, List[str]]) -> Tuple[s
     frame_score = min(1.0, frames / 30.0)
     field_colors = set(kit["field_colors"])
     goalkeeper_colors = set(kit["goalkeeper_colors"])
+    likely_opponent_gk, opponent_gk_reason = is_likely_opponent_goalkeeper(row, config, primary_color=str(color))
+    if likely_opponent_gk:
+        return "opponent_goalkeeper_candidate", round(0.15 + 0.25 * frame_score, 3), opponent_gk_reason
 
     if color in goalkeeper_colors and mean_x <= 3.5 and 7.0 <= mean_y <= 14.0:
         return "analyze_goalkeeper_candidate", round(0.75 + 0.25 * frame_score, 3), f"{color} goalkeeper kit near own goal"
@@ -187,7 +195,7 @@ def classify_tracklets(config: Dict, detections_dir: Path, samples_per_track: in
     out = pd.DataFrame(rows)
     if out.empty:
         return out
-    candidate = out.apply(lambda row: analyze_team_candidate(row, kit), axis=1, result_type="expand")
+    candidate = out.apply(lambda row: analyze_team_candidate(row, config, kit), axis=1, result_type="expand")
     candidate.columns = ["candidate_type", "candidate_score", "candidate_reason"]
     out = pd.concat([out, candidate], axis=1)
     return out.sort_values(["candidate_score", "frames", "mean_conf"], ascending=False)

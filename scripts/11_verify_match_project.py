@@ -10,6 +10,11 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import yaml
 
+try:
+    from analysis_report_runs import latest_report_record
+except ModuleNotFoundError:
+    from scripts.analysis_report_runs import latest_report_record
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -78,7 +83,7 @@ def read_probe_duration(interim_dir: Path) -> Optional[float]:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", required=True, help="Path to matches/<match_id>/config/match.yaml.")
-    parser.add_argument("--output-name", default="mvp_initial")
+    parser.add_argument("--output-name", default=None)
     args = parser.parse_args()
 
     config_path = resolve_path(args.config)
@@ -98,7 +103,8 @@ def main() -> None:
     duration_sec = float(review_cfg.get("duration_sec", 120.0))
     sample_fps = float(review_cfg.get("sample_fps", 2.0))
     recognition_dir = interim_dir / "detections" / output_slug(start_sec, duration_sec, sample_fps)
-    report_dir = output_dir / args.output_name
+    latest_report = latest_report_record(config)
+    report_dir = resolve_path(latest_report["report_dir"]) if latest_report and not args.output_name else output_dir / (args.output_name or "mvp_initial")
 
     checks: List[Tuple[str, bool, bool, str]] = []
     add_check(checks, "config", config_path.exists(), project_relative(config_path))

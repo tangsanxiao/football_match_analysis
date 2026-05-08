@@ -180,8 +180,6 @@ def start_final_report(match_id: str) -> Dict[str, Any]:
         "scripts/14_finalize_human_review.py",
         "--config",
         f"matches/{match_id}/config/match.yaml",
-        "--output-name",
-        "mvp_initial",
     ]
     return start_job(match_id, "final_report", command)
 

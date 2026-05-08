@@ -12,22 +12,15 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import yaml
 
+try:
+    from analysis_metrics import DEFAULT_METRICS
+except ModuleNotFoundError:
+    from scripts.analysis_metrics import DEFAULT_METRICS
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 ROLE_CHOICES = ["goalkeeper", "defender", "right_forward", "center_forward", "left_forward", "substitute"]
-DEFAULT_METRICS = [
-    "shot",
-    "pass",
-    "steal",
-    "positional_discipline",
-    "pressing_intensity",
-    "off_ball_movement",
-    "1v1_attack_defense",
-    "defensive_off_ball_movement",
-    "space_creation",
-    "pass_success",
-]
 COLOR_ALIASES = {
     "红": "pink_red",
     "红色": "pink_red",
@@ -324,6 +317,26 @@ def build_config(info: Dict[str, Any], project_dir: Path, video_path_value: str)
                 "enabled": True,
                 "person_margin_m": 1.5,
                 "ball_margin_m": 0.2,
+            },
+            "ball_filter": {
+                "static_false_positive": {
+                    "enabled": True,
+                    "min_frames": 4,
+                    "min_duration_s": 1.5,
+                    "max_span_m": 0.45,
+                },
+            },
+            "identity_filter": {
+                "opponent_goalkeeper": {
+                    "enabled": True,
+                    "opponent_goal_zone_m": 4.5,
+                    "goal_y_margin_m": 4.2,
+                    "min_frames": 6,
+                    "max_span_x_m": 4.0,
+                    "max_span_y_m": 7.0,
+                    "strict_stationary_span_x_m": 1.8,
+                    "strict_stationary_span_y_m": 3.0,
+                },
             },
         },
     }

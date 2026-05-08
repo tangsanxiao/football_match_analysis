@@ -12,6 +12,11 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 import cv2
 import yaml
 
+try:
+    from analysis_report_runs import latest_report_record
+except ModuleNotFoundError:
+    from scripts.analysis_report_runs import latest_report_record
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -125,8 +130,11 @@ def best_ball_by_frame(track_rows: List[Dict[str, str]]) -> Dict[int, Dict[str, 
 
 
 def event_timestamps(config: Dict[str, Any]) -> List[float]:
-    output_dir = resolve_path(config["match"]["output_dir"]) / "mvp_initial" / "key_timestamps.csv"
-    rows = read_csv(output_dir)
+    latest = latest_report_record(config)
+    if latest.get("report_dir"):
+        rows = read_csv(resolve_path(latest["report_dir"]) / "key_timestamps.csv")
+    else:
+        rows = read_csv(resolve_path(config["match"]["output_dir"]) / "mvp_initial" / "key_timestamps.csv")
     return [safe_float(row.get("timestamp_sec")) for row in rows if row.get("timestamp_sec")]
 
 

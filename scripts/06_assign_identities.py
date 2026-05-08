@@ -10,6 +10,11 @@ from typing import Any, Dict, Optional, Tuple, Union
 import pandas as pd
 import yaml
 
+try:
+    from analysis_detection_filters import is_likely_opponent_goalkeeper
+except ModuleNotFoundError:
+    from scripts.analysis_detection_filters import is_likely_opponent_goalkeeper
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -61,10 +66,15 @@ def manual_map(path: Optional[Path]) -> Dict[int, Tuple[str, float, str]]:
 
 def role_zone_assignment(
     row: pd.Series,
+    config: Dict[str, Any],
     role_players: Dict[str, Dict[str, Any]],
     field_length: float,
     right_forward_y: str,
 ) -> Tuple[Optional[str], float, str]:
+    likely_opponent_gk, opponent_gk_reason = is_likely_opponent_goalkeeper(row, config)
+    if likely_opponent_gk:
+        return None, 0.0, opponent_gk_reason
+
     if row["candidate_type"] in {"red_goalkeeper_candidate", "analyze_goalkeeper_candidate"}:
         if "goalkeeper" not in role_players:
             return None, 0.0, "goalkeeper role missing in roster"
@@ -121,7 +131,7 @@ def build_assignments(
             player_id, confidence, reason = manual[track_id]
             method = "manual"
         else:
-            player_id, confidence, reason = role_zone_assignment(row, role_players, field_length, right_forward_y)
+            player_id, confidence, reason = role_zone_assignment(row, config, role_players, field_length, right_forward_y)
 
         out = row.to_dict()
         out["assigned_player_id"] = player_id or ""

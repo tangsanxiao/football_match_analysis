@@ -9,42 +9,24 @@ import json
 import math
 import re
 from pathlib import Path
+from datetime import datetime
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
 import yaml
 
+try:
+    from analysis_detection_filters import filter_static_ball_false_positives
+    from analysis_metrics import CONFIDENCE_LABELS, ROLE_LABELS, metric_status_rows
+    from analysis_report_runs import project_relative, write_latest_report
+except ModuleNotFoundError:
+    from scripts.analysis_detection_filters import filter_static_ball_false_positives
+    from scripts.analysis_metrics import CONFIDENCE_LABELS, ROLE_LABELS, metric_status_rows
+    from scripts.analysis_report_runs import project_relative, write_latest_report
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-METRIC_STATUS = {
-    "shot": ("射门", "候选片段", "结合人工/系统球点与前场球权归属输出可能射门时刻，暂不计入正式评分。"),
-    "pass": ("传球", "候选片段", "结合人工/系统球点、短缺口插值和红队球权转移输出候选传球，暂不作为正式次数。"),
-    "pass_success": ("传球成功率", "待增强", "需要更稳定的连续球权链路；当前只给参考值或样本不足提示。"),
-    "steal": ("抢断", "候选片段", "可结合近距离压迫和球权转换做候选，但当前不作为正式抢断统计。"),
-    "1v1_attack_defense": ("1v1 攻防", "待增强", "需要更稳定的持球人/防守人关系识别；当前以压迫距离和对抗距离作为前置代理。"),
-    "positional_discipline": ("站位纪律", "已输出代理指标", "通过角色区域占比、平均位置和进攻/防守区域参与度衡量。"),
-    "pressing_intensity": ("压迫强度", "已输出代理指标", "通过进攻半场内接近最近对手的帧占比和关键片段输出。"),
-    "off_ball_movement": ("无球跑动", "已输出代理指标", "通过跑动距离、高速跑、进攻三区进入和关键跑动片段输出。"),
-    "defensive_off_ball_movement": ("防守无球跑动", "部分输出", "当前以后卫/回收区域、最近对手距离和移动强度为代理，仍需球权链路增强。"),
-    "space_creation": ("创造空间", "部分输出", "当前以进攻三区、宽度/纵深跑动和接应空间代理衡量，暂不做正式创造空间次数。"),
-    "observed_coverage": ("观察覆盖率", "已输出辅助指标", "计算方式为该球员被自动识别并绑定成功的去重帧数 / 本次采样处理总帧数 × 100%；它反映可评价样本量，不等同真实上场时间。"),
-}
-
-ROLE_LABELS = {
-    "goalkeeper": "门将",
-    "defender": "后卫",
-    "right_forward": "右前锋",
-    "center_forward": "中锋",
-    "left_forward": "左前锋",
-}
-
-CONFIDENCE_LABELS = {
-    "high": "高",
-    "medium": "中",
-    "provisional": "待校正",
-    "none": "无",
-}
 
 
 def resolve_path(path: Union[str, Path]) -> Path:
@@ -390,12 +372,17 @@ def system_ball_points(tracks: pd.DataFrame, config: Dict[str, Any]) -> pd.DataF
     ball = tracks[tracks["class_name"] == "sports ball"].copy()
     if ball.empty:
         return pd.DataFrame()
+    filtered_rows, filter_summary = filter_static_ball_false_positives(ball.to_dict("records"), config)
+    ball = pd.DataFrame(filtered_rows)
+    if ball.empty:
+        return pd.DataFrame()
     ball = ball.dropna(subset=["field_x_m", "field_y_m"])
     ball = ball[in_field_mask(ball, config)].copy()
     if ball.empty:
         return pd.DataFrame()
     ball["ball_source"] = "system"
     ball["source_priority"] = 1
+    ball.attrs["static_false_positive_rows_removed"] = int(filter_summary.get("removed_rows", 0))
     return ball
 
 
@@ -417,6 +404,7 @@ def combined_ball_points(tracks: pd.DataFrame, config: Dict[str, Any]) -> pd.Dat
     ball = ball.sort_values("timestamp_sec").copy()
     ball.attrs["manual_ball_count"] = int(len(manual_ball))
     ball.attrs["system_ball_count"] = int(len(system_ball))
+    ball.attrs["static_false_positive_rows_removed"] = int(system_ball.attrs.get("static_false_positive_rows_removed", 0))
     ball.attrs["ball_source"] = "human+system" if not manual_ball.empty else "system"
     return ball
 
@@ -519,6 +507,7 @@ def ball_ownership_candidates(
     out.attrs["ball_source"] = ball.attrs.get("ball_source", "system")
     out.attrs["ball_review_count"] = int(ball.attrs.get("manual_ball_count", 0))
     out.attrs["system_ball_count"] = int(ball.attrs.get("system_ball_count", 0))
+    out.attrs["static_false_positive_rows_removed"] = int(ball.attrs.get("static_false_positive_rows_removed", 0))
     return out
 
 
@@ -570,6 +559,7 @@ def technical_reference_table(metrics: pd.DataFrame, red: pd.DataFrame, tracks: 
     ownership = ball_ownership_candidates(red, tracks, config)
     ball_source = str(ownership.attrs.get("ball_source", "system"))
     ball_review_count = int(ownership.attrs.get("ball_review_count", 0))
+    static_ball_removed = int(ownership.attrs.get("static_false_positive_rows_removed", 0))
     pass_attempts, pass_successes = pass_reference_counts(ownership)
 
     shot_counts: Dict[str, int] = {}
@@ -618,6 +608,7 @@ def technical_reference_table(metrics: pd.DataFrame, red: pd.DataFrame, tracks: 
                 "防守无球跑动指数": defensive_off_ball_index,
                 "创造空间指数": space_creation_index,
                 "置信度": f"中（人工球点{ball_review_count}帧）" if "human" in ball_source and ball_review_count else ("低" if attempts or shot_counts.get(player_id, 0) else "低/样本少"),
+                "球点过滤提示": f"已过滤静态假球点{static_ball_removed}条" if static_ball_removed else "",
             }
         )
     return pd.DataFrame(rows)
@@ -794,11 +785,7 @@ def metric_status_table(config: Dict[str, Any]) -> pd.DataFrame:
         or config.get("analysis", {}).get("target_events")
         or []
     )
-    rows = []
-    for metric in selected:
-        label, status, note = METRIC_STATUS.get(metric, (metric, "已选择", "该指标暂未配置详细说明。"))
-        rows.append({"指标": label, "当前报告状态": status, "说明": note})
-    return pd.DataFrame(rows)
+    return pd.DataFrame(metric_status_rows(selected))
 
 
 def markdown_report(
@@ -1005,7 +992,8 @@ def main() -> None:
     parser.add_argument("--output-dir", default=None)
     args = parser.parse_args()
 
-    config = load_yaml(resolve_path(args.config))
+    config_path = resolve_path(args.config)
+    config = load_yaml(config_path)
     detections_dir = resolve_path(args.detections_dir)
     output_dir = resolve_path(args.output_dir or config["match"]["output_dir"])
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -1029,6 +1017,7 @@ def main() -> None:
     labeled_path = output_dir / "tracks_red_labeled.csv"
     report_md_path = output_dir / "report.md"
     report_html_path = output_dir / "report.html"
+    manifest_path = output_dir / "report_manifest.yaml"
 
     metrics.to_csv(metrics_path, index=False)
     reference_metrics.to_csv(reference_metrics_path, index=False)
@@ -1037,6 +1026,26 @@ def main() -> None:
     markdown_text = markdown_report(config, metrics, reference_metrics, events, summary, output_dir)
     report_md_path.write_text(markdown_text, encoding="utf-8")
     report_html_path.write_text(html_report(markdown_text), encoding="utf-8")
+    manifest = {
+        "schema_version": 1,
+        "status": "ready",
+        "generated_at": datetime.now().astimezone().isoformat(timespec="seconds"),
+        "config_path": project_relative(config_path),
+        "detections_dir": project_relative(detections_dir),
+        "report_dir": project_relative(output_dir),
+        "report_md": project_relative(report_md_path),
+        "report_html": project_relative(report_html_path),
+        "selected_metrics": config.get("analysis", {}).get("target_metrics") or config.get("analysis", {}).get("target_events") or [],
+        "artifact_files": {
+            "player_metrics_csv": project_relative(metrics_path),
+            "reference_metrics_csv": project_relative(reference_metrics_path),
+            "key_timestamps_csv": project_relative(events_path),
+            "labeled_tracks_csv": project_relative(labeled_path),
+        },
+    }
+    with manifest_path.open("w", encoding="utf-8") as handle:
+        yaml.safe_dump(manifest, handle, allow_unicode=True, sort_keys=False)
+    write_latest_report(config, output_dir, {"source": "generate_report", "detections_dir": project_relative(detections_dir)})
 
     print(f"metrics_csv: {metrics_path}")
     print(f"reference_metrics_csv: {reference_metrics_path}")
@@ -1044,6 +1053,7 @@ def main() -> None:
     print(f"labeled_tracks_csv: {labeled_path}")
     print(f"report_md: {report_md_path}")
     print(f"report_html: {report_html_path}")
+    print(f"report_manifest: {manifest_path}")
     print(metrics[["name", "number", "role", "rating", "confidence", "distance_per_min", "pressing_pct", "final_third_pct", "role_zone_pct"]].to_string(index=False))
 
 

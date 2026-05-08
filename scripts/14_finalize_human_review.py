@@ -13,6 +13,11 @@ from typing import Any, Dict, List, Optional, Union
 
 import yaml
 
+try:
+    from analysis_report_runs import report_dir_for_output_name, write_latest_report
+except ModuleNotFoundError:
+    from scripts.analysis_report_runs import report_dir_for_output_name, write_latest_report
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -92,7 +97,7 @@ def source_detections_dir(config: Dict[str, Any], review: Dict[str, Any]) -> Pat
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", required=True)
-    parser.add_argument("--output-name", default="mvp_initial")
+    parser.add_argument("--output-name", default=None)
     parser.add_argument("--allow-draft", action="store_true")
     parser.add_argument("--right-forward-y", choices=["high", "low"], default="high")
     args = parser.parse_args()
@@ -129,7 +134,7 @@ def main() -> None:
         ]
     )
 
-    output_dir = resolve_path(config["match"]["output_dir"]) / args.output_name
+    output_dir = report_dir_for_output_name(config, args.output_name, prefix="final")
     run_command(
         [
             sys.executable,
@@ -143,6 +148,14 @@ def main() -> None:
         ]
     )
 
+    latest_payload = write_latest_report(
+        config,
+        output_dir,
+        {
+            "source": "final_report",
+            "source_detections_dir": project_relative(detections_dir),
+        },
+    )
     status_path = resolve_path(config["match"].get("review_dir", "review")) / "human_review" / "final_report_status.yaml"
     write_yaml(
         status_path,
@@ -151,6 +164,7 @@ def main() -> None:
             "finalized_at": datetime.now().astimezone().isoformat(timespec="seconds"),
             "source_detections_dir": project_relative(detections_dir),
             "report_dir": project_relative(output_dir),
+            "latest_report": latest_payload,
         },
     )
     print("\nReviewed final report is ready.")

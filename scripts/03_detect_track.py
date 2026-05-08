@@ -15,6 +15,11 @@ import numpy as np
 import yaml
 from tqdm import tqdm
 
+try:
+    from analysis_detection_filters import filter_static_ball_false_positives
+except ModuleNotFoundError:
+    from scripts.analysis_detection_filters import filter_static_ball_false_positives
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -303,6 +308,8 @@ def run_detection(config: Dict[str, Any], args: argparse.Namespace) -> Path:
     finally:
         cap.release()
 
+    rows, filter_summary = filter_static_ball_false_positives(rows, config)
+
     tracks_csv = output_root / "tracks.csv"
     tracks_in_play_csv = output_root / "tracks_in_play.csv"
     summary_json = output_root / "summary.json"
@@ -316,6 +323,9 @@ def run_detection(config: Dict[str, Any], args: argparse.Namespace) -> Path:
             "tracks_csv": str(tracks_csv),
             "tracks_in_play_csv": str(tracks_in_play_csv),
             "annotated_dir": str(annotated_dir),
+            "filters": {
+                "static_ball_false_positive": filter_summary,
+            },
         }
     )
     with summary_json.open("w", encoding="utf-8") as handle:
@@ -332,6 +342,8 @@ def run_detection(config: Dict[str, Any], args: argparse.Namespace) -> Path:
     print(f"frame_coverage_by_class: {summary['frame_coverage_by_class']}")
     print(f"in_play_frame_coverage_by_class: {summary['in_play_frame_coverage_by_class']}")
     print(f"track_count_by_class: {summary['track_count_by_class']}")
+    if filter_summary.get("removed_rows"):
+        print(f"static_ball_false_positive_removed_rows: {filter_summary['removed_rows']}")
     return output_root
 
 
