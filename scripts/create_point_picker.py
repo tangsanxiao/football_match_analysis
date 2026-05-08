@@ -137,10 +137,27 @@ def build_html(
     }}
     img {{
       display: block;
-      width: 100%;
+      width: auto;
+      max-width: none;
       height: auto;
       cursor: crosshair;
       user-select: none;
+    }}
+    .stage-tools {{
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }}
+    .stage-tools button {{
+      min-height: 28px;
+      padding: 0 9px;
+    }}
+    .zoom-label {{
+      min-width: 52px;
+      text-align: center;
+      font-weight: 800;
+      color: var(--muted);
     }}
     .marker {{
       position: absolute;
@@ -292,7 +309,14 @@ def build_html(
     <section class="stage">
       <div class="stage-header">
         <strong>校准图点击取点</strong>
-        <span><a href="/match">比赛信息</a> · <span id="cursor">x: -, y: -</span></span>
+        <div class="stage-tools">
+          <button id="zoomOut" type="button">-</button>
+          <span id="zoomLabel" class="zoom-label">100%</span>
+          <button id="zoomIn" type="button">+</button>
+          <button id="zoomFit" type="button">适配</button>
+          <a href="/match">比赛信息</a>
+          <span id="cursor">x: -, y: -</span>
+        </div>
       </div>
       <div class="image-wrap" id="wrap">
         <img id="pitch" alt="calibration frame" src="{data_uri}">
@@ -339,6 +363,10 @@ def build_html(
     const image = document.getElementById('pitch');
     const wrap = document.getElementById('wrap');
     const cursor = document.getElementById('cursor');
+    const zoomOut = document.getElementById('zoomOut');
+    const zoomIn = document.getElementById('zoomIn');
+    const zoomFit = document.getElementById('zoomFit');
+    const zoomLabel = document.getElementById('zoomLabel');
     const select = document.getElementById('pointSelect');
     const table = document.getElementById('pointTable');
     const yamlOut = document.getElementById('yamlOut');
@@ -350,6 +378,39 @@ def build_html(
 
     let activeIndex = 0;
     let labelingSubmitted = initialLabelingStatus === 'submitted';
+    let zoomScale = 1;
+
+    function fitScale() {{
+      if (!image.naturalWidth || !image.naturalHeight) return 1;
+      const pad = 24;
+      const widthScale = Math.max(0.1, (wrap.clientWidth - pad) / image.naturalWidth);
+      const heightScale = Math.max(0.1, (wrap.clientHeight - pad) / image.naturalHeight);
+      return Math.min(1, widthScale, heightScale);
+    }}
+
+    function setZoom(next, keepScrollCenter = true) {{
+      if (!image.naturalWidth || !image.naturalHeight) return;
+      const oldWidth = image.clientWidth || image.naturalWidth * zoomScale;
+      const oldHeight = image.clientHeight || image.naturalHeight * zoomScale;
+      const centerX = wrap.scrollLeft + wrap.clientWidth / 2;
+      const centerY = wrap.scrollTop + wrap.clientHeight / 2;
+      zoomScale = Math.max(0.15, Math.min(4, next));
+      image.style.width = `${{Math.round(image.naturalWidth * zoomScale)}}px`;
+      zoomLabel.textContent = `${{Math.round(zoomScale * 100)}}%`;
+      if (keepScrollCenter && oldWidth && oldHeight) {{
+        const ratioX = image.clientWidth / oldWidth;
+        const ratioY = image.clientHeight / oldHeight;
+        wrap.scrollLeft = centerX * ratioX - wrap.clientWidth / 2;
+        wrap.scrollTop = centerY * ratioY - wrap.clientHeight / 2;
+      }}
+      renderMarkers();
+    }}
+
+    function fitImage() {{
+      setZoom(fitScale(), false);
+      wrap.scrollLeft = 0;
+      wrap.scrollTop = 0;
+    }}
 
     function pointLabel(point) {{
       return point.label || point.name || 'unnamed';
@@ -404,6 +465,7 @@ def build_html(
     }}
 
     function markerPosition(point) {{
+      if (!image.naturalWidth || !image.naturalHeight || !image.clientWidth || !image.clientHeight) return null;
       const scaleX = image.clientWidth / image.naturalWidth;
       const scaleY = image.clientHeight / image.naturalHeight;
       return {{
@@ -419,6 +481,7 @@ def build_html(
         const marker = document.createElement('div');
         marker.className = `marker ${{point.kind || 'calibration'}}`;
         const pos = markerPosition(point);
+        if (!pos) return;
         marker.style.left = `${{pos.left}}px`;
         marker.style.top = `${{pos.top}}px`;
         marker.innerHTML = `<span>${{index + 1}} ${{escapeHtml(pointLabel(point))}}</span>`;
@@ -602,8 +665,22 @@ def build_html(
       URL.revokeObjectURL(link.href);
     }});
 
-    window.addEventListener('resize', renderMarkers);
-    image.addEventListener('load', render);
+    zoomOut.addEventListener('click', () => setZoom(zoomScale * 0.8));
+    zoomIn.addEventListener('click', () => setZoom(zoomScale * 1.25));
+    zoomFit.addEventListener('click', fitImage);
+    wrap.addEventListener('wheel', event => {{
+      if (!event.metaKey && !event.ctrlKey) return;
+      event.preventDefault();
+      setZoom(event.deltaY < 0 ? zoomScale * 1.15 : zoomScale * 0.87);
+    }}, {{ passive: false }});
+    window.addEventListener('resize', () => {{
+      setZoom(zoomScale, false);
+      renderMarkers();
+    }});
+    image.addEventListener('load', () => {{
+      fitImage();
+      render();
+    }});
     if (initialLabelingStatus === 'submitted') {{
       setStatus(initialSubmittedAt ? `已提交打标: ${{initialSubmittedAt}}` : '已提交打标', 'saved');
     }}
