@@ -1,0 +1,1583 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>五人制足球分析工作台</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7f4;
+      --panel: #ffffff;
+      --panel-soft: #eef5f1;
+      --ink: #1b241f;
+      --muted: #66726c;
+      --line: #d8ded8;
+      --line-strong: #bdc9c3;
+      --primary: #00604c;
+      --primary-2: #0f7b63;
+      --running: #2f5f9f;
+      --warning: #9b5a00;
+      --danger: #982b16;
+      --shadow: 0 12px 32px rgba(16, 28, 22, .08);
+    }
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 13px; line-height: 1.45; letter-spacing: 0; }
+    button, input, select, textarea { font: inherit; letter-spacing: 0; }
+    button { min-height: 34px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); color: var(--ink); cursor: pointer; font-weight: 700; padding: 0 12px; }
+    button:hover { border-color: var(--primary-2); }
+    button.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+    button.soft { background: var(--panel-soft); color: var(--primary); border-color: #c8e0d7; }
+    button.danger { color: var(--danger); }
+    button:disabled { cursor: not-allowed; opacity: .45; }
+    input, select, textarea { width: 100%; min-height: 34px; border: 1px solid var(--line-strong); border-radius: 4px; background: #fff; color: var(--ink); padding: 6px 8px; }
+    textarea { min-height: 70px; resize: vertical; }
+    label { display: grid; gap: 5px; color: var(--muted); font-size: 12px; font-weight: 650; }
+    a { color: var(--primary); text-decoration: none; font-weight: 800; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    pre { margin: 0; white-space: pre-wrap; max-height: 260px; overflow: auto; background: #20251f; color: #eef3ea; padding: 10px; border-radius: 4px; }
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: 20px; line-height: 28px; font-weight: 800; color: var(--primary); }
+    h2 { font-size: 18px; line-height: 24px; font-weight: 800; }
+    h3 { font-size: 15px; line-height: 20px; font-weight: 800; }
+    .app-header { position: sticky; top: 0; z-index: 30; min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 0 16px; border-bottom: 1px solid var(--line); background: rgba(255, 255, 255, .94); backdrop-filter: blur(10px); }
+    .brand-nav { display: flex; align-items: center; gap: 28px; min-width: 0; }
+    .global-nav { display: flex; align-items: stretch; gap: 8px; height: 64px; }
+    .nav-tab { border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; min-height: 64px; padding: 0 4px; color: var(--ink); }
+    .nav-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+    .job-chip { display: none; align-items: center; gap: 8px; min-height: 34px; padding: 0 12px; border-radius: 4px; background: #dfeaff; color: #17437a; font-weight: 800; }
+    .job-chip.visible { display: inline-flex; }
+    .page { max-width: 1280px; margin: 0 auto; padding: 16px; }
+    .view.hidden, .step-panel.hidden, .review-subpanel.hidden, .hidden { display: none !important; }
+    .home-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .panel, .action-card, .match-card, .task-card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; overflow: visible; }
+    .action-card { min-height: 180px; display: grid; align-content: space-between; padding: 24px; box-shadow: var(--shadow); }
+    .action-card .icon { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 999px; border: 2px solid var(--primary); color: var(--primary); font-size: 24px; font-weight: 900; }
+    .card-copy { display: grid; gap: 8px; }
+    .muted { color: var(--muted); }
+    .section-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 24px 0 12px; }
+    .active-match { display: grid; grid-template-columns: minmax(0, 1fr) 300px; border: 1px solid var(--line); background: #fff; border-radius: 6px; overflow: hidden; }
+    .active-main { padding: 24px; display: grid; gap: 14px; }
+    .active-side { padding: 24px; border-left: 1px solid var(--line); background: #f9fbf8; display: grid; align-content: center; gap: 10px; }
+    .progress-track { height: 7px; border-radius: 999px; background: #e5ebe5; overflow: hidden; }
+    .progress-fill { height: 100%; width: 0; background: var(--primary-2); border-radius: inherit; transition: width .2s ease; }
+    .status-pill, .step-state, .metric-badge { display: inline-flex; align-items: center; min-height: 24px; padding: 0 8px; border-radius: 4px; background: #eef5f1; color: var(--primary); font-size: 12px; font-weight: 800; white-space: nowrap; }
+    .status-pill.warning { background: #fff3df; color: var(--warning); }
+    .status-pill.running { background: #e6efff; color: var(--running); }
+    .status-pill.done { background: #e8f5ef; color: var(--primary); }
+    .status-pill.blocked { background: #ecefed; color: var(--muted); }
+    .setup-layout { display: grid; grid-template-columns: minmax(280px, 360px) minmax(0, 1fr); gap: 16px; align-items: start; }
+    .panel-head { padding: 14px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .panel-body { padding: 16px; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .form-grid .wide, .wide { grid-column: 1 / -1; }
+    .metrics-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .metric { position: relative; display: flex; align-items: center; gap: 8px; min-height: 46px; border: 1px solid var(--line); border-radius: 4px; padding: 8px; background: #fbfcfa; color: var(--ink); font-weight: 750; }
+    .metric input { width: auto; min-height: auto; }
+    .info-dot { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border: 1px solid var(--line); border-radius: 50%; color: var(--muted); font-size: 12px; margin-left: auto; }
+    .metric-tip { display: none; position: absolute; left: 8px; right: 8px; top: calc(100% + 6px); z-index: 50; padding: 9px 10px; border: 1px solid var(--line); border-radius: 4px; background: #17211b; color: #fff; font-size: 12px; line-height: 1.45; box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+    .metric:hover .metric-tip, .metric:focus-within .metric-tip { display: block; }
+    .actions { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 16px; border-top: 1px solid var(--line); flex-wrap: wrap; }
+    .table-wrap { overflow: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 8px; text-align: left; vertical-align: top; }
+    th { background: #f9faf7; color: var(--muted); font-weight: 800; }
+    .workspace-shell { display: grid; gap: 0; }
+    .match-context { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 16px; padding: 16px; background: #eef3ee; border-bottom: 1px solid var(--line); }
+    .context-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .context-meta { display: flex; align-items: center; gap: 14px; color: var(--muted); flex-wrap: wrap; margin-top: 4px; }
+    .stepper { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: #f7faf7; border-bottom: 1px solid var(--line); overflow-x: auto; }
+    .step-button { display: inline-flex; align-items: center; gap: 8px; border: 0; background: transparent; color: var(--muted); padding: 0 6px; white-space: nowrap; }
+    .step-index { width: 24px; height: 24px; display: grid; place-items: center; border: 1px solid var(--line-strong); border-radius: 999px; background: #fff; font-weight: 900; }
+    .step-button.done, .step-button.active, .step-button.running { color: var(--primary); }
+    .step-button.active .step-index, .step-button.running .step-index { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .step-button.blocked { opacity: .58; }
+    .step-divider { color: var(--line-strong); }
+    .workspace-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; align-items: stretch; min-height: calc(100vh - 178px); }
+    .workspace-main { min-width: 0; padding: 16px; }
+    .analysis-rail { border-left: 1px solid var(--line); background: #fff; padding: 16px; display: grid; align-content: start; gap: 16px; }
+    .rail-section { display: grid; gap: 8px; }
+    .rail-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid #edf1ed; padding: 8px 0; }
+    .calibration-frame { width: 100%; height: 72vh; min-height: 560px; border: 0; display: block; background: #20251f; border-radius: 4px; }
+    .inline-status { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .row-actions { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
+    .task-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .task-card { padding: 16px; display: grid; gap: 12px; }
+    .task-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .task-progress { display: flex; align-items: center; gap: 10px; }
+    .task-progress .progress-track { flex: 1; }
+    .review-subtabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0 12px; }
+    .review-subtab { border: 1px solid var(--line); background: #fff; border-radius: 4px; min-height: 34px; padding: 0 12px; cursor: pointer; font-weight: 800; }
+    .review-subtab.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .review-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .review-card { border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: #fff; }
+    .review-image-button { width: 100%; min-height: 0; padding: 0; border: 0; border-radius: 0; display: block; background: #20251f; cursor: zoom-in; }
+    .review-card img { width: 100%; display: block; background: #20251f; aspect-ratio: 16 / 9; object-fit: contain; }
+    .review-card .body { display: grid; gap: 8px; padding: 10px; }
+    .review-meta, .sheet-links { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; color: var(--muted); font-size: 12px; }
+    .pill { display: inline-flex; align-items: center; min-height: 22px; padding: 0 7px; border: 1px solid var(--line); border-radius: 999px; background: #f9faf7; color: var(--muted); font-size: 12px; font-weight: 800; }
+    .empty-state { padding: 18px 12px; color: var(--muted); border: 1px dashed var(--line-strong); background: #fbfcfa; border-radius: 4px; }
+    .review-field-title { color: var(--muted); font-size: 12px; font-weight: 750; }
+    .radio-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .radio-choice { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; border: 1px solid var(--line); border-radius: 4px; padding: 0 10px; background: #fbfcfa; color: var(--ink); cursor: pointer; font-weight: 800; }
+    .radio-choice input { width: auto; min-height: auto; }
+    .radio-choice:has(input:checked) { border-color: var(--primary); background: #eaf5f1; color: var(--primary); }
+    .ball-workspace { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 12px; }
+    .ball-stage { position: relative; min-height: 460px; display: grid; place-items: center; background: #20251f; border-radius: 6px; overflow: hidden; cursor: crosshair; }
+    .ball-stage img { width: 100%; height: 100%; max-height: 72vh; object-fit: contain; display: block; }
+    .ball-marker { position: absolute; width: 24px; height: 24px; border: 3px solid #ffe066; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 2px rgba(0,0,0,.55); pointer-events: none; }
+    .ball-side { display: grid; gap: 10px; align-content: start; }
+    .button-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .ball-progress { color: var(--muted); font-weight: 800; }
+    .history-tools { display: grid; grid-template-columns: minmax(240px, 1fr) auto; gap: 12px; margin-bottom: 12px; }
+    .filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .filter-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .history-row { display: grid; grid-template-columns: minmax(230px, 1.4fr) 1fr 1fr minmax(240px, auto); gap: 12px; align-items: center; border-bottom: 1px solid var(--line); padding: 12px 16px; }
+    .history-row:last-child { border-bottom: 0; }
+    .report-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 14px; }
+    .report-preview { width: 100%; height: 68vh; min-height: 560px; border: 1px solid var(--line); border-radius: 4px; background: #fff; }
+    body.modal-open { overflow: hidden; }
+    .image-modal { position: fixed; inset: 0; z-index: 1000; display: none; grid-template-rows: auto 1fr; background: rgba(12, 17, 14, .94); color: #fff; }
+    .image-modal.open { display: grid; }
+    .image-modal.ball-mode { grid-template-columns: minmax(0, 1fr) 320px; grid-template-rows: auto 1fr; }
+    .image-modal-toolbar { min-height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,.16); background: rgba(12, 17, 14, .92); }
+    .image-modal.ball-mode .image-modal-toolbar { grid-column: 1 / -1; }
+    .modal-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 800; }
+    .modal-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .modal-actions button { border-color: rgba(255,255,255,.22); background: rgba(255,255,255,.08); color: #fff; min-width: 42px; }
+    .zoom-label { min-width: 56px; text-align: center; color: rgba(255,255,255,.78); font-weight: 800; }
+    .image-modal-stage { min-width: 0; min-height: 0; display: grid; place-items: center; overflow: hidden; touch-action: none; cursor: grab; }
+    .image-modal.ball-mode .image-modal-stage { cursor: crosshair; }
+    .image-modal-stage.dragging { cursor: grabbing; }
+    .modal-image { max-width: 96vw; max-height: calc(100vh - 76px); transform-origin: center center; will-change: transform; user-select: none; -webkit-user-drag: none; box-shadow: 0 18px 60px rgba(0,0,0,.45); }
+    .ball-modal-side { min-height: 0; display: none; gap: 10px; align-content: start; padding: 12px; border-left: 1px solid rgba(255,255,255,.16); background: rgba(12, 17, 14, .92); overflow: auto; }
+    .image-modal.ball-mode .ball-modal-side { display: grid; }
+    .ball-modal-side label { color: rgba(255,255,255,.82); font-weight: 800; }
+    .ball-modal-side input { background: rgba(255,255,255,.08); color: #fff; border-color: rgba(255,255,255,.22); }
+    .ball-modal-side .status { color: rgba(255,255,255,.72); }
+    .feedback-modal { position: fixed; inset: 0; z-index: 1100; display: none; place-items: center; padding: 20px; background: rgba(12, 17, 14, .45); }
+    .feedback-modal.open { display: grid; }
+    .feedback-card { width: min(560px, 100%); background: #fff; border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 18px 60px rgba(0,0,0,.24); overflow: hidden; }
+    .feedback-body { padding: 14px; display: grid; gap: 10px; color: var(--ink); line-height: 1.5; }
+    .feedback-body ul { margin: 0; padding-left: 20px; }
+    @media (max-width: 1120px) {
+      .workspace-grid, .report-grid, .setup-layout, .active-match { grid-template-columns: 1fr; }
+      .analysis-rail, .active-side { border-left: 0; border-top: 1px solid var(--line); }
+      .review-grid, .task-grid, .home-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 720px) {
+      .app-header { align-items: flex-start; flex-direction: column; padding: 12px; }
+      .brand-nav, .header-actions { width: 100%; justify-content: space-between; }
+      .global-nav { height: auto; }
+      .nav-tab { min-height: 36px; }
+      .form-grid, .metrics-grid, .history-row, .history-tools, .ball-workspace { grid-template-columns: 1fr; }
+      .match-context { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand-nav">
+      <h1>五人制足球分析工作台</h1>
+      <nav class="global-nav" aria-label="主导航">
+        <button class="nav-tab active" data-view-target="home">首页</button>
+        <button class="nav-tab" data-view-target="setup">新增比赛</button>
+        <button class="nav-tab" data-view-target="history">历史记录</button>
+      </nav>
+    </div>
+    <div class="header-actions">
+      <span id="globalJobChip" class="job-chip"></span>
+      <button id="headerNewMatch" class="primary">+ 新建比赛</button>
+    </div>
+  </header>
+
+  <main class="page">
+    <section id="homeView" class="view">
+      <div class="home-grid">
+        <button class="action-card" id="homeNewMatch">
+          <span class="icon">+</span>
+          <span class="card-copy">
+            <h2>新增比赛</h2>
+            <span class="muted">配置视频、球队、球员和指标，开启一个新的分析项目。</span>
+          </span>
+          <span>开始配置 -></span>
+        </button>
+        <button class="action-card" id="homeHistory">
+          <span class="icon">↺</span>
+          <span class="card-copy">
+            <h2>查看历史</h2>
+            <span class="muted">继续未完成的比赛，或打开已生成的报告与校验任务。</span>
+          </span>
+          <span>进入历史记录 -></span>
+        </button>
+      </div>
+      <div class="section-title">
+        <h3>最近活跃比赛</h3>
+        <button id="refreshHome" class="soft">刷新</button>
+      </div>
+      <div id="homeActiveMatch" class="active-match hidden"></div>
+    </section>
+
+    <section id="setupView" class="view hidden">
+      <div class="section-title">
+        <div>
+          <h2 id="setupTitle">新增比赛分析</h2>
+          <p class="muted">所有信息确认后写入 match.yaml，并自动准备标定帧。</p>
+        </div>
+        <span id="workflowStatus" class="status-pill warning">填写完整信息后，确认写入 match.yaml。</span>
+      </div>
+      <div class="setup-layout">
+        <div>
+          <section class="panel">
+            <div class="panel-head"><h3>比赛与球队基础信息</h3></div>
+            <div class="panel-body form-grid">
+              <label>比赛名称<input id="matchName" placeholder="2026-05-06 红队训练赛"></label>
+              <label>球队名称<input id="teamName" placeholder="红队"></label>
+              <label>球队主色<input id="teamColor" placeholder="pink_red"></label>
+              <label>门将颜色<input id="goalkeeperColor" placeholder="yellow"></label>
+              <label class="wide">选择视频<select id="videoSelect"></select></label>
+              <label class="wide">或指定视频路径<input id="videoPath" placeholder="videos/raw/example.mp4"></label>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head"><h3>场地标定</h3></div>
+            <div class="panel-body form-grid">
+              <label>球场长度米<input id="fieldLength" type="number" step="0.1" value="40"></label>
+              <label>球场宽度米<input id="fieldWidth" type="number" step="0.1" value="20"></label>
+              <label class="wide">标定状态<input id="calibrationStatus" disabled value="未创建项目"></label>
+            </div>
+            <div class="actions">
+              <button id="openCalibration" disabled>进入标定</button>
+            </div>
+          </section>
+        </div>
+
+        <div>
+          <section class="panel">
+            <div class="panel-head"><h3>分析指标</h3><span class="muted">悬停查看定义</span></div>
+            <div id="metrics" class="panel-body metrics-grid"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head"><h3>人员与特征</h3><button id="addPlayer">添加球员</button></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>球员 ID</th><th>代号/名称</th><th>号码</th><th>位置</th><th>重点特征</th><th></th></tr></thead>
+                <tbody id="playersBody"></tbody>
+              </table>
+            </div>
+            <div class="actions">
+              <button id="resetForm">清空</button>
+              <button id="submitMatch" class="primary">确认并创建比赛</button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section id="historyView" class="view hidden">
+      <div class="section-title">
+        <div>
+          <h2>历史分析</h2>
+          <p class="muted">搜索、筛选、继续分析或打开报告。</p>
+        </div>
+        <button id="refreshHistory" class="soft">刷新</button>
+      </div>
+      <div class="history-tools">
+        <input id="historySearch" placeholder="搜索比赛名称、球队或 match id">
+        <div class="filter-row">
+          <button class="filter-chip active" data-history-filter="all">全部</button>
+          <button class="filter-chip" data-history-filter="needs_input">需处理</button>
+          <button class="filter-chip" data-history-filter="running">运行中</button>
+          <button class="filter-chip" data-history-filter="ready">报告就绪</button>
+        </div>
+      </div>
+      <section class="panel">
+        <div id="historyRows"></div>
+      </section>
+    </section>
+
+    <section id="workspaceView" class="view hidden workspace-shell">
+      <div class="match-context">
+        <div>
+          <div class="context-title">
+            <h2 id="workspaceMatchName">比赛上下文</h2>
+            <span id="workspaceStatus" class="status-pill"></span>
+          </div>
+          <div id="workspaceMeta" class="context-meta"></div>
+        </div>
+        <div class="row-actions">
+          <button id="workspaceNextAction" class="primary">下一步</button>
+          <button id="workspaceEditSettings">调整设置</button>
+        </div>
+      </div>
+      <div id="workspaceStepper" class="stepper"></div>
+      <div class="workspace-grid">
+        <div class="workspace-main">
+          <section id="stepSetup" class="step-panel panel">
+            <div class="panel-head"><h3>设置确认</h3><button id="stepSetupEdit">调整设置</button></div>
+            <div id="setupSummary" class="panel-body"></div>
+          </section>
+
+          <section id="stepCalibration" class="step-panel panel hidden">
+            <div class="panel-head">
+              <div>
+                <h3>场地标定</h3>
+                <p id="calibrationTabStatus" class="muted">请选择比赛后开始标定。</p>
+              </div>
+              <div class="row-actions">
+                <button id="refreshCalibration">刷新标定页</button>
+                <button id="submitCalibrationHint" class="soft">标定完成后在画面内提交</button>
+              </div>
+            </div>
+            <iframe id="calibrationFrame" class="calibration-frame" title="场地标定"></iframe>
+          </section>
+
+          <section id="stepRecognition" class="step-panel panel hidden">
+            <div class="panel-head">
+              <div>
+                <h3>系统识别</h3>
+                <p class="muted">完成标定后，系统会生成带预标注的人工校验包。</p>
+              </div>
+              <button id="runRecognition" class="primary">运行识别/生成校验包</button>
+            </div>
+            <div id="jobPanel" class="panel-body">
+              <div id="jobStatus" class="status-pill running">暂无后台任务</div>
+              <pre id="jobLog"></pre>
+            </div>
+          </section>
+
+          <section id="stepReview" class="step-panel hidden">
+            <div class="task-grid">
+              <article class="task-card">
+                <div class="task-head">
+                  <h3>球员身份/位置校验</h3>
+                  <span id="identityTaskStatus" class="status-pill warning">待生成</span>
+                </div>
+                <p class="muted">系统先给出球员预判，你只需要确认不对的项并修正。</p>
+                <div class="task-progress"><div class="progress-track"><div id="identityTaskProgress" class="progress-fill"></div></div><span id="identityTaskCount">0/0</span></div>
+                <button id="openIdentityReview" class="primary">进入球员校验</button>
+              </article>
+              <article class="task-card">
+                <div class="task-head">
+                  <h3>球位置标注</h3>
+                  <span id="ballTaskStatus" class="status-pill">可选</span>
+                </div>
+                <p class="muted">补充低置信关键帧的球点，可改善传球、射门、1v1 等辅助指标。</p>
+                <div class="task-progress"><div class="progress-track"><div id="ballTaskProgress" class="progress-fill"></div></div><span id="ballTaskCount">0/0</span></div>
+                <button id="openBallReview">进入球点标注</button>
+              </article>
+            </div>
+
+            <div class="review-subtabs">
+              <button class="review-subtab active" data-review-subtab="identity">球员身份/位置标注</button>
+              <button class="review-subtab" data-review-subtab="ball">球位置标注</button>
+            </div>
+
+            <section id="identityReviewSubtab" class="panel review-subpanel">
+              <div class="panel-head">
+                <div>
+                  <h3>人工校验：球员身份/位置标注</h3>
+                  <p id="reviewStatus" class="muted">请先完成场地标定并生成校验包。</p>
+                </div>
+                <div class="row-actions">
+                  <button id="refreshReview">刷新校验</button>
+                  <button id="confirmAllReview">全部按系统确认</button>
+                  <button id="saveReview">保存草稿</button>
+                  <button id="submitReview" class="primary">提交并生成报告</button>
+                </div>
+              </div>
+              <div class="panel-body"><div id="reviewSheets" class="sheet-links"></div></div>
+              <div id="reviewItems" class="review-grid"></div>
+            </section>
+
+            <section id="ballReviewSubtab" class="panel review-subpanel hidden">
+              <div class="panel-head">
+                <div>
+                  <h3>人工校验：球位置标注</h3>
+                  <p id="ballReviewStatus" class="muted">球位置标注包还没有加载。</p>
+                </div>
+                <div class="row-actions">
+                  <button id="prepareBallReview">生成球标注包</button>
+                  <button id="refreshBallReview">刷新球标注</button>
+                  <button id="saveBallReview">保存草稿</button>
+                  <button id="submitBallReview" class="primary">提交球点并重算报告</button>
+                </div>
+              </div>
+              <div id="ballWorkspace" class="ball-workspace hidden panel-body">
+                <div id="ballStage" class="ball-stage">
+                  <img id="ballImage" alt="ball review frame">
+                  <div id="ballMarker" class="ball-marker hidden"></div>
+                </div>
+                <aside class="ball-side">
+                  <div id="ballProgress" class="ball-progress"></div>
+                  <div id="ballMeta" class="muted"></div>
+                  <div class="button-grid">
+                    <button id="prevBallFrame">上一张</button>
+                    <button id="nextBallFrame">下一张</button>
+                    <button id="useSystemBall">采用系统点</button>
+                    <button id="ballInvisible">球不可见</button>
+                    <button id="ballOutOfPlay">球在界外</button>
+                    <button id="skipBallFrame">跳过</button>
+                    <button id="resetBallPoint">清除本张</button>
+                    <button id="openBallZoom">放大标注</button>
+                  </div>
+                  <label>备注<input id="ballNote" placeholder="可选"></label>
+                </aside>
+              </div>
+            </section>
+          </section>
+
+          <section id="stepReport" class="step-panel panel hidden">
+            <div class="panel-head">
+              <div>
+                <h3>报告</h3>
+                <p id="reportStatusText" class="muted">报告尚未生成。</p>
+              </div>
+              <div id="reportActions" class="row-actions"></div>
+            </div>
+            <div id="reportBody" class="panel-body"></div>
+          </section>
+        </div>
+
+        <aside class="analysis-rail">
+          <div class="rail-section">
+            <h3>Analysis Rail</h3>
+            <p id="railNextAction" class="muted">选择或创建比赛后显示下一步。</p>
+          </div>
+          <div class="rail-section">
+            <h3>任务状态</h3>
+            <div id="railJobStatus" class="rail-row"><span>后台任务</span><span class="muted">空闲</span></div>
+            <div id="railCalibration" class="rail-row"><span>场地标定</span><span class="muted">0/0</span></div>
+            <div id="railIdentity" class="rail-row"><span>球员校验</span><span class="muted">未生成</span></div>
+            <div id="railBall" class="rail-row"><span>球点标注</span><span class="muted">可选</span></div>
+          </div>
+          <div class="rail-section">
+            <h3>已选指标</h3>
+            <div id="railMetrics" class="filter-row"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <div id="imageModal" class="image-modal hidden" aria-hidden="true">
+    <div class="image-modal-toolbar">
+      <div id="modalTitle" class="modal-title"></div>
+      <div class="modal-actions">
+        <button id="modalZoomOut">-</button>
+        <span id="modalZoomLabel" class="zoom-label">100%</span>
+        <button id="modalZoomIn">+</button>
+        <button id="modalReset">重置</button>
+        <button id="modalClose">关闭</button>
+      </div>
+    </div>
+    <div id="modalStage" class="image-modal-stage">
+      <img id="modalImage" class="modal-image" alt="">
+    </div>
+    <aside id="ballModalSide" class="ball-modal-side">
+      <div id="ballModalProgress" class="ball-progress"></div>
+      <div id="ballModalMeta" class="status"></div>
+      <div class="button-grid">
+        <button id="modalPrevBallFrame">上一张</button>
+        <button id="modalNextBallFrame">下一张</button>
+        <button id="modalUseSystemBall">采用系统点</button>
+        <button id="modalBallInvisible">球不可见</button>
+        <button id="modalBallOutOfPlay">球在界外</button>
+        <button id="modalSkipBallFrame">跳过</button>
+        <button id="modalResetBallPoint">清除本张</button>
+        <button id="modalSaveBallReview">保存草稿</button>
+      </div>
+      <label>备注<input id="ballModalNote" placeholder="可选"></label>
+    </aside>
+  </div>
+
+  <div id="feedbackModal" class="feedback-modal hidden" aria-hidden="true">
+    <div class="feedback-card">
+      <div class="panel-head"><h3 id="feedbackTitle">状态反馈</h3></div>
+      <div id="feedbackBody" class="feedback-body"></div>
+      <div class="actions">
+        <button id="feedbackHistory">查看历史分析</button>
+        <button id="feedbackOk" class="primary">知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+const BOOT = __BOOT__;
+const STEP_LABELS = { setup: '设置', calibration: '标定', recognition: '识别', review: '校验', report: '报告' };
+let editingMatchId = null;
+let currentMatchId = null;
+let currentJobId = null;
+let currentView = 'home';
+let workspaceStep = 'setup';
+let activeState = null;
+let players = [];
+let reviewItems = [];
+let reviewPlayers = [];
+let ballItems = [];
+let ballIndex = 0;
+let historyCache = [];
+let historyFilter = 'all';
+let ballAutoSaveTimer = null;
+let jobPollTimer = null;
+let allJobPollTimer = null;
+let modalScale = 1;
+let modalX = 0;
+let modalY = 0;
+let modalDragging = false;
+let modalDragStartX = 0;
+let modalDragStartY = 0;
+let modalOriginX = 0;
+let modalOriginY = 0;
+let modalMoved = false;
+let modalPurpose = 'view';
+
+function $(id) { return document.getElementById(id); }
+function exists(id) { return Boolean($(id)); }
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+function slug(value) {
+  return String(value || '').trim().toLowerCase()
+    .replace(/[^a-z0-9\u4e00-\u9fff]+/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_+|_+$/g, '') || 'item';
+}
+function api(path, options = {}) {
+  return fetch(path, options).then(async response => {
+    const result = await response.json();
+    if (!response.ok || result.ok === false) throw new Error(result.error || `HTTP ${response.status}`);
+    return result;
+  });
+}
+function statusClass(status) {
+  const text = String(status || '');
+  if (text.includes('完成') || text.includes('就绪')) return 'done';
+  if (text.includes('运行')) return 'running';
+  if (text.includes('失败')) return 'warning';
+  if (text.includes('待')) return 'warning';
+  return '';
+}
+function setPill(el, text, cls='') {
+  if (!el) return;
+  el.textContent = text;
+  el.className = `status-pill ${cls}`.trim();
+}
+function setWorkflow(message, cls='warning') {
+  const map = { saved: 'done', failed: 'warning', status: 'warning' };
+  setPill($('workflowStatus'), message, map[cls] || cls);
+}
+function teamKey() { return slug($('teamName').value || $('teamColor').value || 'team'); }
+function generatedPlayerId(player) { return `${teamKey()}_${slug(player.name || 'player')}`; }
+function selectedMetrics() { return Array.from(document.querySelectorAll('#metrics input:checked')).map(input => input.value); }
+function selectedVideoPath() { return $('videoPath').value.trim() || $('videoSelect').value.trim(); }
+
+function showView(name) {
+  currentView = name;
+  document.querySelectorAll('.view').forEach(view => view.classList.toggle('hidden', view.id !== `${name}View`));
+  document.querySelectorAll('[data-view-target]').forEach(btn => btn.classList.toggle('active', btn.dataset.viewTarget === name));
+  if (name === 'history') loadHistory();
+  if (name === 'home') loadHome();
+  if (name === 'setup' && !editingMatchId) {
+    $('setupTitle').textContent = '新增比赛分析';
+    $('submitMatch').textContent = '确认并创建比赛';
+  }
+}
+
+function renderMetrics(selected = BOOT.default_metrics) {
+  const container = $('metrics');
+  container.innerHTML = '';
+  BOOT.metrics.forEach(metric => {
+    const label = document.createElement('label');
+    label.className = 'metric';
+    label.innerHTML = `<input type="checkbox" value="${escapeHtml(metric.key)}"><span>${escapeHtml(metric.label)}</span><span class="info-dot">?</span><span class="metric-tip">${escapeHtml(metric.description)}</span>`;
+    label.querySelector('input').checked = selected.includes(metric.key);
+    container.appendChild(label);
+  });
+}
+
+function roleOptions(value) {
+  return BOOT.roles.map(role => `<option value="${escapeHtml(role)}" ${role === value ? 'selected' : ''}>${escapeHtml(role)}</option>`).join('');
+}
+
+function renderPlayers() {
+  const body = $('playersBody');
+  body.innerHTML = '';
+  players.forEach((player, index) => {
+    player.player_id = generatedPlayerId(player);
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td><code>${escapeHtml(player.player_id)}</code></td>
+      <td><input data-field="name" data-index="${index}" value="${escapeHtml(player.name || '')}" placeholder="HDA"></td>
+      <td><input data-field="number" data-index="${index}" value="${escapeHtml(player.number || '')}" placeholder="1"></td>
+      <td><select data-field="role" data-index="${index}">${roleOptions(player.role || BOOT.roles[Math.min(index, 4)])}</select></td>
+      <td><input data-field="visual_hint" data-index="${index}" value="${escapeHtml(player.visual_hint || '')}" placeholder="黄色门将服/绿色球鞋"></td>
+      <td><button class="danger" data-remove="${index}">删除</button></td>`;
+    body.appendChild(row);
+  });
+  body.querySelectorAll('input, select').forEach(input => {
+    input.addEventListener('input', event => {
+      const index = Number(event.target.dataset.index);
+      const field = event.target.dataset.field;
+      players[index][field] = event.target.value;
+      if (field === 'name') renderPlayers();
+    });
+  });
+  body.querySelectorAll('[data-remove]').forEach(btn => btn.addEventListener('click', () => {
+    players.splice(Number(btn.dataset.remove), 1);
+    renderPlayers();
+  }));
+}
+
+function collectPayload() {
+  return {
+    match_name: $('matchName').value.trim(),
+    team_name: $('teamName').value.trim(),
+    team_key: teamKey(),
+    team_color: $('teamColor').value.trim(),
+    goalkeeper_color: $('goalkeeperColor').value.trim(),
+    video_path: selectedVideoPath(),
+    field_length: Number($('fieldLength').value || 40),
+    field_width: Number($('fieldWidth').value || 20),
+    metrics: selectedMetrics(),
+    players: players.map(player => ({ name: player.name, number: player.number, role: player.role, visual_hint: player.visual_hint })),
+    substitutions: []
+  };
+}
+
+async function loadVideos() {
+  const result = await api('/api/videos');
+  const select = $('videoSelect');
+  select.innerHTML = '<option value="">选择项目内视频</option>';
+  result.videos.forEach(video => {
+    const option = document.createElement('option');
+    option.value = video.path;
+    option.textContent = video.name;
+    select.appendChild(option);
+  });
+}
+
+function resetForm() {
+  editingMatchId = null;
+  $('setupTitle').textContent = '新增比赛分析';
+  $('matchName').value = '';
+  $('teamName').value = '';
+  $('teamColor').value = 'pink_red';
+  $('goalkeeperColor').value = 'yellow';
+  $('videoPath').value = '';
+  $('fieldLength').value = 40;
+  $('fieldWidth').value = 20;
+  $('calibrationStatus').value = '未创建项目';
+  $('submitMatch').textContent = '确认并创建比赛';
+  $('openCalibration').disabled = true;
+  renderMetrics();
+  players = [
+    { name: 'HDA', number: 1, role: 'goalkeeper', visual_hint: '黄色门将服' },
+    { name: 'LXY', number: 2, role: 'defender', visual_hint: '' },
+    { name: 'TYX', number: 18, role: 'right_forward', visual_hint: '绿色球鞋' },
+    { name: 'JYN', number: 9, role: 'center_forward', visual_hint: '' },
+    { name: 'ZMC', number: 28, role: 'left_forward', visual_hint: '' }
+  ];
+  renderPlayers();
+  setWorkflow('填写完整信息后，确认写入 match.yaml。');
+}
+
+async function submitMatch() {
+  try {
+    setWorkflow('正在写入 match.yaml...');
+    const endpoint = editingMatchId ? `/api/update_match?match_id=${encodeURIComponent(editingMatchId)}` : '/api/create_match';
+    const result = await api(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(collectPayload())
+    });
+    currentMatchId = result.match_id;
+    editingMatchId = result.match_id;
+    currentJobId = result.job && result.job.job_id;
+    $('calibrationStatus').value = '已创建项目，正在准备标定帧';
+    $('openCalibration').disabled = false;
+    setWorkflow('比赛已创建，正在准备标定帧。', 'saved');
+    if (result.job) renderJob(result.job);
+    openWorkspace(result.match_id, 'calibration');
+    if (currentJobId) pollJob();
+  } catch (error) {
+    setWorkflow(`失败: ${error.message}`, 'failed');
+  }
+}
+
+async function loadMatchForEdit(matchId) {
+  const result = await api(`/api/match?match_id=${encodeURIComponent(matchId)}`);
+  const data = result.match;
+  editingMatchId = matchId;
+  currentMatchId = matchId;
+  $('setupTitle').textContent = `调整设置：${data.match_name || matchId}`;
+  $('matchName').value = data.match_name || '';
+  $('teamName').value = data.team_name || '';
+  $('teamColor').value = data.team_color || '';
+  $('goalkeeperColor').value = data.goalkeeper_color || '';
+  $('videoPath').value = data.video_path || '';
+  $('fieldLength').value = data.field_length || 40;
+  $('fieldWidth').value = data.field_width || 20;
+  players = (data.players || []).map(player => ({ name: player.name, number: player.number, role: player.role, visual_hint: player.visual_hint }));
+  renderPlayers();
+  renderMetrics(data.metrics || BOOT.default_metrics);
+  $('submitMatch').textContent = '保存设置并重新准备标定';
+  $('openCalibration').disabled = false;
+  setWorkflow(`正在调整历史项目 ${matchId}。保存后可重新分析。`, 'saved');
+  showView('setup');
+}
+
+function renderHomeFromMatches(matches) {
+  const box = $('homeActiveMatch');
+  if (!matches.length) {
+    box.classList.remove('hidden');
+    box.innerHTML = `<div class="active-main"><h3>还没有历史比赛</h3><p class="muted">从新增比赛开始创建第一个分析项目。</p></div><div class="active-side"><button class="primary" id="emptyHomeNew">新增比赛</button></div>`;
+    $('emptyHomeNew').addEventListener('click', () => { resetForm(); showView('setup'); });
+    return;
+  }
+  const item = matches[0];
+  box.classList.remove('hidden');
+  const pct = item.report_ready ? 100 : item.human_review_ready ? 70 : item.calibration_submitted ? 45 : 20;
+  box.innerHTML = `
+    <div class="active-main">
+      <div><span class="status-pill ${statusClass(item.status)}">${escapeHtml(item.status)}</span> <span class="muted">最后更新: ${escapeHtml(item.updated_at || '')}</span></div>
+      <h2>${escapeHtml(item.name)}</h2>
+      <p class="muted">${escapeHtml(item.team_name || '')} · <code>${escapeHtml(item.match_id)}</code></p>
+      <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <p class="muted">当前进度 ${pct}%</p>
+    </div>
+    <div class="active-side">
+      <h3>${item.report_ready ? '报告已就绪' : '需要继续处理'}</h3>
+      <p class="muted">${item.report_ready ? '可以打开报告，也可以回到工作区重跑或补充校验。' : '打开工作区后会定位到推荐的下一步。'}</p>
+      <button class="primary" id="homeOpenWorkspace">继续分析</button>
+    </div>`;
+  $('homeOpenWorkspace').addEventListener('click', () => openWorkspace(item.match_id));
+}
+
+async function loadHome() {
+  const result = await api('/api/matches');
+  historyCache = result.matches || [];
+  renderHomeFromMatches(historyCache);
+}
+
+function historyMatchesForFilter() {
+  const query = $('historySearch').value.trim().toLowerCase();
+  return historyCache.filter(item => {
+    const text = `${item.name} ${item.team_name} ${item.match_id} ${item.status}`.toLowerCase();
+    if (query && !text.includes(query)) return false;
+    if (historyFilter === 'ready') return Boolean(item.report_ready);
+    if (historyFilter === 'running') return String(item.status || '').includes('运行');
+    if (historyFilter === 'needs_input') return !item.report_ready || String(item.status || '').includes('待');
+    return true;
+  });
+}
+
+function renderHistoryRows() {
+  const rows = historyMatchesForFilter();
+  const box = $('historyRows');
+  box.innerHTML = '';
+  if (!rows.length) {
+    box.innerHTML = '<div class="empty-state">没有匹配的历史比赛。</div>';
+    return;
+  }
+  rows.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'history-row';
+    const reportLinks = item.report_ready ? `<a href="/report?path=${encodeURIComponent(item.report_html)}" target="_blank">HTML</a> · <a href="/report?path=${encodeURIComponent(item.report_md)}" target="_blank">MD</a>` : '<span class="muted">未生成</span>';
+    row.innerHTML = `
+      <div><strong>${escapeHtml(item.name)}</strong><br><span class="muted"><code>${escapeHtml(item.match_id)}</code></span></div>
+      <div>${escapeHtml(item.team_name || '')}<br><span class="muted">${escapeHtml(item.updated_at || '')}</span></div>
+      <div><span class="status-pill ${statusClass(item.status)}">${escapeHtml(item.status)}</span><br>${reportLinks}</div>
+      <div class="row-actions">
+        <button data-open="${escapeHtml(item.match_id)}" class="primary">打开工作区</button>
+        <button data-edit="${escapeHtml(item.match_id)}">调整设置</button>
+        <button data-cal="${escapeHtml(item.match_id)}">标定</button>
+        <button data-review="${escapeHtml(item.match_id)}">校验</button>
+        <button data-report="${escapeHtml(item.match_id)}">报告</button>
+      </div>`;
+    box.appendChild(row);
+  });
+  box.querySelectorAll('[data-open]').forEach(btn => btn.addEventListener('click', () => openWorkspace(btn.dataset.open)));
+  box.querySelectorAll('[data-edit]').forEach(btn => btn.addEventListener('click', () => loadMatchForEdit(btn.dataset.edit)));
+  box.querySelectorAll('[data-cal]').forEach(btn => btn.addEventListener('click', () => openWorkspace(btn.dataset.cal, 'calibration')));
+  box.querySelectorAll('[data-review]').forEach(btn => btn.addEventListener('click', () => openWorkspace(btn.dataset.review, 'review')));
+  box.querySelectorAll('[data-report]').forEach(btn => btn.addEventListener('click', () => openWorkspace(btn.dataset.report, 'report')));
+}
+
+async function loadHistory() {
+  const result = await api('/api/matches');
+  historyCache = result.matches || [];
+  renderHistoryRows();
+}
+
+async function loadMatchState(matchId) {
+  const result = await api(`/api/match_state?match_id=${encodeURIComponent(matchId)}`);
+  activeState = result.state;
+  renderWorkspace(activeState);
+  return activeState;
+}
+
+async function openWorkspace(matchId, step=null) {
+  currentMatchId = matchId;
+  showView('workspace');
+  const state = await loadMatchState(matchId);
+  setWorkspaceStep(step || (state.next_action && state.next_action.step) || 'setup');
+}
+
+function renderWorkspace(state) {
+  const summary = state.summary || {};
+  $('workspaceMatchName').textContent = summary.name || state.match_id;
+  setPill($('workspaceStatus'), summary.status || '', statusClass(summary.status));
+  $('workspaceMeta').innerHTML = `
+    <span>球队：${escapeHtml(summary.team_name || '')}</span>
+    <span>视频：${escapeHtml(summary.video_path || '')}</span>
+    <span>进度：${state.progress_percent || 0}%</span>`;
+  $('workspaceNextAction').textContent = (state.next_action && state.next_action.label) || '下一步';
+  $('railNextAction').textContent = (state.next_action && state.next_action.label) || '';
+  renderStepper(state.steps || []);
+  renderRail(state);
+  renderSetupSummary(state);
+  renderReviewTaskCards(state);
+  renderReportPanel(state);
+}
+
+function renderStepper(steps) {
+  const box = $('workspaceStepper');
+  box.innerHTML = '';
+  steps.forEach((step, index) => {
+    const button = document.createElement('button');
+    button.className = `step-button ${step.status}`;
+    button.dataset.workspaceStep = step.key;
+    button.innerHTML = `<span class="step-index">${step.status === 'done' ? '✓' : index + 1}</span><span>${escapeHtml(step.label)}</span>`;
+    button.addEventListener('click', () => setWorkspaceStep(step.key));
+    box.appendChild(button);
+    if (index < steps.length - 1) {
+      const div = document.createElement('span');
+      div.className = 'step-divider';
+      div.textContent = '>';
+      box.appendChild(div);
+    }
+  });
+}
+
+function setWorkspaceStep(step) {
+  workspaceStep = step || 'setup';
+  document.querySelectorAll('.step-panel').forEach(panel => panel.classList.add('hidden'));
+  const panel = $(`step${workspaceStep.charAt(0).toUpperCase()}${workspaceStep.slice(1)}`);
+  if (panel) panel.classList.remove('hidden');
+  document.querySelectorAll('.step-button').forEach(btn => btn.classList.toggle('active', btn.dataset.workspaceStep === workspaceStep));
+  if (workspaceStep === 'calibration' && currentMatchId) showCalibrationFrame(currentMatchId);
+  if (workspaceStep === 'review' && currentMatchId) {
+    loadHumanReview(currentMatchId);
+    loadBallReview(currentMatchId);
+  }
+  if (workspaceStep === 'report' && activeState) renderReportPanel(activeState);
+}
+
+function renderRail(state) {
+  const tasks = state.tasks || {};
+  const latest = state.latest_job;
+  $('railJobStatus').innerHTML = `<span>后台任务</span><span class="muted">${latest ? `${escapeHtml(latest.name)} · ${escapeHtml(latest.status)}` : '空闲'}</span>`;
+  const calibration = tasks.calibration || {};
+  $('railCalibration').innerHTML = `<span>场地标定</span><span class="muted">${calibration.submitted ? '已提交' : `${calibration.marked || 0}/${calibration.enabled || 0}`}</span>`;
+  const identity = tasks.identity_review || {};
+  $('railIdentity').innerHTML = `<span>球员校验</span><span class="muted">${identity.ready ? `${identity.submitted ? '已提交' : '待处理'} ${identity.item_count || 0}` : '未生成'}</span>`;
+  const ball = tasks.ball_review || {};
+  $('railBall').innerHTML = `<span>球点标注</span><span class="muted">${ball.ready ? `${ball.reviewed_count || 0}/${ball.item_count || 0}` : '可选'}</span>`;
+  $('railMetrics').innerHTML = (state.metrics || []).map(metric => `<span class="metric-badge" title="${escapeHtml(metric.description || '')}">${escapeHtml(metric.label || metric.key)}</span>`).join('');
+}
+
+function renderSetupSummary(state) {
+  const summary = state.summary || {};
+  const playersHtml = (state.team && state.team.players || []).map(player => `<span class="pill">${escapeHtml(player.name || '')} / ${escapeHtml(player.number || '')} / ${escapeHtml(player.role || '')}</span>`).join(' ');
+  $('setupSummary').innerHTML = `
+    <div class="form-grid">
+      <div><h3>${escapeHtml(summary.name || '')}</h3><p class="muted"><code>${escapeHtml(summary.match_id || '')}</code></p></div>
+      <div><h3>${escapeHtml(summary.team_name || '')}</h3><p class="muted">${escapeHtml(summary.video_path || '')}</p></div>
+      <div class="wide"><h3>球员</h3><div class="filter-row">${playersHtml || '<span class="muted">未配置</span>'}</div></div>
+    </div>`;
+}
+
+function renderReviewTaskCards(state) {
+  const identity = state.tasks && state.tasks.identity_review || {};
+  const ball = state.tasks && state.tasks.ball_review || {};
+  const identityTotal = identity.item_count || 0;
+  const identityDone = identity.submitted ? identityTotal : Math.max(0, identityTotal - (identity.pending_count || 0));
+  const ballTotal = ball.item_count || 0;
+  const ballDone = ball.reviewed_count || (ball.submitted ? ballTotal : 0);
+  setPill($('identityTaskStatus'), identity.ready ? (identity.submitted ? '已提交' : '待校验') : '待生成', identity.submitted ? 'done' : 'warning');
+  $('identityTaskProgress').style.width = `${identityTotal ? Math.round(identityDone / identityTotal * 100) : 0}%`;
+  $('identityTaskCount').textContent = `${identityDone}/${identityTotal}`;
+  setPill($('ballTaskStatus'), ball.ready ? (ball.submitted ? '已提交' : '可标注') : '可选', ball.submitted ? 'done' : '');
+  $('ballTaskProgress').style.width = `${ballTotal ? Math.round(ballDone / ballTotal * 100) : 0}%`;
+  $('ballTaskCount').textContent = `${ballDone}/${ballTotal}`;
+}
+
+function renderReportPanel(state) {
+  const report = state.report || {};
+  if (!report.ready) {
+    $('reportStatusText').textContent = '报告尚未生成。提交球员校验后会自动生成报告。';
+    $('reportActions').innerHTML = currentMatchId ? '<button id="reportRunFinal" class="primary">重新生成报告</button>' : '';
+    $('reportBody').innerHTML = '<div class="empty-state">暂无报告。请先完成系统识别与人工校验。</div>';
+    if (exists('reportRunFinal')) $('reportRunFinal').addEventListener('click', () => saveHumanReview(true));
+    return;
+  }
+  $('reportStatusText').textContent = '报告已生成，可在工作区预览，也可以打开 Markdown / HTML 输出。';
+  $('reportActions').innerHTML = `
+    <a href="/report?path=${encodeURIComponent(report.html)}" target="_blank"><button>打开 HTML</button></a>
+    <a href="/report?path=${encodeURIComponent(report.markdown)}" target="_blank"><button>打开 MD</button></a>`;
+  $('reportBody').innerHTML = `<iframe class="report-preview" src="/report?path=${encodeURIComponent(report.html)}" title="报告预览"></iframe>`;
+}
+
+function showCalibrationFrame(matchId) {
+  currentMatchId = matchId;
+  $('calibrationFrame').src = `/calibration?match_id=${encodeURIComponent(matchId)}`;
+  $('calibrationTabStatus').textContent = `当前标定项目: ${matchId}。提交标定后会自动进入识别与校验包生成。`;
+}
+
+function renderJob(result) {
+  if (!result) return;
+  $('globalJobChip').classList.add('visible');
+  $('globalJobChip').textContent = `${result.name || '任务'}: ${result.status || ''}`;
+  $('railJobStatus').innerHTML = `<span>后台任务</span><span class="muted">${escapeHtml(result.name || '')} · ${escapeHtml(result.status || '')}</span>`;
+  $('jobStatus').textContent = `${result.match_id || ''} / ${result.name || ''}: ${result.status || ''}`;
+  $('jobLog').textContent = result.log_tail || '';
+}
+
+async function pollAllJobs() {
+  try {
+    const result = await api('/api/jobs');
+    const active = result.jobs.find(job => job.status === 'running') || result.jobs[0];
+    if (active) {
+      renderJob(active);
+      if (currentMatchId && active.match_id === currentMatchId) loadMatchState(currentMatchId);
+      if (active.status === 'done' || active.status === 'failed') {
+        loadHistory();
+        loadHome();
+      }
+    }
+  } catch (error) {
+    console.warn(error);
+  } finally {
+    allJobPollTimer = setTimeout(pollAllJobs, 3500);
+  }
+}
+
+async function pollJob() {
+  if (!currentJobId) return;
+  const result = await api(`/api/job?job_id=${encodeURIComponent(currentJobId)}`);
+  renderJob(result);
+  if (result.status === 'done') {
+    if (result.name === 'prepare_calibration') {
+      setWorkflow('标定帧已准备。', 'saved');
+      if (currentMatchId) openWorkspace(currentMatchId, 'calibration');
+    } else if (result.name === 'prepare_human_review') {
+      showFeedback('人工校验包已生成', [
+        `当前状态：${result.match_id || currentMatchId} 已完成系统识别和预标注。`,
+        '接下来：请进入人工校验，确认或修正系统认为不确定的球员身份。'
+      ]);
+      if (currentMatchId) openWorkspace(currentMatchId, 'review');
+    } else if (result.name === 'prepare_ball_review') {
+      if (currentMatchId) {
+        await openWorkspace(currentMatchId, 'review');
+        showReviewSubtab('ball');
+      }
+    } else if (result.name === 'final_report') {
+      showFeedback('最终报告已生成', [
+        `当前状态：${result.match_id || currentMatchId} 的最终报告已完成。`,
+        '接下来：可以在报告步骤预览 HTML，或打开 Markdown / CSV 输出。'
+      ]);
+      if (currentMatchId) openWorkspace(currentMatchId, 'report');
+    }
+    loadHistory();
+    loadHome();
+  } else if (result.status === 'failed') {
+    showFeedback('后台任务失败', ['请查看识别步骤里的任务日志，再决定是否重跑。']);
+    if (currentMatchId) loadMatchState(currentMatchId);
+  } else {
+    jobPollTimer = setTimeout(pollJob, 2500);
+  }
+}
+
+async function runAnalysis(matchId = currentMatchId) {
+  if (!matchId) return;
+  try {
+    const result = await api('/api/start_analysis', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ match_id: matchId, device: 'mps' })
+    });
+    currentJobId = result.job.job_id;
+    renderJob(result.job);
+    await openWorkspace(matchId, 'recognition');
+    pollJob();
+  } catch (error) {
+    showFeedback('启动失败', [error.message]);
+  }
+}
+
+function playerOptionsHtml(value) {
+  const roster = reviewPlayers.map(player => `<option value="${escapeHtml(player.player_id)}" ${player.player_id === value ? 'selected' : ''}>${escapeHtml(player.label)}</option>`).join('');
+  return `<option value="" ${!value ? 'selected' : ''}>不纳入本队/不确定</option>${roster}`;
+}
+function statusChoicesHtml(index, value) {
+  const options = [['confirmed', '确认正确'], ['corrected', '已修正'], ['ignored', '忽略该轨迹']];
+  return options.map(([key, label]) => `
+    <label class="radio-choice">
+      <input type="radio" name="review_status_${index}" data-review-field="status" data-index="${index}" value="${key}" ${key === value ? 'checked' : ''}>
+      <span>${label}</span>
+    </label>`).join('');
+}
+
+function renderHumanReview(data) {
+  reviewItems = data.items || [];
+  reviewPlayers = data.players || [];
+  $('reviewStatus').textContent = data.ready
+    ? `当前项目: ${data.match_id}，状态: ${data.status}，校验项: ${data.item_count || reviewItems.length}，待处理: ${data.pending_count || 0}`
+    : (data.message || '人工校验包还没有生成。');
+  $('reviewSheets').innerHTML = '';
+  if (data.contact_sheet) $('reviewSheets').innerHTML += `<a href="/asset?path=${encodeURIComponent(data.contact_sheet)}" target="_blank">Tracklet 总览图</a>`;
+  if (data.candidate_contact_sheet) $('reviewSheets').innerHTML += `<a href="/asset?path=${encodeURIComponent(data.candidate_contact_sheet)}" target="_blank">颜色候选总览图</a>`;
+  const box = $('reviewItems');
+  box.innerHTML = '';
+  if (!data.ready) {
+    box.innerHTML = '<div class="empty-state">还没有可校验内容。完成场地标定后，系统会先抽样关键 tracklet 并给出球员预标注。</div>';
+    return;
+  }
+  if (!reviewItems.length) {
+    box.innerHTML = '<div class="empty-state">校验包为空，请重新生成校验包。</div>';
+    return;
+  }
+  reviewItems.forEach((item, index) => {
+    const human = item.human_review || {};
+    const player = (item.system_labels && item.system_labels.player) || {};
+    const status = human.status === 'pending' ? 'confirmed' : (human.status || 'confirmed');
+    const playerId = human.player_id || player.predicted_id || '';
+    const image = item.frame_image ? `/asset?path=${encodeURIComponent(item.frame_image)}` : '';
+    const imageTitle = `${item.timestamp || ''} / track ${player.track_id || ''} / ${player.name || ''} ${player.number || ''}`;
+    const card = document.createElement('div');
+    card.className = 'review-card';
+    card.innerHTML = `
+      ${image ? `<button class="review-image-button" data-image-src="${escapeHtml(image)}" data-image-title="${escapeHtml(imageTitle)}"><img src="${escapeHtml(image)}" alt="review frame ${escapeHtml(item.review_id)}"></button>` : '<div class="empty-state">无截图</div>'}
+      <div class="body">
+        <div class="review-meta">
+          <span class="pill">${escapeHtml(item.timestamp || '')}</span>
+          <span class="pill">track ${escapeHtml(player.track_id || '')}</span>
+          <span class="pill">${escapeHtml(item.reason || '')}</span>
+          <span class="pill">置信度 ${escapeHtml(player.confidence || '')}</span>
+        </div>
+        <div><strong>系统预判：</strong>${escapeHtml(player.name || '')} / ${escapeHtml(player.number || '')} / ${escapeHtml(player.role || '')}</div>
+        <div><div class="review-field-title">人工判断</div><div class="radio-row">${statusChoicesHtml(index, status)}</div></div>
+        <label>正确球员<select data-review-field="player_id" data-index="${index}">${playerOptionsHtml(playerId)}</select></label>
+        <label>备注<input data-review-field="note" data-index="${index}" value="${escapeHtml(human.note || '')}" placeholder="可选"></label>
+      </div>`;
+    box.appendChild(card);
+  });
+  box.querySelectorAll('[data-review-field]').forEach(input => {
+    input.addEventListener('input', event => {
+      const index = Number(event.target.dataset.index);
+      const field = event.target.dataset.reviewField;
+      reviewItems[index].human_review = reviewItems[index].human_review || {};
+      reviewItems[index].human_review[field] = event.target.value;
+      if (field === 'player_id') {
+        const predicted = reviewItems[index].system_labels.player.predicted_id || '';
+        const nextStatus = event.target.value === predicted ? 'confirmed' : 'corrected';
+        reviewItems[index].human_review.status = nextStatus;
+        const statusRadio = box.querySelector(`input[name="review_status_${index}"][value="${nextStatus}"]`);
+        if (statusRadio) statusRadio.checked = true;
+      }
+    });
+  });
+  box.querySelectorAll('.review-image-button').forEach(button => {
+    button.addEventListener('click', () => openImageModal(button.dataset.imageSrc, button.dataset.imageTitle || ''));
+  });
+}
+
+async function loadHumanReview(matchId) {
+  try {
+    const result = await api(`/api/human_review?match_id=${encodeURIComponent(matchId)}`);
+    renderHumanReview(result.review);
+  } catch (error) {
+    $('reviewStatus').textContent = `加载失败: ${error.message}`;
+    $('reviewItems').innerHTML = '';
+  }
+}
+
+function collectReviewItems() {
+  return reviewItems.map(item => {
+    const human = item.human_review || {};
+    const player = (item.system_labels && item.system_labels.player) || {};
+    return {
+      review_id: item.review_id,
+      status: human.status || 'confirmed',
+      player_id: human.player_id || player.predicted_id || '',
+      report_action: human.report_action || 'keep',
+      note: human.note || ''
+    };
+  });
+}
+function confirmAllReviewItems() {
+  reviewItems.forEach(item => {
+    const player = (item.system_labels && item.system_labels.player) || {};
+    item.human_review = item.human_review || {};
+    item.human_review.status = 'confirmed';
+    item.human_review.player_id = player.predicted_id || '';
+    item.human_review.report_action = 'keep';
+  });
+  renderHumanReview({ ready: true, match_id: currentMatchId, status: 'draft', item_count: reviewItems.length, pending_count: 0, players: reviewPlayers, items: reviewItems });
+}
+async function saveHumanReview(submit=false) {
+  if (!currentMatchId) {
+    showFeedback('无法提交', ['请先选择比赛。']);
+    return;
+  }
+  try {
+    const result = await api('/api/save_human_review', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ match_id: currentMatchId, submit, items: collectReviewItems() })
+    });
+    $('reviewStatus').textContent = submit ? '人工校验已提交，最终报告生成中。' : '人工校验草稿已保存。';
+    if (result.job) {
+      currentJobId = result.job.job_id;
+      renderJob(result.job);
+      showFeedback('人工校验已提交', [
+        `当前状态：${currentMatchId} 的人工校验结果已保存。`,
+        '后台任务：正在根据人工校验结果重新绑定球员轨迹并生成最终 Markdown / HTML / CSV 报告。'
+      ]);
+      pollJob();
+    } else {
+      loadHumanReview(currentMatchId);
+      loadMatchState(currentMatchId);
+    }
+    loadHistory();
+  } catch (error) {
+    $('reviewStatus').textContent = `保存失败: ${error.message}`;
+  }
+}
+
+async function loadBallReview(matchId) {
+  try {
+    const result = await api(`/api/ball_review?match_id=${encodeURIComponent(matchId)}`);
+    renderBallReview(result.ball_review);
+  } catch (error) {
+    $('ballReviewStatus').textContent = `加载失败: ${error.message}`;
+    $('ballWorkspace').classList.add('hidden');
+  }
+}
+function renderBallReview(data) {
+  ballItems = data.items || [];
+  ballIndex = Math.min(ballIndex, Math.max(0, ballItems.length - 1));
+  $('ballReviewStatus').textContent = data.ready
+    ? `当前项目: ${data.match_id}，状态: ${data.status}，已处理: ${data.reviewed_count || 0}/${data.item_count || ballItems.length}`
+    : (data.message || '球位置标注包还没有生成。');
+  $('ballWorkspace').classList.toggle('hidden', !data.ready || !ballItems.length);
+  if (data.ready && ballItems.length) renderBallItem();
+}
+function currentBallItem() { return ballItems[ballIndex] || null; }
+function ballHuman(item) { item.human_review = item.human_review || {}; return item.human_review; }
+function markerPositionFor(item) {
+  const human = item.human_review || {};
+  if (human.ball_visible && Array.isArray(human.review_image_xy)) return human.review_image_xy;
+  const systemBall = item.system_labels && item.system_labels.ball;
+  if (systemBall && Array.isArray(systemBall.review_image_xy)) return systemBall.review_image_xy;
+  return null;
+}
+function renderBallMarker(item) {
+  const marker = $('ballMarker');
+  const point = markerPositionFor(item);
+  if (!point || !$('ballImage').naturalWidth || !$('ballImage').naturalHeight) {
+    marker.classList.add('hidden');
+    return;
+  }
+  marker.style.left = `${100 * Number(point[0]) / $('ballImage').naturalWidth}%`;
+  marker.style.top = `${100 * Number(point[1]) / $('ballImage').naturalHeight}%`;
+  marker.classList.remove('hidden');
+}
+function ballFrameSrc(item) { return item ? `/asset?path=${encodeURIComponent(item.frame_image)}` : ''; }
+function ballModalTitle(item) { return item ? `${ballIndex + 1} / ${ballItems.length} · ${item.timestamp || ''} · 单击球心标注` : ''; }
+function ballStatusLabel(status) {
+  return ({ pending: '待处理', marked: '已标球心', invisible: '球不可见', out_of_play: '球在界外', skipped: '已跳过' })[status] || status || '待处理';
+}
+function ballNoteValue() { return $('imageModal').classList.contains('open') && modalPurpose === 'ball' ? $('ballModalNote').value || '' : $('ballNote').value || ''; }
+function setBallNoteValue(value) { $('ballNote').value = value || ''; $('ballModalNote').value = value || ''; }
+function updateBallModalSide(item) {
+  if (!item) return;
+  const human = ballHuman(item);
+  const systemBall = item.system_labels && item.system_labels.ball || {};
+  $('ballModalProgress').textContent = `${ballIndex + 1} / ${ballItems.length} · ${item.timestamp || ''}`;
+  $('ballModalMeta').textContent = `原因: ${item.reason || ''}；系统球: ${systemBall.visible ? `可见，置信度 ${systemBall.confidence}` : '未识别到球'}；人工状态: ${ballStatusLabel(human.status)}`;
+  $('ballModalNote').value = human.note || '';
+}
+function syncBallModal() {
+  if (!$('imageModal').classList.contains('open') || modalPurpose !== 'ball') return;
+  const item = currentBallItem();
+  if (!item) { closeImageModal(); return; }
+  $('modalImage').src = ballFrameSrc(item);
+  $('modalTitle').textContent = ballModalTitle(item);
+  updateBallModalSide(item);
+  resetModalView();
+}
+function renderBallItem() {
+  const item = currentBallItem();
+  if (!item) return;
+  const human = ballHuman(item);
+  const systemBall = item.system_labels && item.system_labels.ball || {};
+  $('ballProgress').textContent = `${ballIndex + 1} / ${ballItems.length} · ${item.timestamp || ''}`;
+  $('ballMeta').textContent = `原因: ${item.reason || ''}；系统球: ${systemBall.visible ? `可见，置信度 ${systemBall.confidence}` : '未识别到球'}；人工状态: ${ballStatusLabel(human.status)}`;
+  setBallNoteValue(human.note || '');
+  updateBallModalSide(item);
+  $('ballImage').src = ballFrameSrc(item);
+  $('ballImage').onload = () => { if (currentBallItem() === item) renderBallMarker(item); };
+  renderBallMarker(item);
+}
+function clickToBallImageXY(event) {
+  const image = $('ballImage');
+  const rect = image.getBoundingClientRect();
+  const x = (event.clientX - rect.left) * image.naturalWidth / rect.width;
+  const y = (event.clientY - rect.top) * image.naturalHeight / rect.height;
+  return [Math.max(0, Math.min(image.naturalWidth - 1, Math.round(x * 10) / 10)), Math.max(0, Math.min(image.naturalHeight - 1, Math.round(y * 10) / 10))];
+}
+function modalEventToImageXY(event) {
+  const image = $('modalImage');
+  if (!image.naturalWidth || !image.naturalHeight) return null;
+  const rect = image.getBoundingClientRect();
+  if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) return null;
+  const x = (event.clientX - rect.left) * image.naturalWidth / rect.width;
+  const y = (event.clientY - rect.top) * image.naturalHeight / rect.height;
+  return [Math.max(0, Math.min(image.naturalWidth - 1, Math.round(x * 10) / 10)), Math.max(0, Math.min(image.naturalHeight - 1, Math.round(y * 10) / 10))];
+}
+function advanceAfterBallDecision() {
+  if (ballIndex < ballItems.length - 1) nextBallFrame();
+  else { renderBallItem(); syncBallModal(); }
+}
+function markBallVisible(point) {
+  const item = currentBallItem(); if (!item) return;
+  const human = ballHuman(item);
+  human.status = 'marked'; human.ball_visible = true; human.review_image_xy = point; human.note = ballNoteValue();
+  renderBallMarker(item); scheduleBallAutoSave(); advanceAfterBallDecision();
+}
+function markBallInvisible() {
+  const item = currentBallItem(); if (!item) return;
+  const human = ballHuman(item);
+  human.status = 'invisible'; human.ball_visible = false; human.review_image_xy = null; human.note = ballNoteValue();
+  scheduleBallAutoSave(); advanceAfterBallDecision();
+}
+function markBallOutOfPlay() {
+  const item = currentBallItem(); if (!item) return;
+  const human = ballHuman(item);
+  human.status = 'out_of_play'; human.ball_visible = false; human.review_image_xy = null; human.note = ballNoteValue();
+  scheduleBallAutoSave(); advanceAfterBallDecision();
+}
+function skipBallFrame() {
+  const item = currentBallItem(); if (!item) return;
+  const human = ballHuman(item);
+  human.status = 'skipped'; human.ball_visible = false; human.review_image_xy = null; human.note = ballNoteValue();
+  scheduleBallAutoSave(); advanceAfterBallDecision();
+}
+function useSystemBallPoint() {
+  const item = currentBallItem(); if (!item) return;
+  const systemBall = item.system_labels && item.system_labels.ball || {};
+  if (!Array.isArray(systemBall.review_image_xy)) { $('ballReviewStatus').textContent = '当前帧没有系统球点可采用。'; return; }
+  markBallVisible(systemBall.review_image_xy);
+}
+function resetBallPoint() {
+  const item = currentBallItem(); if (!item) return;
+  item.human_review = { status: 'pending', ball_visible: null, review_image_xy: null, note: ballNoteValue() };
+  renderBallItem(); scheduleBallAutoSave();
+}
+function nextBallFrame() { if (ballIndex < ballItems.length - 1) { ballIndex += 1; renderBallItem(); syncBallModal(); } }
+function prevBallFrame() { if (ballIndex > 0) { ballIndex -= 1; renderBallItem(); syncBallModal(); } }
+function openBallZoomModal() {
+  const item = currentBallItem();
+  if (item) openImageModal(ballFrameSrc(item), ballModalTitle(item), 'ball');
+}
+function collectBallReviewItems() {
+  return ballItems.map(item => {
+    const human = item.human_review || {};
+    return {
+      review_id: item.review_id,
+      status: human.status || 'pending',
+      ball_visible: Boolean(human.ball_visible),
+      review_image_xy: Array.isArray(human.review_image_xy) ? human.review_image_xy : null,
+      note: human.note || ''
+    };
+  });
+}
+function scheduleBallAutoSave() {
+  if (ballAutoSaveTimer) clearTimeout(ballAutoSaveTimer);
+  ballAutoSaveTimer = setTimeout(() => saveBallReview(false, true), 450);
+}
+async function saveBallReview(submit=false, silent=false) {
+  if (!currentMatchId) { if (!silent) showFeedback('无法保存', ['请先选择比赛。']); return; }
+  try {
+    const result = await api('/api/save_ball_review', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ match_id: currentMatchId, submit, items: collectBallReviewItems() })
+    });
+    if (!silent) $('ballReviewStatus').textContent = submit ? '球位置标注已提交，正在重算报告。' : '球位置标注草稿已保存。';
+    if (result.job) {
+      currentJobId = result.job.job_id;
+      renderJob(result.job);
+      showFeedback('球位置标注已提交', [
+        `当前状态：${currentMatchId} 的球点已保存。`,
+        '后台任务：正在使用人工球点重算传球、射门、1v1 等辅助指标。'
+      ]);
+      pollJob();
+    } else if (!silent) {
+      loadBallReview(currentMatchId);
+      loadMatchState(currentMatchId);
+    }
+  } catch (error) {
+    if (!silent) $('ballReviewStatus').textContent = `保存失败: ${error.message}`;
+  }
+}
+async function prepareBallReview() {
+  if (!currentMatchId) { showFeedback('无法生成', ['请先选择比赛。']); return; }
+  try {
+    const result = await api('/api/start_ball_review', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ match_id: currentMatchId })
+    });
+    currentJobId = result.job.job_id;
+    renderJob(result.job);
+    $('ballReviewStatus').textContent = '正在生成球位置标注包...';
+    pollJob();
+  } catch (error) {
+    $('ballReviewStatus').textContent = `启动失败: ${error.message}`;
+  }
+}
+
+function showReviewSubtab(name) {
+  const target = name === 'ball' ? 'ball' : 'identity';
+  document.querySelectorAll('.review-subtab').forEach(btn => btn.classList.toggle('active', btn.dataset.reviewSubtab === target));
+  $('identityReviewSubtab').classList.toggle('hidden', target !== 'identity');
+  $('ballReviewSubtab').classList.toggle('hidden', target !== 'ball');
+  if (!currentMatchId) return;
+  if (target === 'identity') loadHumanReview(currentMatchId);
+  if (target === 'ball') loadBallReview(currentMatchId);
+}
+
+function clampZoom(value) { return Math.max(0.5, Math.min(8, value)); }
+function updateModalTransform() {
+  $('modalImage').style.transform = `translate(${modalX}px, ${modalY}px) scale(${modalScale})`;
+  $('modalZoomLabel').textContent = `${Math.round(modalScale * 100)}%`;
+}
+function resetModalView() { modalScale = 1; modalX = 0; modalY = 0; updateModalTransform(); }
+function zoomModal(multiplier, event=null) {
+  const previous = modalScale;
+  const next = clampZoom(previous * multiplier);
+  if (next === previous) return;
+  if (event) {
+    const rect = $('modalStage').getBoundingClientRect();
+    const centerX = event.clientX - rect.left - rect.width / 2;
+    const centerY = event.clientY - rect.top - rect.height / 2;
+    const ratio = next / previous;
+    modalX = centerX - (centerX - modalX) * ratio;
+    modalY = centerY - (centerY - modalY) * ratio;
+  }
+  modalScale = next;
+  updateModalTransform();
+}
+function openImageModal(src, title='', purpose='view') {
+  modalPurpose = purpose;
+  $('modalImage').src = src;
+  $('modalTitle').textContent = title;
+  $('imageModal').classList.add('open');
+  $('imageModal').classList.remove('hidden');
+  $('imageModal').classList.toggle('ball-mode', purpose === 'ball');
+  $('imageModal').setAttribute('aria-hidden', 'false');
+  document.body.classList.add('modal-open');
+  if (purpose === 'ball') updateBallModalSide(currentBallItem());
+  resetModalView();
+}
+function closeImageModal() {
+  $('imageModal').classList.remove('open');
+  $('imageModal').classList.add('hidden');
+  $('imageModal').classList.remove('ball-mode');
+  $('imageModal').setAttribute('aria-hidden', 'true');
+  $('modalImage').src = '';
+  document.body.classList.remove('modal-open');
+  modalDragging = false;
+  modalMoved = false;
+  modalPurpose = 'view';
+}
+function showFeedback(title, lines) {
+  $('feedbackTitle').textContent = title;
+  const bodyLines = Array.isArray(lines) ? lines : [String(lines || '')];
+  $('feedbackBody').innerHTML = `<ul>${bodyLines.map(line => `<li>${escapeHtml(line)}</li>`).join('')}</ul>`;
+  $('feedbackModal').classList.add('open');
+  $('feedbackModal').classList.remove('hidden');
+  $('feedbackModal').setAttribute('aria-hidden', 'false');
+}
+function closeFeedback() {
+  $('feedbackModal').classList.remove('open');
+  $('feedbackModal').classList.add('hidden');
+  $('feedbackModal').setAttribute('aria-hidden', 'true');
+}
+
+function bindEvents() {
+  document.querySelectorAll('[data-view-target]').forEach(btn => btn.addEventListener('click', () => showView(btn.dataset.viewTarget)));
+  $('headerNewMatch').addEventListener('click', () => { resetForm(); showView('setup'); });
+  $('homeNewMatch').addEventListener('click', () => { resetForm(); showView('setup'); });
+  $('homeHistory').addEventListener('click', () => showView('history'));
+  $('refreshHome').addEventListener('click', loadHome);
+  $('refreshHistory').addEventListener('click', loadHistory);
+  $('historySearch').addEventListener('input', renderHistoryRows);
+  document.querySelectorAll('.filter-chip').forEach(btn => btn.addEventListener('click', () => {
+    historyFilter = btn.dataset.historyFilter;
+    document.querySelectorAll('.filter-chip').forEach(item => item.classList.toggle('active', item === btn));
+    renderHistoryRows();
+  }));
+  $('addPlayer').addEventListener('click', () => { players.push({ name: '', number: '', role: 'substitute', visual_hint: '' }); renderPlayers(); });
+  $('submitMatch').addEventListener('click', submitMatch);
+  $('resetForm').addEventListener('click', resetForm);
+  $('openCalibration').addEventListener('click', () => { if (currentMatchId || editingMatchId) openWorkspace(currentMatchId || editingMatchId, 'calibration'); });
+  $('workspaceEditSettings').addEventListener('click', () => { if (currentMatchId) loadMatchForEdit(currentMatchId); });
+  $('stepSetupEdit').addEventListener('click', () => { if (currentMatchId) loadMatchForEdit(currentMatchId); });
+  $('workspaceNextAction').addEventListener('click', () => { if (activeState && activeState.next_action) setWorkspaceStep(activeState.next_action.step); });
+  $('refreshCalibration').addEventListener('click', () => { if (currentMatchId) showCalibrationFrame(currentMatchId); });
+  $('runRecognition').addEventListener('click', () => runAnalysis(currentMatchId));
+  $('openIdentityReview').addEventListener('click', () => showReviewSubtab('identity'));
+  $('openBallReview').addEventListener('click', () => showReviewSubtab('ball'));
+  document.querySelectorAll('.review-subtab').forEach(btn => btn.addEventListener('click', () => showReviewSubtab(btn.dataset.reviewSubtab)));
+  $('refreshReview').addEventListener('click', () => { if (currentMatchId) loadHumanReview(currentMatchId); });
+  $('confirmAllReview').addEventListener('click', confirmAllReviewItems);
+  $('saveReview').addEventListener('click', () => saveHumanReview(false));
+  $('submitReview').addEventListener('click', () => saveHumanReview(true));
+  $('prepareBallReview').addEventListener('click', prepareBallReview);
+  $('refreshBallReview').addEventListener('click', () => { if (currentMatchId) loadBallReview(currentMatchId); });
+  $('saveBallReview').addEventListener('click', () => saveBallReview(false));
+  $('submitBallReview').addEventListener('click', () => saveBallReview(true));
+  $('ballStage').addEventListener('click', event => { if (currentBallItem() && event.target.id === 'ballImage') markBallVisible(clickToBallImageXY(event)); });
+  $('prevBallFrame').addEventListener('click', prevBallFrame);
+  $('nextBallFrame').addEventListener('click', nextBallFrame);
+  $('useSystemBall').addEventListener('click', useSystemBallPoint);
+  $('ballInvisible').addEventListener('click', markBallInvisible);
+  $('ballOutOfPlay').addEventListener('click', markBallOutOfPlay);
+  $('skipBallFrame').addEventListener('click', skipBallFrame);
+  $('resetBallPoint').addEventListener('click', resetBallPoint);
+  $('openBallZoom').addEventListener('click', openBallZoomModal);
+  $('ballNote').addEventListener('input', () => {
+    const item = currentBallItem();
+    if (!item) return;
+    ballHuman(item).note = $('ballNote').value || '';
+    $('ballModalNote').value = $('ballNote').value || '';
+    scheduleBallAutoSave();
+  });
+  $('modalPrevBallFrame').addEventListener('click', prevBallFrame);
+  $('modalNextBallFrame').addEventListener('click', nextBallFrame);
+  $('modalUseSystemBall').addEventListener('click', useSystemBallPoint);
+  $('modalBallInvisible').addEventListener('click', markBallInvisible);
+  $('modalBallOutOfPlay').addEventListener('click', markBallOutOfPlay);
+  $('modalSkipBallFrame').addEventListener('click', skipBallFrame);
+  $('modalResetBallPoint').addEventListener('click', resetBallPoint);
+  $('modalSaveBallReview').addEventListener('click', () => saveBallReview(false));
+  $('ballModalNote').addEventListener('input', () => {
+    const item = currentBallItem();
+    if (!item) return;
+    ballHuman(item).note = $('ballModalNote').value || '';
+    $('ballNote').value = $('ballModalNote').value || '';
+    scheduleBallAutoSave();
+  });
+  $('modalClose').addEventListener('click', closeImageModal);
+  $('modalZoomIn').addEventListener('click', () => zoomModal(1.25));
+  $('modalZoomOut').addEventListener('click', () => zoomModal(0.8));
+  $('modalReset').addEventListener('click', resetModalView);
+  $('feedbackOk').addEventListener('click', closeFeedback);
+  $('feedbackHistory').addEventListener('click', () => { closeFeedback(); showView('history'); });
+  $('modalStage').addEventListener('wheel', event => {
+    if (!$('imageModal').classList.contains('open')) return;
+    event.preventDefault();
+    zoomModal(event.deltaY < 0 ? 1.18 : 0.85, event);
+  }, { passive: false });
+  $('modalStage').addEventListener('pointerdown', event => {
+    if (!$('imageModal').classList.contains('open')) return;
+    modalDragging = true;
+    modalMoved = false;
+    modalDragStartX = event.clientX;
+    modalDragStartY = event.clientY;
+    modalOriginX = modalX;
+    modalOriginY = modalY;
+    $('modalStage').classList.add('dragging');
+    $('modalStage').setPointerCapture(event.pointerId);
+    event.preventDefault();
+  });
+  $('modalStage').addEventListener('pointermove', event => {
+    if (!modalDragging) return;
+    const dx = event.clientX - modalDragStartX;
+    const dy = event.clientY - modalDragStartY;
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) modalMoved = true;
+    modalX = modalOriginX + dx;
+    modalY = modalOriginY + dy;
+    updateModalTransform();
+  });
+  $('modalStage').addEventListener('pointerup', event => {
+    const shouldMarkBall = modalPurpose === 'ball' && !modalMoved;
+    modalDragging = false;
+    $('modalStage').classList.remove('dragging');
+    try { $('modalStage').releasePointerCapture(event.pointerId); } catch (error) {}
+    if (shouldMarkBall) {
+      const point = modalEventToImageXY(event);
+      if (point) markBallVisible(point);
+    }
+  });
+  $('modalStage').addEventListener('pointercancel', () => {
+    modalDragging = false;
+    modalMoved = false;
+    $('modalStage').classList.remove('dragging');
+  });
+  $('modalImage').addEventListener('dblclick', event => { zoomModal(modalScale < 2 ? 2 / modalScale : 0.5, event); });
+  document.addEventListener('keydown', event => {
+    if ($('feedbackModal').classList.contains('open') && event.key === 'Escape') { closeFeedback(); return; }
+    if (!$('imageModal').classList.contains('open')) return;
+    const key = event.key.toLowerCase();
+    if (event.key === 'Escape') { closeImageModal(); return; }
+    if (event.key === '+' || event.key === '=') zoomModal(1.25);
+    if (event.key === '-') zoomModal(0.8);
+    if (event.key === '0') resetModalView();
+    if (modalPurpose === 'ball') {
+      if (event.key === 'ArrowRight') nextBallFrame();
+      if (event.key === 'ArrowLeft') prevBallFrame();
+      if (key === 'n') markBallInvisible();
+      if (key === 'o') markBallOutOfPlay();
+      if (key === 's') skipBallFrame();
+    }
+  });
+  $('teamName').addEventListener('input', renderPlayers);
+  $('teamColor').addEventListener('input', renderPlayers);
+  window.addEventListener('message', event => {
+    if (event.data && event.data.type === 'analysis_job_started' && event.data.job) {
+      currentJobId = event.data.job.job_id;
+      renderJob(event.data.job);
+      showFeedback('场地标定已提交', [
+        '后台任务：正在生成系统预标注的人工校验包。',
+        '接下来：任务完成后会自动切换到人工校验步骤。'
+      ]);
+      if (currentMatchId) setWorkspaceStep('recognition');
+      pollJob();
+    }
+  });
+}
+
+bindEvents();
+renderMetrics();
+resetForm();
+loadVideos();
+loadHome();
+loadHistory();
+pollAllJobs();
+  </script>
+</body>
+</html>

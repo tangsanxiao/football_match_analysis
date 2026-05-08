@@ -9,6 +9,7 @@ data/interim/
 reports/
 runs/
 *.pt
+stitch_pro_match_analytics/
 
 # Isolated match projects keep their configs, but generated media/data can be large.
 matches/*/videos/raw/
