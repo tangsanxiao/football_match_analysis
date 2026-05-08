@@ -106,6 +106,10 @@ def build_html(
       color: var(--ink);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }}
+    body.labeling-fullscreen {{
+      overflow: hidden;
+      background: #08110d;
+    }}
     main {{
       display: grid;
       grid-template-columns: minmax(0, 1fr) 420px;
@@ -113,11 +117,32 @@ def build_html(
       min-height: 100vh;
       padding: 16px;
     }}
+    body.labeling-fullscreen main {{
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 0;
+      min-height: 100vh;
+      padding: 0;
+      background: #08110d;
+    }}
     .stage, .side {{
       background: var(--panel);
       border: 1px solid var(--line);
       border-radius: 8px;
       overflow: hidden;
+    }}
+    body.labeling-fullscreen .stage, body.labeling-fullscreen .side {{
+      border-color: rgba(255,255,255,.14);
+      border-radius: 0;
+    }}
+    body.labeling-fullscreen .stage {{
+      background: #08110d;
+    }}
+    body.labeling-fullscreen .side {{
+      background: rgba(12, 17, 14, .96);
+      color: #fff;
     }}
     .stage-header, .side-header {{
       display: flex;
@@ -129,11 +154,20 @@ def build_html(
       color: var(--muted);
       font-size: 13px;
     }}
+    body.labeling-fullscreen .stage-header, body.labeling-fullscreen .side-header {{
+      min-height: 52px;
+      color: rgba(255,255,255,.78);
+      border-color: rgba(255,255,255,.16);
+      background: rgba(12, 17, 14, .92);
+    }}
     .image-wrap {{
       position: relative;
       overflow: auto;
       height: calc(100vh - 58px);
       background: #20251f;
+    }}
+    body.labeling-fullscreen .image-wrap {{
+      height: calc(100vh - 52px);
     }}
     img {{
       display: block;
@@ -152,6 +186,17 @@ def build_html(
     .stage-tools button {{
       min-height: 28px;
       padding: 0 9px;
+    }}
+    .fullscreen-only {{
+      display: none;
+    }}
+    body.labeling-fullscreen .fullscreen-only {{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }}
+    body.labeling-fullscreen #openFullscreen {{
+      display: none;
     }}
     .zoom-label {{
       min-width: 52px;
@@ -187,12 +232,19 @@ def build_html(
       height: calc(100vh - 32px);
       overflow: auto;
     }}
+    body.labeling-fullscreen .side {{
+      height: 100vh;
+      border-left: 1px solid rgba(255,255,255,.16);
+    }}
     .controls {{
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 8px;
       padding: 12px;
       border-bottom: 1px solid var(--line);
+    }}
+    body.labeling-fullscreen .controls {{
+      border-color: rgba(255,255,255,.16);
     }}
     select, button, textarea {{
       font: inherit;
@@ -215,6 +267,21 @@ def build_html(
     button.primary {{
       background: var(--accent);
       border-color: var(--accent);
+      color: #fff;
+    }}
+    body.labeling-fullscreen select,
+    body.labeling-fullscreen button,
+    body.labeling-fullscreen textarea {{
+      border-color: rgba(255,255,255,.22);
+      background: rgba(255,255,255,.08);
+      color: #fff;
+    }}
+    body.labeling-fullscreen option {{
+      color: var(--ink);
+    }}
+    body.labeling-fullscreen button.primary {{
+      background: #0f7b63;
+      border-color: #0f7b63;
       color: #fff;
     }}
     .wide {{
@@ -245,6 +312,14 @@ def build_html(
       background: #f9faf7;
       z-index: 1;
     }}
+    body.labeling-fullscreen th {{
+      background: #111c16;
+      color: rgba(255,255,255,.8);
+    }}
+    body.labeling-fullscreen th,
+    body.labeling-fullscreen td {{
+      border-color: rgba(255,255,255,.12);
+    }}
     .kind {{
       display: inline-flex;
       align-items: center;
@@ -266,11 +341,19 @@ def build_html(
     tr.active td {{
       background: #e8f3ef;
     }}
+    body.labeling-fullscreen tr.active td {{
+      background: rgba(95, 211, 255, .16);
+    }}
     .hint {{
       color: var(--muted);
       padding: 10px 12px;
       font-size: 13px;
       line-height: 1.45;
+    }}
+    body.labeling-fullscreen .hint,
+    body.labeling-fullscreen .optional,
+    body.labeling-fullscreen .zoom-label {{
+      color: rgba(255,255,255,.72);
     }}
     textarea {{
       display: block;
@@ -314,6 +397,8 @@ def build_html(
           <span id="zoomLabel" class="zoom-label">100%</span>
           <button id="zoomIn" type="button">+</button>
           <button id="zoomFit" type="button">适配</button>
+          <button id="openFullscreen" type="button">放大标定</button>
+          <button id="closeFullscreen" class="fullscreen-only" type="button">关闭放大</button>
           <a href="/match">比赛信息</a>
           <span id="cursor">x: -, y: -</span>
         </div>
@@ -367,6 +452,8 @@ def build_html(
     const zoomIn = document.getElementById('zoomIn');
     const zoomFit = document.getElementById('zoomFit');
     const zoomLabel = document.getElementById('zoomLabel');
+    const openFullscreen = document.getElementById('openFullscreen');
+    const closeFullscreen = document.getElementById('closeFullscreen');
     const select = document.getElementById('pointSelect');
     const table = document.getElementById('pointTable');
     const yamlOut = document.getElementById('yamlOut');
@@ -410,6 +497,38 @@ def build_html(
       setZoom(fitScale(), false);
       wrap.scrollLeft = 0;
       wrap.scrollTop = 0;
+    }}
+
+    function refreshFullscreenLayout() {{
+      window.setTimeout(() => fitImage(), 80);
+    }}
+
+    function notifyParentFullscreen(active) {{
+      if (window.parent && window.parent !== window) {{
+        window.parent.postMessage({{ type: 'calibration_fullscreen', active }}, '*');
+      }}
+    }}
+
+    async function enterFullscreenLabeling() {{
+      document.body.classList.add('labeling-fullscreen');
+      notifyParentFullscreen(true);
+      refreshFullscreenLayout();
+      try {{
+        if (!document.fullscreenElement && document.documentElement.requestFullscreen) {{
+          await document.documentElement.requestFullscreen();
+        }}
+      }} catch (error) {{
+        setStatus('已进入放大标定；浏览器未允许独占全屏也可以继续标注', 'saved');
+      }}
+    }}
+
+    async function exitFullscreenLabeling() {{
+      document.body.classList.remove('labeling-fullscreen');
+      notifyParentFullscreen(false);
+      refreshFullscreenLayout();
+      try {{
+        if (document.fullscreenElement && document.exitFullscreen) await document.exitFullscreen();
+      }} catch (error) {{}}
     }}
 
     function pointLabel(point) {{
@@ -668,11 +787,20 @@ def build_html(
     zoomOut.addEventListener('click', () => setZoom(zoomScale * 0.8));
     zoomIn.addEventListener('click', () => setZoom(zoomScale * 1.25));
     zoomFit.addEventListener('click', fitImage);
+    openFullscreen.addEventListener('click', enterFullscreenLabeling);
+    closeFullscreen.addEventListener('click', exitFullscreenLabeling);
     wrap.addEventListener('wheel', event => {{
       if (!event.metaKey && !event.ctrlKey) return;
       event.preventDefault();
       setZoom(event.deltaY < 0 ? zoomScale * 1.15 : zoomScale * 0.87);
     }}, {{ passive: false }});
+    document.addEventListener('fullscreenchange', () => {{
+      if (!document.fullscreenElement) {{
+        document.body.classList.remove('labeling-fullscreen');
+        notifyParentFullscreen(false);
+      }}
+      refreshFullscreenLayout();
+    }});
     window.addEventListener('resize', () => {{
       setZoom(zoomScale, false);
       renderMarkers();

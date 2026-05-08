@@ -106,6 +106,8 @@
     .rail-section { display: grid; gap: 8px; }
     .rail-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid #edf1ed; padding: 8px 0; }
     .calibration-frame { width: 100%; height: 72vh; min-height: 560px; border: 0; display: block; background: #20251f; border-radius: 4px; }
+    .calibration-frame.expanded { position: fixed; inset: 0; z-index: 1200; width: 100vw; height: 100vh; min-height: 0; border-radius: 0; }
+    body.calibration-frame-open { overflow: hidden; }
     .inline-status { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
     .row-actions { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
     .task-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
@@ -130,7 +132,7 @@
     .radio-choice input { width: auto; min-height: auto; }
     .radio-choice:has(input:checked) { border-color: var(--primary); background: #eaf5f1; color: var(--primary); }
     .ball-workspace { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 12px; }
-    .ball-stage { position: relative; min-height: 460px; display: grid; place-items: center; background: #20251f; border-radius: 6px; overflow: hidden; cursor: crosshair; }
+    .ball-stage { position: relative; min-height: 460px; display: grid; place-items: center; background: #20251f; border-radius: 6px; overflow: hidden; cursor: zoom-in; }
     .ball-stage img { width: 100%; height: 100%; max-height: 72vh; object-fit: contain; display: block; }
     .ball-marker { position: absolute; width: 24px; height: 24px; border: 3px solid #ffe066; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 2px rgba(0,0,0,.55); pointer-events: none; }
     .ball-side { display: grid; gap: 10px; align-content: start; }
@@ -158,6 +160,10 @@
     .image-modal.ball-mode .image-modal-stage { cursor: crosshair; }
     .image-modal-stage.dragging { cursor: grabbing; }
     .modal-image { max-width: 96vw; max-height: calc(100vh - 76px); transform-origin: center center; will-change: transform; user-select: none; -webkit-user-drag: none; box-shadow: 0 18px 60px rgba(0,0,0,.45); }
+    .modal-ball-marker { position: absolute; width: 28px; height: 28px; border: 3px solid #ffe066; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 2px rgba(0,0,0,.62), 0 0 18px rgba(255,224,102,.45); pointer-events: none; z-index: 2; }
+    .modal-ball-marker::before, .modal-ball-marker::after { content: ""; position: absolute; background: #ffe066; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+    .modal-ball-marker::before { width: 2px; height: 36px; }
+    .modal-ball-marker::after { width: 36px; height: 2px; }
     .ball-modal-side, .identity-modal-side { min-height: 0; display: none; gap: 10px; align-content: start; padding: 12px; border-left: 1px solid rgba(255,255,255,.16); background: rgba(12, 17, 14, .92); overflow: auto; }
     .image-modal.ball-mode .ball-modal-side { display: grid; }
     .image-modal.identity-mode .identity-modal-side { display: grid; }
@@ -345,7 +351,7 @@
                 <button id="submitCalibrationHint" class="soft">标定完成后在画面内提交</button>
               </div>
             </div>
-            <iframe id="calibrationFrame" class="calibration-frame" title="场地标定"></iframe>
+            <iframe id="calibrationFrame" class="calibration-frame" title="场地标定" allow="fullscreen" allowfullscreen></iframe>
           </section>
 
           <section id="stepRecognition" class="step-panel panel hidden">
@@ -420,7 +426,7 @@
                 </div>
               </div>
               <div id="ballWorkspace" class="ball-workspace hidden panel-body">
-                <div id="ballStage" class="ball-stage">
+                <div id="ballStage" class="ball-stage" title="点击进入放大标注">
                   <img id="ballImage" alt="ball review frame">
                   <div id="ballMarker" class="ball-marker hidden"></div>
                 </div>
@@ -490,6 +496,7 @@
     </div>
     <div id="modalStage" class="image-modal-stage">
       <img id="modalImage" class="modal-image" alt="">
+      <div id="modalBallMarker" class="modal-ball-marker hidden"></div>
     </div>
     <aside id="ballModalSide" class="ball-modal-side">
       <div id="ballModalProgress" class="ball-progress"></div>
@@ -1323,6 +1330,25 @@ function markerPositionFor(item) {
   if (systemBall && Array.isArray(systemBall.review_image_xy)) return systemBall.review_image_xy;
   return null;
 }
+function updateModalBallMarker() {
+  const marker = $('modalBallMarker');
+  if (modalPurpose !== 'ball' || !$('imageModal').classList.contains('open')) {
+    marker.classList.add('hidden');
+    return;
+  }
+  const item = currentBallItem();
+  const point = item ? markerPositionFor(item) : null;
+  const image = $('modalImage');
+  if (!point || !image.naturalWidth || !image.naturalHeight) {
+    marker.classList.add('hidden');
+    return;
+  }
+  const stageRect = $('modalStage').getBoundingClientRect();
+  const imageRect = image.getBoundingClientRect();
+  marker.style.left = `${imageRect.left - stageRect.left + imageRect.width * Number(point[0]) / image.naturalWidth}px`;
+  marker.style.top = `${imageRect.top - stageRect.top + imageRect.height * Number(point[1]) / image.naturalHeight}px`;
+  marker.classList.remove('hidden');
+}
 function renderBallMarker(item) {
   const marker = $('ballMarker');
   const point = markerPositionFor(item);
@@ -1348,6 +1374,7 @@ function updateBallModalSide(item) {
   $('ballModalProgress').textContent = `${ballIndex + 1} / ${ballItems.length} · ${item.timestamp || ''}`;
   $('ballModalMeta').textContent = `原因: ${item.reason || ''}；系统球: ${systemBall.visible ? `可见，置信度 ${systemBall.confidence}` : '未识别到球'}；人工状态: ${ballStatusLabel(human.status)}`;
   $('ballModalNote').value = human.note || '';
+  updateModalBallMarker();
 }
 function syncBallModal() {
   if (!$('imageModal').classList.contains('open') || modalPurpose !== 'ball') return;
@@ -1370,6 +1397,7 @@ function renderBallItem() {
   $('ballImage').src = ballFrameSrc(item);
   $('ballImage').onload = () => { if (currentBallItem() === item) renderBallMarker(item); };
   renderBallMarker(item);
+  updateModalBallMarker();
 }
 function clickToBallImageXY(event) {
   const image = $('ballImage');
@@ -1504,6 +1532,7 @@ function clampZoom(value) { return Math.max(0.5, Math.min(8, value)); }
 function updateModalTransform() {
   $('modalImage').style.transform = `translate(${modalX}px, ${modalY}px) scale(${modalScale})`;
   $('modalZoomLabel').textContent = `${Math.round(modalScale * 100)}%`;
+  updateModalBallMarker();
 }
 function resetModalView() { modalScale = 1; modalX = 0; modalY = 0; updateModalTransform(); }
 function zoomModal(multiplier, event=null) {
@@ -1534,6 +1563,7 @@ function openImageModal(src, title='', purpose='view') {
   document.body.classList.add('modal-open');
   if (purpose === 'ball') updateBallModalSide(currentBallItem());
   if (purpose === 'identity') updateIdentityModalSide();
+  updateModalBallMarker();
   resetModalView();
 }
 function closeImageModal() {
@@ -1544,6 +1574,7 @@ function closeImageModal() {
   $('imageModal').classList.remove('side-mode');
   $('imageModal').setAttribute('aria-hidden', 'true');
   $('modalImage').src = '';
+  $('modalBallMarker').classList.add('hidden');
   document.body.classList.remove('modal-open');
   modalDragging = false;
   modalMoved = false;
@@ -1597,7 +1628,7 @@ function bindEvents() {
   $('refreshBallReview').addEventListener('click', () => { if (currentMatchId) loadBallReview(currentMatchId); });
   $('saveBallReview').addEventListener('click', () => saveBallReview(false));
   $('submitBallReview').addEventListener('click', () => saveBallReview(true));
-  $('ballStage').addEventListener('click', event => { if (currentBallItem() && event.target.id === 'ballImage') markBallVisible(clickToBallImageXY(event)); });
+  $('ballStage').addEventListener('click', () => { if (currentBallItem()) openBallZoomModal(); });
   $('prevBallFrame').addEventListener('click', prevBallFrame);
   $('nextBallFrame').addEventListener('click', nextBallFrame);
   $('useSystemBall').addEventListener('click', useSystemBallPoint);
@@ -1653,6 +1684,7 @@ function bindEvents() {
   $('modalZoomIn').addEventListener('click', () => zoomModal(1.25));
   $('modalZoomOut').addEventListener('click', () => zoomModal(0.8));
   $('modalReset').addEventListener('click', resetModalView);
+  $('modalImage').addEventListener('load', updateModalBallMarker);
   $('feedbackOk').addEventListener('click', closeFeedback);
   $('feedbackHistory').addEventListener('click', () => { closeFeedback(); showView('history'); });
   $('modalStage').addEventListener('wheel', event => {
@@ -1729,6 +1761,9 @@ function bindEvents() {
       ]);
       if (currentMatchId) setWorkspaceStep('recognition');
       pollJob();
+    } else if (event.data && event.data.type === 'calibration_fullscreen') {
+      $('calibrationFrame').classList.toggle('expanded', Boolean(event.data.active));
+      document.body.classList.toggle('calibration-frame-open', Boolean(event.data.active));
     }
   });
 }
