@@ -18,8 +18,10 @@ import yaml
 
 try:
     from create_point_picker import build_html, load_yaml, point_payload, resolve_path
+    from analysis_app_config import should_count_calibration_point
 except ModuleNotFoundError:
     from scripts.create_point_picker import build_html, load_yaml, point_payload, resolve_path
+    from scripts.analysis_app_config import should_count_calibration_point
 
 
 MIN_SUBMITTED_POINTS = 4
@@ -66,15 +68,17 @@ def write_yaml(path: Path, payload: Dict[str, Any]) -> None:
 
 
 def point_counts(points_yaml: Dict[str, Any]) -> Tuple[int, int]:
-    enabled = 0
+    required = 0
     marked = 0
     for point in points_yaml.get("points", []):
-        if point.get("enabled") is False:
+        if not should_count_calibration_point(point):
             continue
-        enabled += 1
+        if point.get("required") is not False:
+            required += 1
         image_xy = point.get("image_xy")
         if isinstance(image_xy, list) and len(image_xy) == 2:
             marked += 1
+    enabled = max(required, marked)
     return marked, enabled
 
 

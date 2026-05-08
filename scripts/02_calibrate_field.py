@@ -33,6 +33,8 @@ def valid_points(points_yaml: Dict[str, Any]) -> List[Dict[str, Any]]:
     for point in points_yaml.get("points", []):
         if point.get("enabled") is False:
             continue
+        if point.get("use_for_homography") is False:
+            continue
         image_xy = point.get("image_xy")
         field_xy = point.get("field_xy")
         if image_xy is None:

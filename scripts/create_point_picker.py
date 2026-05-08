@@ -41,9 +41,14 @@ def point_payload(points_yaml: Dict[str, Any]) -> List[Dict[str, Any]]:
         payload.append(
             {
                 "name": point.get("name", ""),
+                "label": point.get("label", point.get("name", "")),
+                "kind": point.get("kind", "calibration"),
                 "field_xy": point.get("field_xy"),
                 "image_xy": point.get("image_xy"),
                 "enabled": point.get("enabled", True),
+                "required": point.get("required", True),
+                "use_for_homography": point.get("use_for_homography", True),
+                "help": point.get("help", ""),
             }
         )
     return payload
@@ -148,6 +153,8 @@ def build_html(
       pointer-events: none;
       box-shadow: 0 0 0 2px rgba(255,255,255,.9);
     }}
+    .marker.static_field_mark {{ background: #5fd3ff; }}
+    .marker.visible_area {{ background: #f77a6b; }}
     .marker span {{
       position: absolute;
       left: 14px;
@@ -221,6 +228,24 @@ def build_html(
       background: #f9faf7;
       z-index: 1;
     }}
+    .kind {{
+      display: inline-flex;
+      align-items: center;
+      min-height: 20px;
+      padding: 0 6px;
+      border-radius: 999px;
+      background: #eef3ef;
+      color: #405047;
+      font-size: 11px;
+      font-weight: 750;
+      white-space: nowrap;
+    }}
+    .kind.static_field_mark {{ background: #e6f6ff; color: #14546b; }}
+    .kind.visible_area {{ background: #fff0ed; color: #7a2d21; }}
+    .optional {{
+      color: var(--muted);
+      font-size: 12px;
+    }}
     tr.active td {{
       background: #e8f3ef;
     }}
@@ -292,6 +317,7 @@ def build_html(
         <thead>
           <tr>
             <th>点位</th>
+            <th>类型</th>
             <th>场地坐标</th>
             <th>像素坐标</th>
           </tr>
@@ -326,7 +352,16 @@ def build_html(
     let labelingSubmitted = initialLabelingStatus === 'submitted';
 
     function pointLabel(point) {{
-      return point.name || 'unnamed';
+      return point.label || point.name || 'unnamed';
+    }}
+
+    function pointKindLabel(point) {{
+      const labels = {{
+        calibration: '标定点',
+        static_field_mark: '静态白点',
+        visible_area: '可见边界'
+      }};
+      return labels[point.kind] || point.kind || '标定点';
     }}
 
     function renderSelect() {{
@@ -350,9 +385,11 @@ def build_html(
           select.value = String(index);
           render();
         }});
-        const field = Array.isArray(point.field_xy) ? `[${{point.field_xy[0]}}, ${{point.field_xy[1]}}]` : '';
+        const field = Array.isArray(point.field_xy) ? `[${{point.field_xy[0]}}, ${{point.field_xy[1]}}]` : '<span class="optional">不参与场地坐标</span>';
         const imageXY = Array.isArray(point.image_xy) ? `[${{point.image_xy[0]}}, ${{point.image_xy[1]}}]` : '';
-        row.innerHTML = `<td>${{index + 1}}. ${{escapeHtml(pointLabel(point))}}</td><td>${{field}}</td><td>${{imageXY}}</td>`;
+        const optional = point.required === false ? '<div class="optional">可选，不要猜点</div>' : '';
+        const help = point.help ? `<div class="optional">${{escapeHtml(point.help)}}</div>` : '';
+        row.innerHTML = `<td>${{index + 1}}. ${{escapeHtml(pointLabel(point))}}${{optional}}${{help}}</td><td><span class="kind ${{escapeHtml(point.kind || 'calibration')}}">${{escapeHtml(pointKindLabel(point))}}</span></td><td>${{field}}</td><td>${{imageXY}}</td>`;
         table.appendChild(row);
       }});
     }}
@@ -380,7 +417,7 @@ def build_html(
       points.forEach((point, index) => {{
         if (!Array.isArray(point.image_xy)) return;
         const marker = document.createElement('div');
-        marker.className = 'marker';
+        marker.className = `marker ${{point.kind || 'calibration'}}`;
         const pos = markerPosition(point);
         marker.style.left = `${{pos.left}}px`;
         marker.style.top = `${{pos.top}}px`;
@@ -393,12 +430,20 @@ def build_html(
       const lines = ['points:'];
       points.forEach(point => {{
         lines.push(`  - name: ${{point.name}}`);
-        lines.push(`    field_xy: [${{point.field_xy[0]}}, ${{point.field_xy[1]}}]`);
+        lines.push(`    label: ${{point.label || point.name}}`);
+        lines.push(`    kind: ${{point.kind || 'calibration'}}`);
+        if (Array.isArray(point.field_xy)) {{
+          lines.push(`    field_xy: [${{point.field_xy[0]}}, ${{point.field_xy[1]}}]`);
+        }} else {{
+          lines.push('    field_xy:');
+        }}
         if (Array.isArray(point.image_xy)) {{
           lines.push(`    image_xy: [${{point.image_xy[0]}}, ${{point.image_xy[1]}}]`);
         }} else {{
           lines.push('    image_xy:');
         }}
+        lines.push(`    required: ${{point.required !== false ? 'true' : 'false'}}`);
+        lines.push(`    use_for_homography: ${{point.use_for_homography !== false ? 'true' : 'false'}}`);
         lines.push('');
       }});
       return lines.join('\\n');
@@ -409,7 +454,11 @@ def build_html(
     }}
 
     function enabledPoints() {{
-      return points.filter(point => point.enabled !== false);
+      return points.filter(point => point.enabled !== false && point.use_for_homography !== false && Array.isArray(point.field_xy));
+    }}
+
+    function requiredPoints() {{
+      return enabledPoints().filter(point => point.required !== false);
     }}
 
     function markedPoints() {{
@@ -418,7 +467,7 @@ def build_html(
 
     function renderSubmitState() {{
       const marked = markedPoints().length;
-      const enabled = enabledPoints().length;
+      const enabled = Math.max(requiredPoints().length, marked);
       submitLabeling.textContent = labelingSubmitted ? `已提交打标 (${{marked}}/${{enabled}})` : `提交打标 (${{marked}}/${{enabled}})`;
       submitLabeling.disabled = !autoSave || marked < minSubmitPoints;
     }}
@@ -464,7 +513,7 @@ def build_html(
 
     async function submitCurrentLabeling() {{
       const marked = markedPoints().length;
-      const enabled = enabledPoints().length;
+      const enabled = Math.max(requiredPoints().length, marked);
       if (!autoSave) {{
         setStatus('提交失败: 请通过 serve_point_picker.py 打开页面', 'failed');
         return;

@@ -11,7 +11,7 @@ import yaml
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 
-from analysis_app_config import DEFAULT_METRICS as CONFIG_DEFAULT_METRICS
+from analysis_app_config import DEFAULT_METRICS as CONFIG_DEFAULT_METRICS, default_calibration_points, should_count_calibration_point
 from analysis_detection_filters import filter_static_ball_false_positives, is_likely_opponent_goalkeeper
 from analysis_metrics import DEFAULT_METRICS, metric_definition, metric_status_rows
 from analysis_report_runs import latest_report_record, write_latest_report
@@ -24,6 +24,7 @@ def base_config(output_dir: Path | None = None, review_dir: Path | None = None) 
             "output_dir": str(output_dir or PROJECT_ROOT / "tmp_reports"),
             "review_dir": str(review_dir or PROJECT_ROOT / "tmp_review"),
         },
+        "calibration": {},
         "teams": {
             "analyze_team": "red",
             "red": {
@@ -40,8 +41,10 @@ def base_config(output_dir: Path | None = None, review_dir: Path | None = None) 
                     "min_frames": 4,
                     "min_duration_s": 1.5,
                     "max_span_m": 0.45,
+                    "marked_static_field": {"min_frames": 2, "max_span_m": 0.8},
                 }
             },
+            "visible_area_filter": {"enabled": True},
             "identity_filter": {
                 "opponent_goalkeeper": {
                     "enabled": True,
@@ -64,6 +67,15 @@ class AnalysisCoreTest(unittest.TestCase):
         self.assertEqual(metric_definition("pass")["label"], "传球")
         rows = metric_status_rows(["pass", "observed_coverage"])
         self.assertEqual([row["指标"] for row in rows], ["传球", "观察覆盖率"])
+
+    def test_default_calibration_points_include_optional_marks(self) -> None:
+        points = default_calibration_points(40.0, 20.0)["points"]
+        by_name = {point["name"]: point for point in points}
+        self.assertEqual(by_name["left_penalty_mark"]["kind"], "static_field_mark")
+        self.assertFalse(by_name["visible_area_bottom_left"]["use_for_homography"])
+        self.assertFalse(by_name["bottom_left_corner"]["required"])
+        self.assertTrue(should_count_calibration_point(by_name["left_penalty_mark"]))
+        self.assertFalse(should_count_calibration_point(by_name["visible_area_top_left"]))
 
     def test_static_ball_filter_removes_stationary_field_mark(self) -> None:
         rows = [
@@ -97,6 +109,58 @@ class AnalysisCoreTest(unittest.TestCase):
         filtered, summary = filter_static_ball_false_positives(rows, base_config())
         self.assertEqual(summary["removed_rows"], 0)
         self.assertEqual(len(filtered), 5)
+
+    def test_marked_static_field_spot_can_filter_short_false_positive(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            points_path = Path(tmp) / "calibration_points.yaml"
+            points_yaml = default_calibration_points(40.0, 20.0)
+            for point in points_yaml["points"]:
+                if point["name"] == "left_penalty_mark":
+                    point["image_xy"] = [100, 120]
+            points_path.write_text(yaml.safe_dump(points_yaml, allow_unicode=True, sort_keys=False), encoding="utf-8")
+            config = base_config()
+            config["calibration"]["points_path"] = str(points_path)
+            rows = [
+                {
+                    "class_name": "sports ball",
+                    "track_id": 7,
+                    "timestamp_sec": index * 0.5,
+                    "field_x_m": 6.05,
+                    "field_y_m": 10.02,
+                    "anchor_x": 102,
+                    "anchor_y": 121,
+                    "inside_play_area": True,
+                }
+                for index in range(2)
+            ]
+            filtered, summary = filter_static_ball_false_positives(rows, config)
+            self.assertEqual(summary["removed_rows"], 2)
+            self.assertEqual(filtered, [])
+
+    def test_visible_area_polygon_filters_outside_rows(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            points_path = Path(tmp) / "calibration_points.yaml"
+            points_yaml = default_calibration_points(40.0, 20.0)
+            polygon = {
+                "visible_area_top_left": [0, 0],
+                "visible_area_top_right": [200, 0],
+                "visible_area_bottom_right": [200, 200],
+                "visible_area_bottom_left": [0, 200],
+            }
+            for point in points_yaml["points"]:
+                if point["name"] in polygon:
+                    point["image_xy"] = polygon[point["name"]]
+            points_path.write_text(yaml.safe_dump(points_yaml, allow_unicode=True, sort_keys=False), encoding="utf-8")
+            config = base_config()
+            config["calibration"]["points_path"] = str(points_path)
+            rows = [
+                {"class_name": "person", "track_id": 1, "anchor_x": 50, "anchor_y": 50, "inside_play_area": True},
+                {"class_name": "person", "track_id": 2, "anchor_x": 250, "anchor_y": 50, "inside_play_area": True},
+            ]
+            filtered, summary = filter_static_ball_false_positives(rows, config)
+            self.assertEqual(len(filtered), 1)
+            self.assertEqual(filtered[0]["track_id"], 1)
+            self.assertEqual(summary["visible_area"]["removed_rows"], 1)
 
     def test_opponent_goalkeeper_filter_flags_far_goal_keeper(self) -> None:
         row = {

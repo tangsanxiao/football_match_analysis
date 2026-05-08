@@ -13,6 +13,11 @@ from typing import Any, Dict, List, Optional, Union
 
 import yaml
 
+try:
+    from analysis_app_config import should_count_calibration_point, sync_calibration_points
+except ModuleNotFoundError:
+    from scripts.analysis_app_config import should_count_calibration_point, sync_calibration_points
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -62,7 +67,7 @@ def has_enough_calibration_points(points_path: Path) -> bool:
     points_yaml = load_yaml(points_path)
     ready = 0
     for point in points_yaml.get("points", []):
-        if point.get("enabled") is False:
+        if not should_count_calibration_point(point):
             continue
         image_xy = point.get("image_xy")
         if isinstance(image_xy, list) and len(image_xy) == 2:
@@ -117,6 +122,11 @@ def initial_recognition_dir(config: Dict[str, Any]) -> Path:
 
 
 def run_calibration_step(config_path: Path, config: Dict[str, Any], points_path: Path) -> None:
+    sync_calibration_points(
+        points_path,
+        float(config.get("field", {}).get("length_m", 40.0)),
+        float(config.get("field", {}).get("width_m", 20.0)),
+    )
     run_command([sys.executable, "scripts/00_probe_video.py", "--config", project_relative(config_path)])
     run_command([sys.executable, "scripts/01_sample_frames.py", "--config", project_relative(config_path)])
 

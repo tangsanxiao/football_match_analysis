@@ -14,8 +14,10 @@ import yaml
 
 try:
     from analysis_metrics import DEFAULT_METRICS
+    from analysis_app_config import default_calibration_points
 except ModuleNotFoundError:
     from scripts.analysis_metrics import DEFAULT_METRICS
+    from scripts.analysis_app_config import default_calibration_points
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -208,28 +210,6 @@ def link_video(source: Path, project_dir: Path, mode: str) -> str:
     return project_relative(target)
 
 
-def default_calibration_points(field_length: float, field_width: float) -> Dict[str, Any]:
-    length = float(field_length)
-    width = float(field_width)
-    return {
-        "calibration": {
-            "image_path": "",
-            "note": "image_path is filled by scripts/09_prepare_match_review.py after sample extraction.",
-        },
-        "points": [
-            {"name": "top_left_corner", "field_xy": [0.0, 0.0], "image_xy": None, "enabled": True},
-            {"name": "top_right_corner", "field_xy": [length, 0.0], "image_xy": None, "enabled": True},
-            {"name": "bottom_left_corner", "field_xy": [0.0, width], "image_xy": None, "enabled": True},
-            {"name": "bottom_right_corner", "field_xy": [length, width], "image_xy": None, "enabled": True},
-            {"name": "center_mark", "field_xy": [length / 2.0, width / 2.0], "image_xy": None, "enabled": True},
-            {"name": "halfway_top_touchline", "field_xy": [length / 2.0, 0.0], "image_xy": None, "enabled": True},
-            {"name": "halfway_bottom_touchline", "field_xy": [length / 2.0, width], "image_xy": None, "enabled": True},
-            {"name": "left_goal_center", "field_xy": [0.0, width / 2.0], "image_xy": None, "enabled": True},
-            {"name": "right_goal_center", "field_xy": [length, width / 2.0], "image_xy": None, "enabled": True},
-        ],
-    }
-
-
 def build_config(info: Dict[str, Any], project_dir: Path, video_path_value: str) -> Dict[str, Any]:
     team_key = info["team_key"]
     config_rel = project_relative(project_dir / "config" / "calibration_points.yaml")
@@ -324,7 +304,14 @@ def build_config(info: Dict[str, Any], project_dir: Path, video_path_value: str)
                     "min_frames": 4,
                     "min_duration_s": 1.5,
                     "max_span_m": 0.45,
+                    "marked_static_field": {
+                        "min_frames": 2,
+                        "max_span_m": 0.8,
+                    },
                 },
+            },
+            "visible_area_filter": {
+                "enabled": True,
             },
             "identity_filter": {
                 "opponent_goalkeeper": {

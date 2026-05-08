@@ -12,8 +12,10 @@ import yaml
 
 try:
     from analysis_report_runs import latest_report_record
+    from analysis_app_config import should_count_calibration_point
 except ModuleNotFoundError:
     from scripts.analysis_report_runs import latest_report_record
+    from scripts.analysis_app_config import should_count_calibration_point
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -61,7 +63,7 @@ def count_marked_points(points_path: Path) -> Tuple[int, int]:
     total = 0
     marked = 0
     for point in points_yaml.get("points", []):
-        if point.get("enabled") is False:
+        if not should_count_calibration_point(point):
             continue
         total += 1
         image_xy = point.get("image_xy")

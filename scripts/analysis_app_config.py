@@ -107,9 +107,175 @@ def default_match_id(match_name: str, video_path: Path) -> str:
     return f"{slugify(seed)}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"[:80]
 
 
-def default_calibration_points(field_length: float, field_width: float) -> Dict[str, Any]:
+def calibration_point_specs(field_length: float, field_width: float) -> List[Dict[str, Any]]:
     length = float(field_length)
     width = float(field_width)
+    penalty_m = min(6.0, max(0.0, length / 2.0 - 1.0))
+    return [
+        {
+            "name": "top_left_corner",
+            "label": "左上角",
+            "kind": "calibration",
+            "field_xy": [0.0, 0.0],
+            "image_xy": None,
+            "enabled": True,
+            "required": True,
+            "help": "可见时优先标；用于场地透视标定。",
+        },
+        {
+            "name": "top_right_corner",
+            "label": "右上角",
+            "kind": "calibration",
+            "field_xy": [length, 0.0],
+            "image_xy": None,
+            "enabled": True,
+            "required": True,
+            "help": "可见时优先标；用于场地透视标定。",
+        },
+        {
+            "name": "bottom_left_corner",
+            "label": "左下角（可选）",
+            "kind": "calibration",
+            "field_xy": [0.0, width],
+            "image_xy": None,
+            "enabled": True,
+            "required": False,
+            "help": "如果画面没拍全，不要猜；留空即可。",
+        },
+        {
+            "name": "bottom_right_corner",
+            "label": "右下角（可选）",
+            "kind": "calibration",
+            "field_xy": [length, width],
+            "image_xy": None,
+            "enabled": True,
+            "required": False,
+            "help": "如果画面没拍全，不要猜；留空即可。",
+        },
+        {
+            "name": "center_mark",
+            "label": "中点",
+            "kind": "calibration",
+            "field_xy": [length / 2.0, width / 2.0],
+            "image_xy": None,
+            "enabled": True,
+            "required": True,
+            "help": "中圈/中线中心点；用于场地透视标定。",
+        },
+        {
+            "name": "halfway_top_touchline",
+            "label": "中线-上边线",
+            "kind": "calibration",
+            "field_xy": [length / 2.0, 0.0],
+            "image_xy": None,
+            "enabled": True,
+            "required": True,
+            "help": "中线与上侧边线交点；用于场地透视标定。",
+        },
+        {
+            "name": "halfway_bottom_touchline",
+            "label": "中线-下边线",
+            "kind": "calibration",
+            "field_xy": [length / 2.0, width],
+            "image_xy": None,
+            "enabled": True,
+            "required": True,
+            "help": "中线与下侧边线交点；用于场地透视标定。",
+        },
+        {
+            "name": "left_goal_center",
+            "label": "左球门中心",
+            "kind": "calibration",
+            "field_xy": [0.0, width / 2.0],
+            "image_xy": None,
+            "enabled": True,
+            "required": True,
+            "help": "左侧球门线中心；用于场地透视标定。",
+        },
+        {
+            "name": "right_goal_center",
+            "label": "右球门中心",
+            "kind": "calibration",
+            "field_xy": [length, width / 2.0],
+            "image_xy": None,
+            "enabled": True,
+            "required": True,
+            "help": "右侧球门线中心；用于场地透视标定。",
+        },
+        {
+            "name": "left_penalty_mark",
+            "label": "左侧点球点/白点（可选）",
+            "kind": "static_field_mark",
+            "field_xy": [penalty_m, width / 2.0],
+            "image_xy": None,
+            "enabled": True,
+            "required": False,
+            "use_for_homography": True,
+            "static_filter_radius_m": 0.65,
+            "static_filter_radius_px": 22,
+            "help": "用于过滤白点被识别成足球；如果确认是标准点球点，也会辅助标定。",
+        },
+        {
+            "name": "right_penalty_mark",
+            "label": "右侧点球点/白点（可选）",
+            "kind": "static_field_mark",
+            "field_xy": [length - penalty_m, width / 2.0],
+            "image_xy": None,
+            "enabled": True,
+            "required": False,
+            "use_for_homography": True,
+            "static_filter_radius_m": 0.65,
+            "static_filter_radius_px": 22,
+            "help": "用于过滤白点被识别成足球；如果确认是标准点球点，也会辅助标定。",
+        },
+        {
+            "name": "visible_area_top_left",
+            "label": "可见区域左上",
+            "kind": "visible_area",
+            "field_xy": None,
+            "image_xy": None,
+            "enabled": True,
+            "required": False,
+            "use_for_homography": False,
+            "help": "沿画面里实际可见的球场区域按顺时针标；用于过滤画面外/边缘误检。",
+        },
+        {
+            "name": "visible_area_top_right",
+            "label": "可见区域右上",
+            "kind": "visible_area",
+            "field_xy": None,
+            "image_xy": None,
+            "enabled": True,
+            "required": False,
+            "use_for_homography": False,
+            "help": "沿画面里实际可见的球场区域按顺时针标；用于过滤画面外/边缘误检。",
+        },
+        {
+            "name": "visible_area_bottom_right",
+            "label": "可见区域右下",
+            "kind": "visible_area",
+            "field_xy": None,
+            "image_xy": None,
+            "enabled": True,
+            "required": False,
+            "use_for_homography": False,
+            "help": "沿画面里实际可见的球场区域按顺时针标；用于过滤画面外/边缘误检。",
+        },
+        {
+            "name": "visible_area_bottom_left",
+            "label": "可见区域左下",
+            "kind": "visible_area",
+            "field_xy": None,
+            "image_xy": None,
+            "enabled": True,
+            "required": False,
+            "use_for_homography": False,
+            "help": "沿画面里实际可见的球场区域按顺时针标；用于过滤画面外/边缘误检。",
+        },
+    ]
+
+
+def default_calibration_points(field_length: float, field_width: float) -> Dict[str, Any]:
     return {
         "calibration": {
             "image_path": "",
@@ -117,18 +283,17 @@ def default_calibration_points(field_length: float, field_width: float) -> Dict[
             "labeling_submitted": False,
             "note": "image_path is filled by scripts/09_prepare_match_review.py after sample extraction.",
         },
-        "points": [
-            {"name": "top_left_corner", "field_xy": [0.0, 0.0], "image_xy": None, "enabled": True},
-            {"name": "top_right_corner", "field_xy": [length, 0.0], "image_xy": None, "enabled": True},
-            {"name": "bottom_left_corner", "field_xy": [0.0, width], "image_xy": None, "enabled": True},
-            {"name": "bottom_right_corner", "field_xy": [length, width], "image_xy": None, "enabled": True},
-            {"name": "center_mark", "field_xy": [length / 2.0, width / 2.0], "image_xy": None, "enabled": True},
-            {"name": "halfway_top_touchline", "field_xy": [length / 2.0, 0.0], "image_xy": None, "enabled": True},
-            {"name": "halfway_bottom_touchline", "field_xy": [length / 2.0, width], "image_xy": None, "enabled": True},
-            {"name": "left_goal_center", "field_xy": [0.0, width / 2.0], "image_xy": None, "enabled": True},
-            {"name": "right_goal_center", "field_xy": [length, width / 2.0], "image_xy": None, "enabled": True},
-        ],
+        "points": calibration_point_specs(field_length, field_width),
     }
+
+
+def should_count_calibration_point(point: Dict[str, Any]) -> bool:
+    if point.get("enabled") is False:
+        return False
+    if point.get("use_for_homography") is False:
+        return False
+    field_xy = point.get("field_xy")
+    return isinstance(field_xy, list) and len(field_xy) == 2
 
 
 def sync_calibration_points(
@@ -145,21 +310,19 @@ def sync_calibration_points(
     points_yaml = load_yaml(points_path)
     length = float(field_length)
     width = float(field_width)
-    field_xy_by_name = {
-        "top_left_corner": [0.0, 0.0],
-        "top_right_corner": [length, 0.0],
-        "bottom_left_corner": [0.0, width],
-        "bottom_right_corner": [length, width],
-        "center_mark": [length / 2.0, width / 2.0],
-        "halfway_top_touchline": [length / 2.0, 0.0],
-        "halfway_bottom_touchline": [length / 2.0, width],
-        "left_goal_center": [0.0, width / 2.0],
-        "right_goal_center": [length, width / 2.0],
-    }
-    for point in points_yaml.get("points", []):
-        name = point.get("name")
-        if name in field_xy_by_name:
-            point["field_xy"] = field_xy_by_name[name]
+    specs_by_name = {point["name"]: point for point in calibration_point_specs(length, width)}
+    existing = points_yaml.setdefault("points", [])
+    existing_by_name = {str(point.get("name")): point for point in existing}
+    for name, spec in specs_by_name.items():
+        if name not in existing_by_name:
+            existing.append(spec)
+            continue
+        point = existing_by_name[name]
+        for key, value in spec.items():
+            if key == "image_xy":
+                point.setdefault(key, value)
+            else:
+                point[key] = value
     calibration = points_yaml.setdefault("calibration", {})
     if field_changed and (calibration.get("labeling_submitted") or calibration.get("labeling_status") == "submitted"):
         calibration["labeling_status"] = "draft_after_field_change"
@@ -269,7 +432,14 @@ def build_config(info: Dict[str, Any], project_dir: Path, video_path_value: str)
                     "min_frames": 4,
                     "min_duration_s": 1.5,
                     "max_span_m": 0.45,
+                    "marked_static_field": {
+                        "min_frames": 2,
+                        "max_span_m": 0.8,
+                    },
                 },
+            },
+            "visible_area_filter": {
+                "enabled": True,
             },
             "identity_filter": {
                 "opponent_goalkeeper": {
@@ -412,13 +582,15 @@ def list_videos() -> List[Dict[str, str]]:
 def point_counts(points_path: Path) -> Tuple[int, int, bool]:
     points_yaml = load_yaml(points_path)
     marked = 0
-    enabled = 0
+    required = 0
     for point in points_yaml.get("points", []):
-        if point.get("enabled") is False:
+        if not should_count_calibration_point(point):
             continue
-        enabled += 1
+        if point.get("required") is not False:
+            required += 1
         if isinstance(point.get("image_xy"), list) and len(point.get("image_xy")) == 2:
             marked += 1
+    enabled = max(required, marked)
     calibration = points_yaml.get("calibration", {})
     submitted = bool(calibration.get("labeling_submitted") or calibration.get("labeling_status") == "submitted")
     return marked, enabled, submitted

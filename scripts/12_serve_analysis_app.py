@@ -31,6 +31,7 @@ try:
         roster_options,
         safe_float,
         safe_int,
+        sync_calibration_points,
         write_yaml,
     )
     from analysis_app_jobs import (
@@ -63,6 +64,7 @@ except ModuleNotFoundError:
         roster_options,
         safe_float,
         safe_int,
+        sync_calibration_points,
         write_yaml,
     )
     from scripts.analysis_app_jobs import (
@@ -568,6 +570,11 @@ class Handler(BaseHTTPRequestHandler):
         config_path = PROJECT_ROOT / "matches" / match_id / "config" / "match.yaml"
         config = load_yaml(config_path)
         points_path = self.points_path_for(match_id)
+        sync_calibration_points(
+            points_path,
+            float(config.get("field", {}).get("length_m", 40.0)),
+            float(config.get("field", {}).get("width_m", 20.0)),
+        )
         points_yaml = load_yaml_file(points_path)
         image_path_value = points_yaml.get("calibration", {}).get("image_path")
         if not image_path_value:
