@@ -1,4 +1,4 @@
-status: pending
+status: submitted
 match_id: 中青赛_1_20260506_213657
 source_detections_dir: matches/中青赛_1_20260506_213657/data/interim/detections/segment_0000_0579_2fps
 review_item_count: 120
@@ -24,11 +24,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0002
   type: ball_position
   reason: key_timestamp_window
@@ -50,11 +51,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0003
   type: ball_position
   reason: key_timestamp_window
@@ -76,11 +78,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0004
   type: ball_position
   reason: key_timestamp_window
@@ -102,11 +105,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0005
   type: ball_position
   reason: ball_detection_window
@@ -128,11 +132,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1205.3
+    - 223.6
+    source_image_xy:
+    - 2024.9
+    - 375.65
     note: ''
+    field_xy:
+    - 32.669
+    - 5.34
 - review_id: ball_0006
   type: ball_position
   reason: ball_detection_window
@@ -154,11 +165,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1145.0
+    - 211.0
+    source_image_xy:
+    - 1923.6
+    - 354.48
     note: ''
+    field_xy:
+    - 30.383
+    - 3.192
 - review_id: ball_0007
   type: ball_position
   reason: ball_detection_window
@@ -186,11 +204,18 @@ items:
       - 2.73
       - 9.04
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1150.1
+    - 206.5
+    source_image_xy:
+    - 1932.17
+    - 346.92
     note: ''
+    field_xy:
+    - 31.691
+    - 2.335
 - review_id: ball_0008
   type: ball_position
   reason: ball_detection_window
@@ -218,11 +243,18 @@ items:
       - 2.73
       - 9.05
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1151.7
+    - 202.6
+    source_image_xy:
+    - 1934.86
+    - 340.37
     note: ''
+    field_xy:
+    - 32.665
+    - 1.547
 - review_id: ball_0009
   type: ball_position
   reason: ball_detection_window
@@ -244,11 +276,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1154.7
+    - 198.5
+    source_image_xy:
+    - 1939.9
+    - 333.48
     note: ''
+    field_xy:
+    - 33.878
+    - 0.657
 - review_id: ball_0010
   type: ball_position
   reason: ball_detection_window
@@ -276,11 +315,18 @@ items:
       - 2.73
       - 9.04
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1153.0
+    - 197.0
+    source_image_xy:
+    - 1937.04
+    - 330.96
     note: ''
+    field_xy:
+    - 34.083
+    - 0.332
 - review_id: ball_0011
   type: ball_position
   reason: ball_detection_window
@@ -302,11 +348,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1134.8
+    - 194.1
+    source_image_xy:
+    - 1906.46
+    - 326.09
     note: ''
+    field_xy:
+    - 33.098
+    - -0.212
 - review_id: ball_0012
   type: ball_position
   reason: ball_detection_window
@@ -334,11 +387,18 @@ items:
       - 2.73
       - 9.05
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1139.4
+    - 197.4
+    source_image_xy:
+    - 1914.19
+    - 331.63
     note: ''
+    field_xy:
+    - 32.751
+    - 0.5
 - review_id: ball_0013
   type: ball_position
   reason: ball_detection_window
@@ -366,11 +426,18 @@ items:
       - 2.73
       - 9.04
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1143.3
+    - 201.2
+    source_image_xy:
+    - 1920.74
+    - 338.02
     note: ''
+    field_xy:
+    - 32.245
+    - 1.293
 - review_id: ball_0014
   type: ball_position
   reason: ball_detection_window
@@ -398,11 +465,18 @@ items:
       - 2.73
       - 9.04
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1209.7
+    - 225.8
+    source_image_xy:
+    - 2032.3
+    - 379.34
     note: ''
+    field_xy:
+    - 32.573
+    - 5.702
 - review_id: ball_0015
   type: ball_position
   reason: ball_detection_window
@@ -430,11 +504,18 @@ items:
       - 2.73
       - 9.03
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1180.4
+    - 221.6
+    source_image_xy:
+    - 1983.07
+    - 372.29
     note: ''
+    field_xy:
+    - 31.109
+    - 4.996
 - review_id: ball_0016
   type: ball_position
   reason: ball_detection_window
@@ -456,11 +537,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1177.5
+    - 226.4
+    source_image_xy:
+    - 1978.2
+    - 380.35
     note: ''
+    field_xy:
+    - 30.012
+    - 5.753
 - review_id: ball_0017
   type: ball_position
   reason: ball_detection_window
@@ -482,11 +570,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1220.8
+    - 243.2
+    source_image_xy:
+    - 2050.94
+    - 408.58
     note: ''
+    field_xy:
+    - 30.194
+    - 8.234
 - review_id: ball_0018
   type: ball_position
   reason: ball_detection_window
@@ -514,11 +609,18 @@ items:
       - 2.73
       - 9.04
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1228.8
+    - 247.8
+    source_image_xy:
+    - 2064.38
+    - 416.3
     note: ''
+    field_xy:
+    - 29.979
+    - 8.848
 - review_id: ball_0019
   type: ball_position
   reason: ball_detection_window
@@ -546,11 +648,18 @@ items:
       - 2.73
       - 9.04
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1198.3
+    - 240.0
+    source_image_xy:
+    - 2013.14
+    - 403.2
     note: ''
+    field_xy:
+    - 29.182
+    - 7.733
 - review_id: ball_0020
   type: ball_position
   reason: ball_detection_window
@@ -578,11 +687,18 @@ items:
       - 2.73
       - 9.05
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1136.3
+    - 231.2
+    source_image_xy:
+    - 1908.98
+    - 388.42
     note: ''
+    field_xy:
+    - 26.444
+    - 6.382
 - review_id: ball_0021
   type: ball_position
   reason: ball_detection_window
@@ -610,11 +726,18 @@ items:
       - 2.73
       - 9.04
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1150.5
+    - 233.4
+    source_image_xy:
+    - 1932.84
+    - 392.11
     note: ''
+    field_xy:
+    - 27.038
+    - 6.713
 - review_id: ball_0022
   type: ball_position
   reason: ball_detection_window
@@ -636,11 +759,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1184.3
+    - 241.3
+    source_image_xy:
+    - 1989.62
+    - 405.38
     note: ''
+    field_xy:
+    - 28.053
+    - 7.853
 - review_id: ball_0023
   type: ball_position
   reason: ball_detection_window
@@ -668,11 +798,18 @@ items:
       - 2.73
       - 9.04
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1203.9
+    - 246.6
+    source_image_xy:
+    - 2022.55
+    - 414.29
     note: ''
+    field_xy:
+    - 28.523
+    - 8.591
 - review_id: ball_0024
   type: ball_position
   reason: ball_detection_window
@@ -700,11 +837,12 @@ items:
       - 2.73
       - 9.04
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0025
   type: ball_position
   reason: ball_detection_window
@@ -732,11 +870,12 @@ items:
       - 2.73
       - 9.05
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0026
   type: ball_position
   reason: ball_detection_window
@@ -758,11 +897,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1184.1
+    - 221.7
+    source_image_xy:
+    - 1989.29
+    - 372.46
     note: ''
+    field_xy:
+    - 31.376
+    - 5.014
 - review_id: ball_0027
   type: ball_position
   reason: ball_detection_window
@@ -790,11 +936,18 @@ items:
       - 2.73
       - 9.04
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1146.1
+    - 206.9
+    source_image_xy:
+    - 1925.45
+    - 347.59
     note: ''
+    field_xy:
+    - 31.279
+    - 2.424
 - review_id: ball_0028
   type: ball_position
   reason: ball_detection_window
@@ -822,11 +975,18 @@ items:
       - 2.73
       - 9.03
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1096.7
+    - 194.3
+    source_image_xy:
+    - 1842.46
+    - 326.42
     note: ''
+    field_xy:
+    - 29.755
+    - 0.076
 - review_id: ball_0029
   type: ball_position
   reason: ball_detection_window
@@ -848,11 +1008,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1068.8
+    - 186.5
+    source_image_xy:
+    - 1795.58
+    - 313.32
     note: ''
+    field_xy:
+    - 28.99
+    - -1.465
 - review_id: ball_0030
   type: ball_position
   reason: ball_detection_window
@@ -874,11 +1041,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1083.7
+    - 188.7
+    source_image_xy:
+    - 1820.62
+    - 317.02
     note: ''
+    field_xy:
+    - 29.795
+    - -1.078
 - review_id: ball_0031
   type: ball_position
   reason: ball_detection_window
@@ -900,11 +1074,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1121.4
+    - 196.2
+    source_image_xy:
+    - 1883.95
+    - 329.62
     note: ''
+    field_xy:
+    - 31.44
+    - 0.341
 - review_id: ball_0032
   type: ball_position
   reason: key_timestamp_window
@@ -926,11 +1107,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1192.4
+    - 209.8
+    source_image_xy:
+    - 2003.23
+    - 352.46
     note: ''
+    field_xy:
+    - 34.61
+    - 2.868
 - review_id: ball_0033
   type: ball_position
   reason: ball_detection_window
@@ -952,11 +1140,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1260.6
+    - 219.3
+    source_image_xy:
+    - 2117.81
+    - 368.42
     note: ''
+    field_xy:
+    - 38.559
+    - 4.612
 - review_id: ball_0034
   type: ball_position
   reason: ball_detection_window
@@ -984,11 +1179,18 @@ items:
       - 2.73
       - 9.02
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1218.4
+    - 207.7
+    source_image_xy:
+    - 2046.91
+    - 348.94
     note: ''
+    field_xy:
+    - 37.59
+    - 2.368
 - review_id: ball_0035
   type: ball_position
   reason: ball_detection_window
@@ -1010,11 +1212,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1161.2
+    - 187.8
+    source_image_xy:
+    - 1950.82
+    - 315.5
     note: ''
+    field_xy:
+    - 37.356
+    - -1.988
 - review_id: ball_0036
   type: ball_position
   reason: ball_detection_window
@@ -1036,11 +1245,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0037
   type: ball_position
   reason: ball_detection_window
@@ -1062,11 +1272,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0038
   type: ball_position
   reason: key_timestamp_window
@@ -1088,11 +1299,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0039
   type: ball_position
   reason: key_timestamp_window
@@ -1114,11 +1326,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0040
   type: ball_position
   reason: key_timestamp_window
@@ -1140,11 +1353,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0041
   type: ball_position
   reason: key_timestamp_window
@@ -1166,11 +1380,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1170.0
+    - 194.5
+    source_image_xy:
+    - 1965.6
+    - 326.76
     note: ''
+    field_xy:
+    - 36.37
+    - -0.365
 - review_id: ball_0042
   type: ball_position
   reason: key_timestamp_window
@@ -1192,11 +1413,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1199.4
+    - 203.1
+    source_image_xy:
+    - 2014.99
+    - 341.21
     note: ''
+    field_xy:
+    - 36.964
+    - 1.447
 - review_id: ball_0043
   type: ball_position
   reason: key_timestamp_window
@@ -1218,11 +1446,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1200.1
+    - 201.3
+    source_image_xy:
+    - 2016.17
+    - 338.18
     note: ''
+    field_xy:
+    - 37.528
+    - 1.041
 - review_id: ball_0044
   type: ball_position
   reason: key_timestamp_window
@@ -1244,11 +1479,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0045
   type: ball_position
   reason: key_timestamp_window
@@ -1270,11 +1506,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0046
   type: ball_position
   reason: key_timestamp_window
@@ -1296,11 +1533,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1301.1
+    - 236.9
+    source_image_xy:
+    - 2185.85
+    - 397.99
     note: ''
+    field_xy:
+    - 37.765
+    - 7.67
 - review_id: ball_0047
   type: ball_position
   reason: ball_detection_window
@@ -1322,11 +1566,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0048
   type: ball_position
   reason: ball_detection_window
@@ -1354,11 +1599,12 @@ items:
       - 2.73
       - 9.02
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0049
   type: ball_position
   reason: ball_detection_window
@@ -1380,11 +1626,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1351.9
+    - 238.8
+    source_image_xy:
+    - 2271.19
+    - 401.18
     note: ''
+    field_xy:
+    - 42.027
+    - 8.182
 - review_id: ball_0050
   type: ball_position
   reason: ball_detection_window
@@ -1412,11 +1665,18 @@ items:
       - 2.73
       - 9.02
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1387.1
+    - 251.3
+    source_image_xy:
+    - 2330.33
+    - 422.18
     note: ''
+    field_xy:
+    - 41.888
+    - 10.211
 - review_id: ball_0051
   type: ball_position
   reason: ball_detection_window
@@ -1438,11 +1698,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1372.6
+    - 255.9
+    source_image_xy:
+    - 2305.97
+    - 429.91
     note: ''
+    field_xy:
+    - 39.368
+    - 10.703
 - review_id: ball_0052
   type: ball_position
   reason: ball_detection_window
@@ -1464,11 +1731,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1368.8
+    - 199.1
+    source_image_xy:
+    - 2299.58
+    - 334.49
     note: ''
+    field_xy:
+    - 61.496
+    - -0.828
 - review_id: ball_0053
   type: ball_position
   reason: ball_detection_window
@@ -1490,11 +1764,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1291.8
+    - 229.3
+    source_image_xy:
+    - 2170.22
+    - 385.22
     note: ''
+    field_xy:
+    - 38.856
+    - 6.426
 - review_id: ball_0054
   type: ball_position
   reason: key_timestamp_window
@@ -1516,11 +1797,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1313.7
+    - 259.7
+    source_image_xy:
+    - 2207.02
+    - 436.3
     note: ''
+    field_xy:
+    - 33.844
+    - 10.738
 - review_id: ball_0055
   type: ball_position
   reason: key_timestamp_window
@@ -1542,11 +1830,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1352.5
+    - 265.4
+    source_image_xy:
+    - 2272.2
+    - 445.87
     note: ''
+    field_xy:
+    - 35.61
+    - 11.657
 - review_id: ball_0056
   type: ball_position
   reason: key_timestamp_window
@@ -1568,11 +1863,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1558.1
+    - 300.7
+    source_image_xy:
+    - 2617.61
+    - 505.18
     note: ''
+    field_xy:
+    - 44.088
+    - 17.168
 - review_id: ball_0057
   type: ball_position
   reason: key_timestamp_window
@@ -1594,11 +1896,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0058
   type: ball_position
   reason: key_timestamp_window
@@ -1620,11 +1923,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0059
   type: ball_position
   reason: key_timestamp_window
@@ -1646,11 +1950,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0060
   type: ball_position
   reason: key_timestamp_window
@@ -1672,11 +1977,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0061
   type: ball_position
   reason: ball_detection_window
@@ -1698,11 +2004,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 535.8
+    - 231.3
+    source_image_xy:
+    - 900.14
+    - 388.58
     note: ''
+    field_xy:
+    - 3.318
+    - 5.695
 - review_id: ball_0062
   type: ball_position
   reason: ball_detection_window
@@ -1730,11 +2043,18 @@ items:
       - 2.73
       - 9.05
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 542.0
+    - 229.8
+    source_image_xy:
+    - 910.56
+    - 386.06
     note: ''
+    field_xy:
+    - 3.465
+    - 5.569
 - review_id: ball_0063
   type: ball_position
   reason: ball_detection_window
@@ -1756,11 +2076,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 536.6
+    - 208.9
+    source_image_xy:
+    - 901.49
+    - 350.95
     note: ''
+    field_xy:
+    - 3.358
+    - 3.598
 - review_id: ball_0064
   type: ball_position
   reason: ball_detection_window
@@ -1788,11 +2115,18 @@ items:
       - 2.73
       - 9.04
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 793.4
+    - 221.3
+    source_image_xy:
+    - 1332.91
+    - 371.78
     note: ''
+    field_xy:
+    - 10.885
+    - 4.842
 - review_id: ball_0065
   type: ball_position
   reason: ball_detection_window
@@ -1814,11 +2148,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 948.3
+    - 245.2
+    source_image_xy:
+    - 1593.14
+    - 411.94
     note: ''
+    field_xy:
+    - 15.623
+    - 7.6
 - review_id: ball_0066
   type: ball_position
   reason: key_timestamp_window
@@ -1840,11 +2181,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1412.7
+    - 423.1
+    source_image_xy:
+    - 2373.34
+    - 710.81
     note: ''
+    field_xy:
+    - 21.29
+    - 20.853
 - review_id: ball_0067
   type: ball_position
   reason: key_timestamp_window
@@ -1866,11 +2214,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1031.3
+    - 284.3
+    source_image_xy:
+    - 1732.58
+    - 477.62
     note: ''
+    field_xy:
+    - 16.551
+    - 11.338
 - review_id: ball_0068
   type: ball_position
   reason: key_timestamp_window
@@ -1892,11 +2247,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1075.6
+    - 259.1
+    source_image_xy:
+    - 1807.01
+    - 435.29
     note: ''
+    field_xy:
+    - 20.115
+    - 9.402
 - review_id: ball_0069
   type: ball_position
   reason: key_timestamp_window
@@ -1918,11 +2280,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1051.5
+    - 249.0
+    source_image_xy:
+    - 1766.52
+    - 418.32
     note: ''
+    field_xy:
+    - 19.844
+    - 8.292
 - review_id: ball_0070
   type: ball_position
   reason: key_timestamp_window
@@ -1944,11 +2313,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 986.6
+    - 249.0
+    source_image_xy:
+    - 1657.49
+    - 418.32
     note: ''
+    field_xy:
+    - 16.96
+    - 8.088
 - review_id: ball_0071
   type: ball_position
   reason: key_timestamp_window
@@ -1970,11 +2346,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 927.4
+    - 242.2
+    source_image_xy:
+    - 1558.03
+    - 406.9
     note: ''
+    field_xy:
+    - 14.962
+    - 7.245
 - review_id: ball_0072
   type: ball_position
   reason: key_timestamp_window
@@ -1996,11 +2379,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0073
   type: ball_position
   reason: key_timestamp_window
@@ -2022,11 +2406,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0074
   type: ball_position
   reason: key_timestamp_window
@@ -2048,11 +2433,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0075
   type: ball_position
   reason: key_timestamp_window
@@ -2074,11 +2460,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0076
   type: ball_position
   reason: key_timestamp_window
@@ -2100,11 +2487,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0077
   type: ball_position
   reason: key_timestamp_window
@@ -2126,11 +2514,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1590.4
+    - 366.3
+    source_image_xy:
+    - 2671.87
+    - 615.38
     note: ''
+    field_xy:
+    - 33.795
+    - 21.078
 - review_id: ball_0078
   type: ball_position
   reason: key_timestamp_window
@@ -2152,11 +2547,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1434.2
+    - 358.6
+    source_image_xy:
+    - 2409.46
+    - 602.45
     note: ''
+    field_xy:
+    - 27.066
+    - 18.892
 - review_id: ball_0079
   type: ball_position
   reason: key_timestamp_window
@@ -2178,11 +2580,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1438.1
+    - 468.4
+    source_image_xy:
+    - 2416.01
+    - 786.91
     note: ''
+    field_xy:
+    - 19.619
+    - 22.137
 - review_id: ball_0080
   type: ball_position
   reason: key_timestamp_window
@@ -2204,11 +2613,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0081
   type: ball_position
   reason: key_timestamp_window
@@ -2230,11 +2640,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1386.0
+    - 483.9
+    source_image_xy:
+    - 2328.48
+    - 812.95
     note: ''
+    field_xy:
+    - 17.637
+    - 21.988
 - review_id: ball_0082
   type: ball_position
   reason: key_timestamp_window
@@ -2256,11 +2673,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1382.2
+    - 426.0
+    source_image_xy:
+    - 2322.1
+    - 715.68
     note: ''
+    field_xy:
+    - 20.198
+    - 20.648
 - review_id: ball_0083
   type: ball_position
   reason: key_timestamp_window
@@ -2282,11 +2706,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1386.0
+    - 429.9
+    source_image_xy:
+    - 2328.48
+    - 722.23
     note: ''
+    field_xy:
+    - 20.101
+    - 20.786
 - review_id: ball_0084
   type: ball_position
   reason: key_timestamp_window
@@ -2308,11 +2739,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1388.0
+    - 429.9
+    source_image_xy:
+    - 2331.84
+    - 722.23
     note: ''
+    field_xy:
+    - 20.16
+    - 20.804
 - review_id: ball_0085
   type: ball_position
   reason: key_timestamp_window
@@ -2334,11 +2772,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1187.5
+    - 271.8
+    source_image_xy:
+    - 1995.0
+    - 456.62
     note: ''
+    field_xy:
+    - 24.348
+    - 11.165
 - review_id: ball_0086
   type: ball_position
   reason: key_timestamp_window
@@ -2360,11 +2805,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1199.0
+    - 256.4
+    source_image_xy:
+    - 2014.32
+    - 430.75
     note: ''
+    field_xy:
+    - 26.83
+    - 9.696
 - review_id: ball_0087
   type: ball_position
   reason: key_timestamp_window
@@ -2386,11 +2838,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1177.0
+    - 229.1
+    source_image_xy:
+    - 1977.36
+    - 384.89
     note: ''
+    field_xy:
+    - 29.508
+    - 6.158
 - review_id: ball_0088
   type: ball_position
   reason: key_timestamp_window
@@ -2412,11 +2871,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1189.5
+    - 220.8
+    source_image_xy:
+    - 1998.36
+    - 370.94
     note: ''
+    field_xy:
+    - 31.975
+    - 4.867
 - review_id: ball_0089
   type: ball_position
   reason: ball_detection_window
@@ -2438,11 +2904,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0090
   type: ball_position
   reason: ball_detection_window
@@ -2470,11 +2937,18 @@ items:
       - 2.73
       - 9.01
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1258.6
+    - 218.4
+    source_image_xy:
+    - 2114.45
+    - 366.91
     note: ''
+    field_xy:
+    - 38.609
+    - 4.443
 - review_id: ball_0091
   type: ball_position
   reason: ball_detection_window
@@ -2496,11 +2970,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1203.4
+    - 208.3
+    source_image_xy:
+    - 2021.71
+    - 349.94
     note: ''
+    field_xy:
+    - 35.987
+    - 2.538
 - review_id: ball_0092
   type: ball_position
   reason: ball_detection_window
@@ -2522,11 +3003,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1149.4
+    - 192.4
+    source_image_xy:
+    - 1930.99
+    - 323.23
     note: ''
+    field_xy:
+    - 34.891
+    - -0.717
 - review_id: ball_0093
   type: ball_position
   reason: ball_detection_window
@@ -2548,11 +3036,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0094
   type: ball_position
   reason: ball_detection_window
@@ -2580,11 +3069,18 @@ items:
       - 2.73
       - 8.99
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1118.2
+    - 185.0
+    source_image_xy:
+    - 1878.58
+    - 310.8
     note: ''
+    field_xy:
+    - 33.749
+    - -2.285
 - review_id: ball_0095
   type: ball_position
   reason: ball_detection_window
@@ -2612,11 +3108,18 @@ items:
       - 2.73
       - 9.01
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1132.4
+    - 189.5
+    source_image_xy:
+    - 1902.43
+    - 318.36
     note: ''
+    field_xy:
+    - 33.988
+    - -1.285
 - review_id: ball_0096
   type: ball_position
   reason: ball_detection_window
@@ -2638,11 +3141,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1136.2
+    - 190.8
+    source_image_xy:
+    - 1908.82
+    - 320.54
     note: ''
+    field_xy:
+    - 34.027
+    - -0.999
 - review_id: ball_0097
   type: ball_position
   reason: ball_detection_window
@@ -2664,11 +3174,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1147.0
+    - 195.8
+    source_image_xy:
+    - 1926.96
+    - 328.94
     note: ''
+    field_xy:
+    - 33.816
+    - 0.097
 - review_id: ball_0098
   type: ball_position
   reason: ball_detection_window
@@ -2696,11 +3213,18 @@ items:
       - 2.73
       - 9.01
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1152.2
+    - 194.3
+    source_image_xy:
+    - 1935.7
+    - 326.42
     note: ''
+    field_xy:
+    - 34.677
+    - -0.285
 - review_id: ball_0099
   type: ball_position
   reason: ball_detection_window
@@ -2722,11 +3246,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0100
   type: ball_position
   reason: ball_detection_window
@@ -2754,11 +3279,18 @@ items:
       - 2.73
       - 8.99
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1149.9
+    - 194.9
+    source_image_xy:
+    - 1931.83
+    - 327.43
     note: ''
+    field_xy:
+    - 34.308
+    - -0.129
 - review_id: ball_0101
   type: ball_position
   reason: ball_detection_window
@@ -2780,11 +3312,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1196.8
+    - 210.4
+    source_image_xy:
+    - 2010.62
+    - 353.47
     note: ''
+    field_xy:
+    - 34.863
+    - 2.975
 - review_id: ball_0102
   type: ball_position
   reason: ball_detection_window
@@ -2806,11 +3345,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1301.0
+    - 262.9
+    source_image_xy:
+    - 2185.68
+    - 441.67
     note: ''
+    field_xy:
+    - 32.356
+    - 11.007
 - review_id: ball_0103
   type: ball_position
   reason: ball_detection_window
@@ -2838,11 +3384,18 @@ items:
       - 2.73
       - 9.04
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1309.1
+    - 274.2
+    source_image_xy:
+    - 2199.29
+    - 460.66
     note: ''
+    field_xy:
+    - 31.014
+    - 12.215
 - review_id: ball_0104
   type: ball_position
   reason: ball_detection_window
@@ -2864,11 +3417,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1335.0
+    - 271.3
+    source_image_xy:
+    - 2242.8
+    - 455.78
     note: ''
+    field_xy:
+    - 33.222
+    - 12.134
 - review_id: ball_0105
   type: ball_position
   reason: ball_detection_window
@@ -2890,11 +3450,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1353.2
+    - 261.7
+    source_image_xy:
+    - 2273.38
+    - 439.66
     note: ''
+    field_xy:
+    - 36.434
+    - 11.25
 - review_id: ball_0106
   type: ball_position
   reason: ball_detection_window
@@ -2922,11 +3489,18 @@ items:
       - 2.73
       - 9.03
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1307.0
+    - 239.4
+    source_image_xy:
+    - 2195.76
+    - 402.19
     note: ''
+    field_xy:
+    - 37.675
+    - 8.069
 - review_id: ball_0107
   type: ball_position
   reason: ball_detection_window
@@ -2948,11 +3522,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1283.0
+    - 225.7
+    source_image_xy:
+    - 2155.44
+    - 379.18
     note: ''
+    field_xy:
+    - 38.983
+    - 5.791
 - review_id: ball_0108
   type: ball_position
   reason: ball_detection_window
@@ -2980,11 +3561,12 @@ items:
       - 2.73
       - 9.02
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0109
   type: ball_position
   reason: ball_detection_window
@@ -3006,11 +3588,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1290.6
+    - 221.8
+    source_image_xy:
+    - 2168.21
+    - 372.62
     note: ''
+    field_xy:
+    - 40.838
+    - 5.091
 - review_id: ball_0110
   type: ball_position
   reason: ball_detection_window
@@ -3038,11 +3627,12 @@ items:
       - 2.73
       - 9.04
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0111
   type: ball_position
   reason: ball_detection_window
@@ -3064,11 +3654,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0112
   type: ball_position
   reason: ball_detection_window
@@ -3090,11 +3681,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0113
   type: ball_position
   reason: ball_detection_window
@@ -3116,11 +3708,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0114
   type: ball_position
   reason: ball_detection_window
@@ -3142,11 +3735,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0115
   type: ball_position
   reason: ball_detection_window
@@ -3174,11 +3768,12 @@ items:
       - 2.73
       - 9.01
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0116
   type: ball_position
   reason: ball_detection_window
@@ -3200,11 +3795,12 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
 - review_id: ball_0117
   type: ball_position
   reason: ball_detection_window
@@ -3232,11 +3828,18 @@ items:
       - 2.73
       - 9.03
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1296.6
+    - 221.9
+    source_image_xy:
+    - 2178.29
+    - 372.79
     note: ''
+    field_xy:
+    - 41.427
+    - 5.114
 - review_id: ball_0118
   type: ball_position
   reason: ball_detection_window
@@ -3258,11 +3861,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1297.4
+    - 224.9
+    source_image_xy:
+    - 2179.63
+    - 377.83
     note: ''
+    field_xy:
+    - 40.62
+    - 5.67
 - review_id: ball_0119
   type: ball_position
   reason: ball_detection_window
@@ -3284,11 +3894,18 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
-    review_image_xy: null
-    source_image_xy: null
+    status: marked
+    ball_visible: true
+    review_image_xy:
+    - 1298.9
+    - 225.3
+    source_image_xy:
+    - 2182.15
+    - 378.5
     note: ''
+    field_xy:
+    - 40.655
+    - 5.744
 - review_id: ball_0120
   type: ball_position
   reason: ball_detection_window
@@ -3310,8 +3927,10 @@ items:
       review_image_xy: null
       field_xy: null
   human_review:
-    status: pending
-    ball_visible: null
+    status: invisible
+    ball_visible: false
     review_image_xy: null
     source_image_xy: null
     note: ''
+    field_xy: null
+updated_at: '2026-05-07T18:19:31+08:00'
