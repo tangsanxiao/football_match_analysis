@@ -302,7 +302,14 @@ def create_review_package(config: Dict[str, Any], detections_dir: Path, max_item
             safe_float(row.get("first_ts")),
         ),
     )
-    selected = sorted_rows[:max_items]
+    selected = sorted(
+        sorted_rows[:max_items],
+        key=lambda row: (
+            safe_float(row.get("sample_timestamp"), safe_float(row.get("first_ts"), 0.0)),
+            safe_int(row.get("sample_frame")),
+            safe_int(row.get("track_id")),
+        ),
+    )
     items: List[Dict[str, Any]] = []
     csv_rows: List[Dict[str, Any]] = []
     for index, row in enumerate(selected, start=1):

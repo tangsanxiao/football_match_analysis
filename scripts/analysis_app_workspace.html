@@ -1033,8 +1033,25 @@ function statusChoicesHtml(index, value) {
     </label>`).join('');
 }
 
+function reviewTimeKey(item) {
+  const timestamp = Number(item && item.timestamp_sec);
+  const frame = Number(item && item.frame_idx);
+  return {
+    timestamp: Number.isFinite(timestamp) ? timestamp : Number.POSITIVE_INFINITY,
+    frame: Number.isFinite(frame) ? frame : 0,
+    reviewId: String(item && item.review_id || '')
+  };
+}
+function sortReviewItemsByTime(items) {
+  return [...(items || [])].sort((a, b) => {
+    const left = reviewTimeKey(a);
+    const right = reviewTimeKey(b);
+    return left.timestamp - right.timestamp || left.frame - right.frame || left.reviewId.localeCompare(right.reviewId);
+  });
+}
+
 function renderHumanReview(data) {
-  reviewItems = data.items || [];
+  reviewItems = sortReviewItemsByTime(data.items);
   reviewPlayers = data.players || [];
   $('reviewStatus').textContent = data.ready
     ? `当前项目: ${data.match_id}，状态: ${data.status}，校验项: ${data.item_count || reviewItems.length}，待处理: ${data.pending_count || 0}`
@@ -1255,7 +1272,7 @@ async function loadBallReview(matchId) {
   }
 }
 function renderBallReview(data) {
-  ballItems = data.items || [];
+  ballItems = sortReviewItemsByTime(data.items);
   ballIndex = Math.min(ballIndex, Math.max(0, ballItems.length - 1));
   $('ballReviewStatus').textContent = data.ready
     ? `当前项目: ${data.match_id}，状态: ${data.status}，已处理: ${data.reviewed_count || 0}/${data.item_count || ballItems.length}`

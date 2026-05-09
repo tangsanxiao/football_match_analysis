@@ -248,7 +248,10 @@ def create_ball_review(config: Dict[str, Any], detections_dir: Path, max_frames:
     if not frames:
         raise RuntimeError("No sampled frames are available for ball review.")
     ball_by_frame = best_ball_by_frame(track_rows)
-    selected = select_review_frames(frames, ball_by_frame, event_timestamps(config), max_frames=max_frames, interval_sec=interval_sec)
+    selected = sorted(
+        select_review_frames(frames, ball_by_frame, event_timestamps(config), max_frames=max_frames, interval_sec=interval_sec),
+        key=lambda item: (safe_float(item.get("timestamp_sec")), safe_int(item.get("frame_idx"))),
+    )
 
     review_root = resolve_path(config["match"].get("review_dir", "review")) / "ball_review"
     frames_dir = review_root / "frames"

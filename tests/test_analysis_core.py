@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 import tempfile
 import unittest
+import importlib.util
 from pathlib import Path
 
 import yaml
@@ -15,6 +16,11 @@ from analysis_app_config import DEFAULT_METRICS as CONFIG_DEFAULT_METRICS, defau
 from analysis_detection_filters import filter_static_ball_false_positives, is_likely_opponent_goalkeeper
 from analysis_metrics import DEFAULT_METRICS, metric_definition, metric_status_rows
 from analysis_report_runs import latest_report_record, write_latest_report
+
+serve_app_spec = importlib.util.spec_from_file_location("serve_analysis_app", PROJECT_ROOT / "scripts" / "12_serve_analysis_app.py")
+serve_analysis_app = importlib.util.module_from_spec(serve_app_spec)
+assert serve_app_spec and serve_app_spec.loader
+serve_app_spec.loader.exec_module(serve_analysis_app)
 
 
 def base_config(output_dir: Path | None = None, review_dir: Path | None = None) -> dict:
@@ -76,6 +82,15 @@ class AnalysisCoreTest(unittest.TestCase):
         self.assertFalse(by_name["bottom_left_corner"]["required"])
         self.assertTrue(should_count_calibration_point(by_name["left_penalty_mark"]))
         self.assertFalse(should_count_calibration_point(by_name["visible_area_top_left"]))
+
+    def test_review_item_time_key_sorts_chronologically(self) -> None:
+        items = [
+            {"review_id": "b", "timestamp_sec": 12.0, "frame_idx": 360},
+            {"review_id": "a", "timestamp_sec": 8.0, "frame_idx": 240},
+            {"review_id": "c", "timestamp_sec": 12.0, "frame_idx": 300},
+        ]
+        ordered = sorted(items, key=serve_analysis_app.review_item_time_key)
+        self.assertEqual([item["review_id"] for item in ordered], ["a", "c", "b"])
 
     def test_static_ball_filter_removes_stationary_field_mark(self) -> None:
         rows = [

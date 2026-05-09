@@ -81,6 +81,14 @@ except ModuleNotFoundError:
     from scripts.serve_point_picker import submit_labeling, update_point_image_xy
 
 
+def review_item_time_key(item: Dict[str, Any]) -> Tuple[float, int, str]:
+    return (
+        safe_float(item.get("timestamp_sec"), float("inf")),
+        safe_int(item.get("frame_idx"), 0),
+        str(item.get("review_id") or ""),
+    )
+
+
 def human_review_payload(match_id: str) -> Dict[str, Any]:
     config_path = PROJECT_ROOT / "matches" / match_id / "config" / "match.yaml"
     if not config_path.exists():
@@ -100,7 +108,7 @@ def human_review_payload(match_id: str) -> Dict[str, Any]:
         }
 
     correction_items = corrections.get("items") or {}
-    items = manifest.get("items") or []
+    items = sorted(manifest.get("items") or [], key=review_item_time_key)
     for item in items:
         review_id = str(item.get("review_id") or "")
         if review_id in correction_items:
@@ -233,7 +241,7 @@ def ball_review_payload(match_id: str) -> Dict[str, Any]:
             "items": [],
         }
     correction_items = corrections.get("items") or {}
-    items = manifest.get("items") or []
+    items = sorted(manifest.get("items") or [], key=review_item_time_key)
     for item in items:
         review_id = str(item.get("review_id") or "")
         if review_id in correction_items:
