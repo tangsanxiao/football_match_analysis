@@ -40,6 +40,7 @@ from analysis_eval import (  # noqa: E402
     run_layer_a,
     run_layer_b,
 )
+from analysis_detection_filters import filter_static_ball_false_positives  # noqa: E402
 
 
 GOLD_ROOT = PROJECT_ROOT / "evals" / "gold"
@@ -107,26 +108,26 @@ def find_latest_report(match_dir: Path) -> Optional[Path]:
 def load_system_ball_points(match_dir: Path, source: str = "raw") -> Optional[pd.DataFrame]:
     """Return system-side ball points for Layer B comparison.
 
-    source="raw":      YOLO's auto-detected ball boxes (pre human review).
-                       Loaded from the segment's tracks.csv filtered to
-                       class_name == "sports ball". This is the meaningful
-                       comparison against human-labeled gold.
-    source="reviewed": post human-review consolidated ball points. Useful for
-                       measuring the labeling effort, but NOT a measure of the
-                       model — the gold typically came from this same file.
+    source="raw":      YOLO's auto-detected ball boxes (pre any filter, pre
+                       human review). Loaded from the segment's tracks.csv
+                       filtered to class_name == "sports ball".
+    source="filtered": raw YOLO detections passed through
+                       analysis_detection_filters.filter_static_ball_false_positives,
+                       which is what the production pipeline (03_detect_track,
+                       07_generate_report) actually uses before human review.
+                       This is the honest measurement of what reaches the user.
+    source="reviewed": post human-review consolidated ball points. Circular
+                       if your gold was extracted from this same file.
     """
     if source == "reviewed":
         path = match_dir / "review" / "ball_review" / "ball_review_points.csv"
         if not path.exists():
             return None
         try:
-            df = pd.read_csv(path)
+            return pd.read_csv(path)
         except Exception:
             return None
-        # Normalize to (timestamp_sec, ball_in_play, field_x_m, field_y_m)
-        return df
 
-    # source == "raw"
     detections_dir = _resolve_source_detections_dir(match_dir)
     if detections_dir is None:
         return None
@@ -134,15 +135,28 @@ def load_system_ball_points(match_dir: Path, source: str = "raw") -> Optional[pd
     if not tracks_csv.exists():
         return None
     try:
-        df = pd.read_csv(tracks_csv)
+        full = pd.read_csv(tracks_csv)
     except Exception:
         return None
-    if "class_name" not in df.columns:
+    if "class_name" not in full.columns:
         return None
-    ball = df[df["class_name"].astype(str).str.lower() == "sports ball"].copy()
+
+    if source == "filtered":
+        config_path = match_dir / "config" / "match.yaml"
+        config: Dict[str, Any] = {}
+        if config_path.exists():
+            with config_path.open("r", encoding="utf-8") as h:
+                config = yaml.safe_load(h) or {}
+        kept_rows, _summary = filter_static_ball_false_positives(
+            full.to_dict("records"), config
+        )
+        full = pd.DataFrame(kept_rows)
+        if full.empty or "class_name" not in full.columns:
+            return pd.DataFrame(columns=["timestamp_sec", "field_x_m", "field_y_m", "ball_in_play", "conf"])
+
+    ball = full[full["class_name"].astype(str).str.lower() == "sports ball"].copy()
     if ball.empty:
-        return ball  # empty df, eval will see 0 system points
-    # Conform to the columns the eval expects
+        return ball
     ball["ball_in_play"] = ball.get("inside_play_area", True)
     return ball[["timestamp_sec", "field_x_m", "field_y_m", "ball_in_play", "conf"]]
 
@@ -370,10 +384,11 @@ def main() -> int:
         help="override Layer B tolerances, e.g. player_position_m=2.0 (repeatable)",
     )
     parser.add_argument(
-        "--ball-source", choices=["raw", "reviewed"], default="raw",
-        help="raw = YOLO auto detections (default, the honest model comparison); "
-             "reviewed = post human-review consolidated points (circular if your gold "
-             "was extracted from the same file).",
+        "--ball-source", choices=["raw", "filtered", "reviewed"], default="filtered",
+        help="raw = YOLO auto detections, no filter; "
+             "filtered = raw + filter_static_ball_false_positives (production default, "
+             "the honest 'what reaches the user' measurement); "
+             "reviewed = post human-review (circular if gold was extracted from same file).",
     )
     parser.add_argument(
         "--output", default="",

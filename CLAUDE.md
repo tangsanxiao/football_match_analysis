@@ -145,16 +145,20 @@ The harness exits non-zero on any **fail**.
 Tolerances default per `evals/gold_schema_v1.yaml#match_tolerances`. The
 algorithms are locked by `TestEvalLayerA` and `TestEvalLayerB`.
 
-**`--ball-source` matters**: default `raw` reads YOLO's pre-human-review ball
-detections from `data/interim/detections/<segment>/tracks.csv` (filtered to
-`class_name == "sports ball"`). `reviewed` reads the post-human file and is
-circular if the gold was extracted from there.
+**`--ball-source`** chooses what to measure as "system output":
+- `raw` — YOLO ball detections, no filter, no human (pure model)
+- `filtered` *(default)* — raw + `filter_static_ball_false_positives` (production pipeline before human review)
+- `reviewed` — post-human (circular if your gold was extracted from there)
 
 First baseline (2026-05-10) on `中青赛_1_20260506_213657` window 78–138s:
-**ball_recall = 0/30 (0%)** with `--ball-source raw`. YOLO11n's ball head is
-not usable on this footage without major intervention; manual ball review is
-empirically the only viable path until a model upgrade. See `evals/README.md`
-"Current baseline".
+- **ball_recall = 0/30 (0%) for both `raw` and `filtered`** at default tolerances.
+- 103 raw "ball" detections are all on one static field-mark; the 3-group
+  static filter removes them, but the 66 remaining are all off-field
+  (`inside_play_area=False`).
+- Diagnosis: the bottleneck is **the model**, not the filter. Manual ball
+  review is empirically the only viable ball pipeline today. See
+  `evals/README.md` "Current baseline" for the full A/B and the four
+  testable improvement directions.
 
 To add a new gold segment, see `evals/README.md`. Investment per match is
 ~15 minutes (label 30s of footage); the harness will produce partial Layer B

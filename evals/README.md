@@ -102,31 +102,37 @@ Match tolerances (e.g. "system point within 1.5m and 1s of gold counts as a hit"
 
 Ball-related metrics need a careful choice of system output:
 
-- **`--ball-source raw`** (default) — pre-human-review YOLO ball detections from `data/interim/detections/<segment>/tracks.csv` filtered to `class_name == "sports ball"`. **This is the meaningful comparison**: it measures the model alone, before manual correction.
-- **`--ball-source reviewed`** — post-human-review consolidated points from `matches/<id>/review/ball_review/ball_review_points.csv`. **Circular** if the gold was extracted from this same file (recall will appear 100%); use only to measure things like "did human review add new positive points" once the project tracks that.
+- **`--ball-source raw`** — pre-filter, pre-human YOLO detections from `data/interim/detections/<segment>/tracks.csv` filtered to `class_name == "sports ball"`. Measures **the model alone**.
+- **`--ball-source filtered`** *(default)* — raw detections passed through `filter_static_ball_false_positives`. Measures **what the production pipeline actually offers the user** before human review (this is what `03_detect_track` and `07_generate_report` use internally).
+- **`--ball-source reviewed`** — post-human-review file. **Circular** if your gold was extracted from this same file; use only when measuring "human contribution on top of the model".
 
 ---
 
 ## Current baseline (2026-05-10)
 
-First real gold landed: `evals/gold/中青赛_1_20260506_213657/` (window 78–138s, 30 in-play ball points).
+First real gold: `evals/gold/中青赛_1_20260506_213657/` (window 78–138s, 30 in-play ball points; data extracted from this match's existing human-labeled ball-review file, not AI-fabricated).
 
-Layer B with default tolerances and `--ball-source raw`:
+Layer B at default tolerances (1.5m / 1s):
 
-| Metric | Value | Note |
-|---|---:|---|
-| `ball_recall` | **0.0%** (0/30) | YOLO11n produces 103 ball detections in this window, all clustered at one static field-mark (~2.7m, ~9.0m). None match the actual ball. |
-| `ball_position_error_m` | — | No matches → no error to compute. |
+| `--ball-source` | `ball_recall` | What survived | Interpretation |
+|---|---:|---|---|
+| `raw` | **0/30 (0%)** | 103 system "ball" detections, all on a single static field-mark at (~2.7m, ~9.0m) | YOLO is hallucinating one location consistently |
+| `filtered` | **0/30 (0%)** | 66 "ball" detections, all clustered at sidelines (y ≈ 22m, outside the 20m-wide field) and marked `inside_play_area=False` | The static-filter correctly removed the 3 worst false-positive groups; remaining noise is off-field and ignored by the eval anyway |
+| `reviewed` | 100% (circular — don't use against this gold) | — | — |
 
-Interpretation: the project's manual ball-review workflow is empirically **the only thing** producing usable ball positions on this footage. Even loose tolerances (5m / 3s) yield 0/30 — YOLO11n's ball head is not viable for 5-a-side amateur footage as-is.
+Even at loose tolerances (5m / 3s), `raw` and `filtered` both stay at 0/30.
 
-Improvements that should move this number up:
-- Switch to YOLO11s/m (more capacity for small-object detection).
-- Apply `analysis_detection_filters.filter_static_ball_false_positives` before the gold comparison (currently the `raw` path doesn't filter; consider adding `--ball-source filtered`).
-- Train a small-object specialized ball detector and ensemble.
-- Add optical-flow ball interpolation between detections.
+**Diagnosis** — three findings, each measurable:
 
-Each of those is now testable: run the eval before, change one thing, run again. The number is the merge gate.
+1. **The bottleneck is the model, not the filter.** `filter_static_ball_false_positives` is doing its job (removed 63 rows in 3 static groups), but the surviving detections are *still* false positives. There are essentially zero true ball detections in this window.
+2. **The manual ball-review workflow is empirically the only viable ball pipeline today.** This is not over-conservatism — YOLO11n cannot see the ball in this footage.
+3. **Headroom from 0% to 100%** for any of the following improvements, each now testable as a single-change PR with a before/after number:
+   - Upgrade YOLO11n → YOLO11s / 11m (more parameter capacity for small objects)
+   - Train a small-object specialized ball detector and ensemble it with the main detector
+   - Add optical-flow ball interpolation between sparse detections
+   - Tighten `inside_play_area` polygon AND lower ball-class conf threshold (currently the global `conf=0.18`; ball class would benefit from ~0.05)
+
+The number is the merge gate: any "I improved ball detection" PR must show this metric move.
 
 ---
 
