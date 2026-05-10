@@ -135,11 +135,12 @@ frames extracted from this match's existing `ball_review_points.csv`. See
 `docs/football-video-analysis-mvp/09-custom-ball-head-v1.md` for the full
 experiment.
 
-| Model | Detections (window) | `ball_recall@1.5m` | `recall@5m` | `recall@10m` | Pos err (m) |
-|---|---:|---:|---:|---:|---:|
-| YOLO11n COCO | 92 / 66 filtered | 0/30 (0%) | 0/30 | 0/30 | — |
-| YOLO11s COCO | 268 / 176 filtered | 0/30 (0%) | 0/30 | 0/30 | — |
-| **ball_v1 (e17 snapshot)** | **72 raw, 61 in_play** | **13/30 (43.3%)** | **24/30 (80.0%)** | **25/30 (83.3%)** | **0.98** |
+| Model | Conf | Detections (window) | `ball_recall@1.5m` | `recall@5m` | `recall@10m` | Pos err (m) |
+|---|---:|---:|---:|---:|---:|---:|
+| YOLO11n COCO | 0.18 | 92 / 66 filtered | 0/30 (0%) | 0/30 | 0/30 | — |
+| YOLO11s COCO | 0.18 | 268 / 176 filtered | 0/30 (0%) | 0/30 | 0/30 | — |
+| ball_v1 (fine-tuned) | 0.18 | 72 / 61 in_play | 13/30 (43.3%) | 24/30 (80.0%) | 25/30 (83.3%) | 0.98 |
+| **ball_v1 (recommended)** | **0.05** | **379 / 365 in_play** | **25/30 (83.3%)** | — | — | **0.86** |
 
 ball_v1 detections cluster at x∈[25.5, 35.6], y∈[0.7, 16.2] — gold lives at
 x∈[26.4, 38.6], y∈[-0.4, 8.8]. **Spatially almost overlapping.** This is

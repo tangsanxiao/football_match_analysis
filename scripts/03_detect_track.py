@@ -369,7 +369,9 @@ def parser_with_config_defaults(config: Dict[str, Any]) -> argparse.ArgumentPars
 
 
 def main() -> None:
-    pre_parser = argparse.ArgumentParser(add_help=False)
+    # allow_abbrev=False prevents argparse from treating --conf as a prefix
+    # match for --config (silently swapping conf's value into config's slot).
+    pre_parser = argparse.ArgumentParser(add_help=False, allow_abbrev=False)
     pre_parser.add_argument("--config", default="configs/match_red_mvp.yaml")
     pre_args, _ = pre_parser.parse_known_args()
     config_path = resolve_path(pre_args.config)

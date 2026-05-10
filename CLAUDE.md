@@ -155,11 +155,12 @@ algorithms are locked by `TestEvalLayerA` and `TestEvalLayerB`.
 Baselines (2026-05-10) on `中青赛_1_20260506_213657` window 78–138s
 (30 in-play gold ball points):
 
-| Model | Detections (window) | `ball_recall@1.5m` | `recall@10m` | Pos err (m) |
+| Model | Conf | Detections (window) | `ball_recall@1.5m` | Pos err (m) |
 |---|---:|---:|---:|---:|
-| YOLO11n COCO | 92 raw / 66 filtered | 0/30 (0%) | 0/30 | — |
-| YOLO11s COCO | 268 raw / 176 filtered | 0/30 (0%) | 0/30 | — |
-| **ball_v1 (fine-tuned, e17)** | **72 raw, 84.7% in-play** | **13/30 (43.3%)** | **25/30 (83.3%)** | **0.98** |
+| YOLO11n COCO | 0.18 | 92 / 66 filtered | 0/30 (0%) | — |
+| YOLO11s COCO | 0.18 | 268 / 176 filtered | 0/30 (0%) | — |
+| **ball_v1 (fine-tuned)** | 0.18 | 72 / 61 in_play | 13/30 (43.3%) | 0.98 |
+| **ball_v1 (recommended)** | **0.05** | **379 / 365 in_play** | **25/30 (83.3%)** | **0.86** |
 
 - COCO-trained YOLO (any size) detects "balls" entirely off-field; not viable.
 - **ball_v1**, fine-tuned from yolo11n on 67 positives + 29 negatives
