@@ -60,12 +60,13 @@ docs/football-video-analysis-mvp/   Process notes per work phase
 matches/<match_id>/        Per-match isolated project (config tracked, media gitignored)
 reports/                   Pilot report outputs (gitignored)
 scripts/
-  00_..15_*.py             Pipeline steps, numbered in execution order
+  00_..16_*.py             Pipeline steps, numbered in execution order
   analysis_app_*.py        Library modules reused by 12_serve_analysis_app.py
   analysis_detection_filters.py / analysis_metrics.py / analysis_report_runs.py
   create_point_picker.py / serve_point_picker.py    Calibration UI
   analysis_app_workspace.html       Frontend (vanilla HTML/JS, ~1.7K lines)
-tests/test_analysis_core.py         Only test file (unittest)
+reports/combined/<slug>/<ts>/      Combined reports from 16_merge_match_segments
+tests/test_analysis_core.py         Test suite (unittest)
 videos/raw/                Source footage (gitignored)
 design.md                  UX/UI source of truth — read before any UI change
 ```
@@ -94,6 +95,58 @@ not part of the live codebase. Don't import from it. Don't put new work there.
    config/IO helpers.
 9. `13_prepare_human_review` / `14_finalize_human_review` / `15_prepare_ball_review`
    produce the human-review packages and finalize after manual annotations.
+10. `16_merge_match_segments` aggregates finalized reports from N match projects
+    into one combined report (use case: upper-half + lower-half of one game). See
+    "Multi-segment matches" below.
+
+---
+
+## Multi-segment matches (e.g. 上半场 + 下半场)
+
+A real 5-a-side game is typically two ~20-min halves. **Treat each half as its
+own match project, then merge.** Reasons:
+
+- Trackers (ByteTrack / BoT-SORT) reset IDs across the half-time gap anyway —
+  pretending it's one continuous video creates fake cross-half tracklets.
+- Re-running just one half is cheap; re-running a 40-min concat is not.
+- Calibration may differ (camera bumped between halves). Two projects force you
+  to handle that explicitly.
+
+Workflow:
+
+```bash
+# 1. Scaffold one match project per half
+python scripts/08_new_match_project.py --match-id 中青赛_2026_05_10_h1 ...
+python scripts/08_new_match_project.py --match-id 中青赛_2026_05_10_h2 ...
+
+# 2. Run the full pipeline on each half independently
+python scripts/10_run_match_mvp.py --config matches/中青赛_2026_05_10_h1/config/match.yaml
+python scripts/10_run_match_mvp.py --config matches/中青赛_2026_05_10_h2/config/match.yaml
+# (calibration / identity binding / ball review can be reused if camera & roster unchanged)
+
+# 3. Merge into one combined report
+python scripts/16_merge_match_segments.py \
+    --match 中青赛_2026_05_10_h1 --label 上半场 \
+    --match 中青赛_2026_05_10_h2 --label 下半场 \
+    --name "中青赛 2026-05-10" \
+    --output 中青赛_2026_05_10
+# → reports/combined/中青赛_2026_05_10/<timestamp>/{report.md, report.html, *.csv, manifest.yaml}
+```
+
+Single-segment use is also supported (`--match X` once = produces a normalized
+combined-style output for one match). The aggregation rules are:
+
+- `observed_frames` / `observed_seconds` / `distance_m` / `high_speed_distance_m`
+  → **sum**
+- `*_pct` and rate columns → **weighted average by `observed_frames`**
+- `distance_per_min` → **recomputed** from total distance ÷ total observed time
+- `key_timestamps.csv` → concatenated with each segment's timestamps offset by
+  the cumulative duration of preceding segments; gains a `segment` column
+- `tracks_red_labeled.csv` → same offset + segment column
+- `confidence` → most conservative across segments
+
+The aggregation logic is locked by tests in `TestMergeMatchSegments`
+(`tests/test_analysis_core.py`).
 
 ---
 

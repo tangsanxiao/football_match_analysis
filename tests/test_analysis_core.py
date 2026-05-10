@@ -22,6 +22,13 @@ serve_analysis_app = importlib.util.module_from_spec(serve_app_spec)
 assert serve_app_spec and serve_app_spec.loader
 serve_app_spec.loader.exec_module(serve_analysis_app)
 
+merge_spec = importlib.util.spec_from_file_location(
+    "merge_match_segments", PROJECT_ROOT / "scripts" / "16_merge_match_segments.py"
+)
+merge_match_segments = importlib.util.module_from_spec(merge_spec)
+assert merge_spec and merge_spec.loader
+merge_spec.loader.exec_module(merge_match_segments)
+
 
 def base_config(output_dir: Path | None = None, review_dir: Path | None = None) -> dict:
     return {
@@ -219,6 +226,109 @@ class AnalysisCoreTest(unittest.TestCase):
             self.assertEqual(Path(record["report_dir"]).name, "final_20260508_120000")
             latest_yaml = yaml.safe_load((output_dir / "latest_report.yaml").read_text(encoding="utf-8"))
             self.assertEqual(latest_yaml["source"], "test")
+
+
+class TestMergeMatchSegments(unittest.TestCase):
+    """Lock in the per-segment merge math for 16_merge_match_segments.py."""
+
+    @staticmethod
+    def _player_df(rows):
+        import pandas as pd
+
+        cols = [
+            "player_id", "name", "number", "role",
+            "observed_frames", "observed_seconds", "observed_coverage_pct",
+            "distance_m", "distance_per_min",
+            "high_speed_distance_m", "high_speed_pct",
+            "pressing_pct", "duel_proximity_pct",
+            "attacking_half_pct", "final_third_pct", "role_zone_pct",
+            "avg_nearest_opponent_m", "avg_x_m", "avg_y_m",
+            "rating", "confidence",
+        ]
+        return pd.DataFrame(rows, columns=cols)
+
+    def test_merge_player_metrics_sums_avgs_and_recomputes_rate(self) -> None:
+        seg_a = self._player_df([
+            ["p1", "ALPHA", 7, "defender",
+             100, 50.0, 50.0, 200.0, 240.0, 20.0, 10.0,
+             5.0, 2.0, 30.0, 10.0, 80.0, 6.0, 20.0, 5.0,
+             8.0, "high"],
+            ["p2", "BETA", 9, "center_forward",
+             200, 100.0, 70.0, 500.0, 300.0, 100.0, 20.0,
+             8.0, 4.0, 60.0, 25.0, 70.0, 7.0, 30.0, 12.0,
+             7.0, "medium"],
+        ])
+        seg_b = self._player_df([
+            ["p1", "ALPHA", 7, "defender",
+             300, 150.0, 60.0, 600.0, 240.0, 60.0, 10.0,
+             5.0, 2.0, 30.0, 10.0, 90.0, 6.0, 22.0, 5.0,
+             6.0, "medium"],
+            # p3 only present in segment B
+            ["p3", "GAMMA", 11, "left_forward",
+             50, 25.0, 30.0, 100.0, 240.0, 0.0, 0.0,
+             0.0, 0.0, 50.0, 20.0, 60.0, 8.0, 25.0, 8.0,
+             7.5, "low"],
+        ])
+
+        merged = merge_match_segments.merge_player_metrics([seg_a, seg_b])
+
+        merged_by_id = {row["player_id"]: row for _, row in merged.iterrows()}
+
+        # ALPHA appears in both segments — sums and weighted averages
+        alpha = merged_by_id["p1"]
+        self.assertEqual(alpha["observed_frames"], 400.0)
+        self.assertEqual(alpha["observed_seconds"], 200.0)
+        self.assertAlmostEqual(alpha["distance_m"], 800.0, places=1)
+        self.assertAlmostEqual(alpha["high_speed_distance_m"], 80.0, places=1)
+        # distance_per_min recomputed: 800 / 200 * 60 = 240
+        self.assertAlmostEqual(alpha["distance_per_min"], 240.0, places=1)
+        # rating weighted by observed_frames: (8.0*100 + 6.0*300) / 400 = 6.5
+        self.assertAlmostEqual(alpha["rating"], 6.5, places=2)
+        # confidence: high vs medium → most conservative is medium
+        self.assertEqual(alpha["confidence"], "medium")
+
+        # BETA appears only in segment A — passes through
+        beta = merged_by_id["p2"]
+        self.assertEqual(beta["observed_frames"], 200.0)
+        self.assertAlmostEqual(beta["distance_m"], 500.0, places=1)
+        self.assertEqual(beta["confidence"], "medium")
+
+        # GAMMA appears only in segment B
+        gamma = merged_by_id["p3"]
+        self.assertEqual(gamma["observed_frames"], 50.0)
+        self.assertAlmostEqual(gamma["distance_m"], 100.0, places=1)
+        self.assertEqual(gamma["confidence"], "low")
+
+    def test_confidence_min_picks_worst(self) -> None:
+        cm = merge_match_segments.confidence_min
+        self.assertEqual(cm(["high", "medium"]), "medium")
+        self.assertEqual(cm(["medium", "low"]), "low")
+        self.assertEqual(cm(["high", "high"]), "high")
+        # Chinese labels mix: 中 ranks same as medium, 低 same as low
+        self.assertEqual(cm(["高", "中"]), "中")
+        self.assertEqual(cm([None, "", "high"]), "high")
+        self.assertEqual(cm([]), "")
+
+    def test_merge_key_timestamps_applies_offset_and_segment_label(self) -> None:
+        import pandas as pd
+
+        df_a = pd.DataFrame([
+            {"timestamp_sec": 10.0, "timestamp": "00:10", "event_type": "高速跑动"},
+            {"timestamp_sec": 100.0, "timestamp": "01:40", "event_type": "压迫候选"},
+        ])
+        df_b = pd.DataFrame([
+            {"timestamp_sec": 5.0, "timestamp": "00:05", "event_type": "高速跑动"},
+        ])
+        merged = merge_match_segments.merge_key_timestamps([
+            (df_a, 0.0, "上半场"),
+            (df_b, 600.0, "下半场"),
+        ])
+        # Three events total, sorted by timestamp ascending
+        self.assertEqual(len(merged), 3)
+        self.assertListEqual(list(merged["segment"]), ["上半场", "上半场", "下半场"])
+        # df_b's first event got +600s offset, becoming 605s
+        self.assertAlmostEqual(merged.iloc[2]["timestamp_sec"], 605.0)
+        self.assertEqual(merged.iloc[2]["timestamp"], "10:05")
 
 
 if __name__ == "__main__":
