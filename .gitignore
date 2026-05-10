@@ -11,6 +11,9 @@ runs/
 *.pt
 stitch_pro_match_analytics/
 
+# Training datasets are derivable (regenerate from ball_review_points + video). Don't commit.
+evals/training/
+
 # Isolated match projects keep their configs, but generated media/data can be large.
 matches/*/videos/raw/
 matches/*/data/interim/

@@ -64,6 +64,8 @@ scripts/
   analysis_app_*.py        Library modules reused by 12_serve_analysis_app.py
   analysis_detection_filters.py / analysis_metrics.py / analysis_report_runs.py
   analysis_eval.py         Pure logic for the Layer A / Layer B eval harness
+  prepare_ball_training_data.py  Build a YOLO dataset from review/ball_review/*
+  train_ball_detector.py   Fine-tune a ball-only YOLO from existing weights
   create_point_picker.py / serve_point_picker.py    Calibration UI
   analysis_app_workspace.html       Frontend (vanilla HTML/JS, ~1.7K lines)
 reports/combined/<slug>/<ts>/      Combined reports from 16_merge_match_segments
@@ -150,22 +152,69 @@ algorithms are locked by `TestEvalLayerA` and `TestEvalLayerB`.
 - `filtered` *(default)* — raw + `filter_static_ball_false_positives` (production pipeline before human review)
 - `reviewed` — post-human (circular if your gold was extracted from there)
 
-First baseline (2026-05-10) on `中青赛_1_20260506_213657` window 78–138s:
-- **YOLO11n: ball_recall = 0/30 (0%)** at default tolerances; both raw and filtered.
-- **YOLO11s: ball_recall = 0/30 (0%)** at default; **0/30 even at 10m tolerance**.
-  3× more detections than 11n (87.6% vs 42.8% frame coverage) but they
-  cluster at sidelines / advertising boards, never on the actual ball.
-- Diagnosis: the COCO `sports ball` class is mismatched to 5-a-side
-  amateur footage (~5–10 px white blobs). **Bigger COCO-trained YOLO
-  ≠ better ball detection** — domain-specific training or specialized
-  small-object detector is required. Manual ball review remains the
-  only viable ball pipeline today. See `evals/README.md` "Current
-  baseline" + "YOLO11s A/B" for full numbers and the still-on-the-table
-  directions.
+Baselines (2026-05-10) on `中青赛_1_20260506_213657` window 78–138s
+(30 in-play gold ball points):
+
+| Model | Detections (window) | `ball_recall@1.5m` | `recall@10m` | Pos err (m) |
+|---|---:|---:|---:|---:|
+| YOLO11n COCO | 92 raw / 66 filtered | 0/30 (0%) | 0/30 | — |
+| YOLO11s COCO | 268 raw / 176 filtered | 0/30 (0%) | 0/30 | — |
+| **ball_v1 (fine-tuned, e17)** | **72 raw, 84.7% in-play** | **13/30 (43.3%)** | **25/30 (83.3%)** | **0.98** |
+
+- COCO-trained YOLO (any size) detects "balls" entirely off-field; not viable.
+- **ball_v1**, fine-tuned from yolo11n on 67 positives + 29 negatives
+  derived from the match's existing `ball_review_points.csv`, lands
+  detections **inside the play area in the right region**, with
+  sub-meter median error.
+- See `docs/football-video-analysis-mvp/08-eval-harness-and-yolo-ball-baseline.md`
+  for the COCO-baseline experiment and `09-custom-ball-head-v1.md` for the
+  fine-tune result, plus the four next improvement directions.
+- Manual ball review is **still useful** but no longer the only path; v2+
+  with more matches' data should push recall higher and start retiring it.
 
 To add a new gold segment, see `evals/README.md`. Investment per match is
 ~15 minutes (label 30s of footage); the harness will produce partial Layer B
 metrics from partial gold.
+
+### Custom ball-detector training (domain-specific)
+
+Two helper scripts let you train a single-class YOLO ball head on the
+existing human-labeled ball points:
+
+```bash
+# 1. Build a dataset from one or more matches' ball_review_points.csv
+python scripts/prepare_ball_training_data.py \
+    --match 中青赛_1_20260506_213657 \
+    --output-name ball_v1 --bbox-size 24 --val-split 0.2 --seed 42
+# → evals/training/ball_v1/{images,labels}/{train,val}/  +  data.yaml
+
+# 2. Fine-tune a YOLO ball-only model
+python scripts/train_ball_detector.py \
+    --data evals/training/ball_v1/data.yaml \
+    --base yolo11n.pt --run-name ball_v1 \
+    --epochs 80 --imgsz 1280 --batch 8 --device mps
+# → runs/detect/ball_v1/weights/best.pt  (gitignored)
+
+# 3. Re-detect using the custom weights, into a separate segment dir
+python scripts/03_detect_track.py \
+    --config matches/<id>/config/match.yaml \
+    --model runs/detect/ball_v1/weights/best.pt \
+    --classes 0 \
+    --start-sec 60 --duration-sec 100 --max-frames 0 --device mps
+mv matches/<id>/data/interim/detections/segment_0060_0100_2fps \
+   matches/<id>/data/interim/detections/segment_0060_0100_2fps_ball_v1
+
+# 4. Evaluate against gold
+python scripts/17_eval_against_gold.py \
+    --match <id> --gold auto --ball-source raw \
+    --detections-dir matches/<id>/data/interim/detections/segment_0060_0100_2fps_ball_v1 \
+    --eval-label "ball_v1" --output ab_ball_v1
+```
+
+`evals/training/` is gitignored (regenerable from `ball_review_points.csv`
++ video). Trained weights live under `runs/detect/<run_name>/weights/`,
+also gitignored. To share a trained checkpoint, attach the `.pt` to a
+release or copy via separate channel — never commit it.
 
 ---
 

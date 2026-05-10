@@ -128,6 +128,30 @@ Even at loose tolerances (5m / 3s), `raw` and `filtered` both stay at 0/30.
 2. **The manual ball-review workflow is empirically the only viable ball pipeline today.**
 3. **Model size alone does not help** — see the YOLO11s A/B below.
 
+### ball_v1 fine-tune (2026-05-10) — **first non-zero result**
+
+Trained a single-class YOLO from `yolo11n.pt` on 67 positive + 29 negative
+frames extracted from this match's existing `ball_review_points.csv`. See
+`docs/football-video-analysis-mvp/09-custom-ball-head-v1.md` for the full
+experiment.
+
+| Model | Detections (window) | `ball_recall@1.5m` | `recall@5m` | `recall@10m` | Pos err (m) |
+|---|---:|---:|---:|---:|---:|
+| YOLO11n COCO | 92 / 66 filtered | 0/30 (0%) | 0/30 | 0/30 | — |
+| YOLO11s COCO | 268 / 176 filtered | 0/30 (0%) | 0/30 | 0/30 | — |
+| **ball_v1 (e17 snapshot)** | **72 raw, 61 in_play** | **13/30 (43.3%)** | **24/30 (80.0%)** | **25/30 (83.3%)** | **0.98** |
+
+ball_v1 detections cluster at x∈[25.5, 35.6], y∈[0.7, 16.2] — gold lives at
+x∈[26.4, 38.6], y∈[-0.4, 8.8]. **Spatially almost overlapping.** This is
+the first model checkpoint that detects balls inside the play area in the
+right region.
+
+The next experiments to run (each with a new `ab_<label>` eval):
+
+- `ball_v2`: add a second match's ball_review_points to training
+- `ball_v1_low_conf`: same weights, inference at `conf=0.05` to trade precision for recall
+- `ball_v1_with_persons`: dual-model inference (ball_v1 + yolo11n person) merged
+
 ### YOLO11s A/B (2026-05-10)
 
 Same gold, same window, same params (`conf=0.18`, `imgsz=1280`, `sample-fps=2.0`, ByteTrack). Re-ran detection on the 60–160s window with both 11n and 11s into separate detection dirs (`segment_0060_0100_2fps_yolo11n` / `_yolo11s`) and ran the eval with `--detections-dir`.
