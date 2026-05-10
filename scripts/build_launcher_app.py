@@ -68,9 +68,14 @@ set -u
 APP_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 PROJECT_DIR="$(cat "$APP_DIR/Resources/project_path.txt")"
 PORT="__PORT__"
+URL="http://localhost:$PORT/"
 
 dialog() {
     osascript -e "display dialog \"$1\" buttons {\"OK\"} default button 1 with icon caution with title \"足球分析工作台\""
+}
+
+notify() {
+    osascript -e "display notification \"$1\" with title \"足球分析工作台\" subtitle \"$URL\""
 }
 
 if [ ! -d "$PROJECT_DIR" ]; then
@@ -86,11 +91,12 @@ if [ ! -x ".venv/bin/python" ]; then
 fi
 
 # 已经在跑就直接打开浏览器
-if curl -sf "http://localhost:$PORT/" >/dev/null 2>&1; then
-    open "http://localhost:$PORT/"
+if curl -sf "$URL" >/dev/null 2>&1; then
+    open "$URL"
+    notify "已经在运行,已打开浏览器"
     # 仍然 wait,这样用户从 Dock 退出 app 时,我们不会留下孤儿 Python 进程
     # (没法 wait 一个不是自己启的进程,只好 sleep 长循环。)
-    while curl -sf "http://localhost:$PORT/" >/dev/null 2>&1; do
+    while curl -sf "$URL" >/dev/null 2>&1; do
         sleep 5
     done
     exit 0
@@ -108,8 +114,9 @@ trap 'kill "$SERVER_PID" 2>/dev/null; exit 0' INT TERM EXIT
 
 # 最多等 30 秒
 for i in $(seq 1 60); do
-    if curl -sf "http://localhost:$PORT/" >/dev/null 2>&1; then
-        open "http://localhost:$PORT/"
+    if curl -sf "$URL" >/dev/null 2>&1; then
+        open "$URL"
+        notify "工作台已就绪"
         wait "$SERVER_PID"
         exit 0
     fi
@@ -119,6 +126,17 @@ done
 dialog "服务启动超时,请查看 $LOG_FILE"
 kill "$SERVER_PID" 2>/dev/null
 exit 1
+"""
+
+
+WEBLOC_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>URL</key>
+    <string>http://localhost:{port}/</string>
+</dict>
+</plist>
 """
 
 
@@ -149,7 +167,16 @@ def build_app(name: str, output_dir: Path, port: int, reinstall: bool) -> Path:
     (resources / "project_path.txt").write_text(
         str(PROJECT_ROOT.resolve()), encoding="utf-8"
     )
-    return app_path
+
+    # Sister .webloc bookmark — drag to Dock for one-click "open in browser"
+    # (independent of whether the .app is running; works after the service
+    # is already started). Even when the .app is running, double-clicking the
+    # .app does NOT re-trigger the launcher (macOS just focuses the existing
+    # process), so a separate URL bookmark is the right reopen-the-page UX.
+    webloc_path = output_dir / f"{name}（打开浏览器）.webloc"
+    webloc_path.write_text(WEBLOC_TEMPLATE.format(port=port), encoding="utf-8")
+
+    return app_path, webloc_path
 
 
 def main() -> int:
@@ -177,18 +204,23 @@ def main() -> int:
         print(f"⚠️  本脚本生成 macOS .app 包,当前系统是 {sys.platform};"
               " 仍然会生成,但可能无法直接双击运行。", file=sys.stderr)
 
-    app_path = build_app(args.name, output_dir, args.port, args.reinstall)
+    app_path, webloc_path = build_app(args.name, output_dir, args.port, args.reinstall)
+    url = f"http://localhost:{args.port}/"
 
-    print(f"✅ 启动器已生成: {app_path}")
-    print(f"   关联项目:   {PROJECT_ROOT}")
-    print(f"   监听端口:   {args.port}")
+    print(f"✅ 启动器已生成:  {app_path}")
+    print(f"✅ 浏览器书签已生成: {webloc_path}")
+    print(f"   关联项目:    {PROJECT_ROOT}")
+    print(f"   工作台 URL:  {url}")
     print()
-    print("使用:")
-    print(f"   open '{app_path}'        # 立即启动")
-    print(f"   或在 Finder 双击它")
-    print(f"   或拖到 Dock 钉住,以后一键启动")
+    print("两枚图标分工(都建议拖到 Dock):")
+    print(f"   📱 {app_path.name}")
+    print(f"      → 启动 / 关闭服务")
+    print(f"   🌐 {webloc_path.name}")
+    print(f"      → 服务已起来后再次打开页面(forgot the URL? 双击它就行)")
     print()
-    print("如果你将来移动了项目目录,重新跑 scripts/build_launcher_app.py 即可。")
+    print(f"立即试一下: open '{app_path}'")
+    print()
+    print("项目搬家了?重新跑 scripts/build_launcher_app.py 即可。")
     return 0
 
 

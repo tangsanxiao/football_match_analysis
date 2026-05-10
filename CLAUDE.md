@@ -31,18 +31,24 @@ are **English**.
 Python 3.9 venv lives at `.venv/`. Activate or call `.venv/bin/python` directly.
 
 ```bash
-# === Workspace web app — three ways to start, pick whichever you remember ===
+# === Workspace web app — pick whichever you remember ===
+# URL is always http://localhost:8765/
 
-# (recommended) Double-click app on Dock / Finder / Spotlight
-# Generate once: ~/Applications/Football Analysis.app launches the server +
-# opens a browser; Dock-quit kills the server.
+# (one-time setup) Generate ~/Applications/Football Analysis.app
+#                   + ~/Applications/Football Analysis（打开浏览器）.webloc
 .venv/bin/python scripts/build_launcher_app.py --reinstall
 
-# (terminal) Convenience wrapper at project root
-./run.sh                                          # default port 8765
-PORT=9090 ./run.sh --no-open                      # custom port, headless
+# (recommended daily use) Double-click the .app to start the server,
+#                          double-click the .webloc anytime to open the
+#                          browser at the right URL. Both can be dragged
+#                          to the Dock for one-click access.
 
-# (raw) Direct invocation — used by the wrapper above
+# (terminal) Convenience wrappers at project root
+./run.sh                          # start server + open browser; Ctrl+C stops
+./open.sh                         # server already running, just open browser
+PORT=9090 ./run.sh --no-open      # custom port, headless
+
+# (raw) Direct invocation — used by all the wrappers above
 .venv/bin/python scripts/12_serve_analysis_app.py # default port 8765
 
 # === Pipeline ===

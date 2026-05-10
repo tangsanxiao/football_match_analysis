@@ -261,25 +261,32 @@
       <div class="readme-panel">
 
         <div class="readme-pane" data-readme-pane="ops">
+          <h4>记住这一行就够了</h4>
+          <div class="readme-callout feature" style="font-size: 14px;">
+            <strong>工作台地址</strong>:<code style="font-size: 14px;">http://localhost:8765/</code>
+            <br>
+            页面关掉了想再开?直接复制这个 URL 到浏览器,或双击 Dock 上的 <strong>"Football Analysis(打开浏览器)"</strong> 书签。
+          </div>
+
           <h4>启动这个工作台的三种方式</h4>
           <div class="readme-callout feature">
-            <strong>① 一键 App(推荐,记住这个就够了)</strong>
+            <strong>① 一键 App + 浏览器书签(推荐)</strong>
             <ul>
-              <li>第一次:在项目根跑一次 <code>.venv/bin/python scripts/build_launcher_app.py --reinstall</code>,会在 <code>~/Applications/</code> 生成 <strong>Football Analysis.app</strong>。</li>
-              <li>之后:Finder 双击 / 拖到 Dock 钉住 / Spotlight 搜"Football"。它会自动启动服务并打开浏览器。</li>
-              <li>从 Dock 退出 = 自动停服务,不留孤儿进程。</li>
+              <li>第一次准备:项目根跑 <code>.venv/bin/python scripts/build_launcher_app.py --reinstall</code>,会在 <code>~/Applications/</code> 生成两个图标:</li>
+              <li>📱 <strong>Football Analysis.app</strong> — 启动 / 关闭服务。Dock 退出 = 自动停服务,不留孤儿。</li>
+              <li>🌐 <strong>Football Analysis(打开浏览器).webloc</strong> — 永久 URL 书签。再也不用记 <code>localhost:8765</code>。</li>
+              <li>两个都拖到 Dock,日常用法:点 📱 启动,点 🌐 切回标签页。</li>
             </ul>
           </div>
           <div class="readme-callout">
-            <strong>② 项目根 <code>./run.sh</code></strong>(终端友好)
+            <strong>② 终端 <code>./run.sh</code> / <code>./open.sh</code></strong>
             <ul>
-              <li>项目根敲 <code>./run.sh</code> 即可,会启动服务并打开浏览器,Ctrl+C 停服务。</li>
-              <li>换端口:<code>PORT=9090 ./run.sh</code> 或 <code>./run.sh --port=9090</code></li>
-              <li>不开浏览器:<code>./run.sh --no-open</code></li>
+              <li><code>./run.sh</code>:启动服务并打开浏览器(Ctrl+C 停);<code>PORT=9090 ./run.sh</code> 换端口;<code>--no-open</code> 不开浏览器。</li>
+              <li><code>./open.sh</code>:服务在跑,只想再次打开浏览器标签。</li>
             </ul>
           </div>
           <div class="readme-callout">
-            <strong>③ 直接命令</strong>(老办法)
+            <strong>③ 直接命令</strong>(原生方式)
             <ul>
               <li><code>.venv/bin/python scripts/12_serve_analysis_app.py</code></li>
               <li>默认端口 <code>8765</code>,浏览器打开 <code>http://localhost:8765/</code></li>
@@ -326,11 +333,14 @@
         <div class="readme-pane hidden" data-readme-pane="changelog">
 
           <div class="readme-changelog-item">
-            <div><span class="badge">易用性</span><strong>2026-05-10 · 一键启动 App + run.sh</strong></div>
+            <div><span class="badge">易用性</span><strong>2026-05-10 · 一键启动 App + 浏览器书签 + 命令行快捷</strong></div>
             <ul>
-              <li>新增 <code>scripts/build_launcher_app.py</code>:在 <code>~/Applications/</code> 生成 <strong>Football Analysis.app</strong>,Finder 双击 / Dock 钉住即可启动服务并打开浏览器,Dock 退出会自动杀子进程,不留孤儿。</li>
-              <li>新增项目根 <code>run.sh</code>:<code>./run.sh</code> 即启动 + 打开浏览器,支持 <code>--port=N</code> / <code>--no-open</code>,Ctrl+C 停服务。</li>
-              <li>命令行老办法仍然有效;三种方式都用同一个 <code>scripts/12_serve_analysis_app.py</code>。</li>
+              <li><strong>📱 Football Analysis.app</strong>(<code>~/Applications/</code>):双击启动服务 + 打开浏览器,Dock 退出自动停服务。启动时 macOS 通知里会带 URL,看一眼就知道在哪。</li>
+              <li><strong>🌐 Football Analysis(打开浏览器).webloc</strong>(<code>~/Applications/</code>):服务起来后双击就能再次打开标签页;拖到 Dock 一键回到工作台。**不用再记 <code>localhost:8765</code> 了**。</li>
+              <li><code>./run.sh</code>(项目根):启动 + 自动开浏览器,Ctrl+C 干净停。</li>
+              <li><code>./open.sh</code>(项目根):服务在跑,只想再次打开浏览器标签。</li>
+              <li>命令行原生方式仍可用;所有方式都走同一个 <code>scripts/12_serve_analysis_app.py</code>。</li>
+              <li>第一次准备:<code>.venv/bin/python scripts/build_launcher_app.py --reinstall</code>(只跑一次)。</li>
             </ul>
           </div>
 
