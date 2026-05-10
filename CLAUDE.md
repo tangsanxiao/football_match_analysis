@@ -31,11 +31,24 @@ are **English**.
 Python 3.9 venv lives at `.venv/`. Activate or call `.venv/bin/python` directly.
 
 ```bash
+# === Workspace web app — three ways to start, pick whichever you remember ===
+
+# (recommended) Double-click app on Dock / Finder / Spotlight
+# Generate once: ~/Applications/Football Analysis.app launches the server +
+# opens a browser; Dock-quit kills the server.
+.venv/bin/python scripts/build_launcher_app.py --reinstall
+
+# (terminal) Convenience wrapper at project root
+./run.sh                                          # default port 8765
+PORT=9090 ./run.sh --no-open                      # custom port, headless
+
+# (raw) Direct invocation — used by the wrapper above
+.venv/bin/python scripts/12_serve_analysis_app.py # default port 8765
+
+# === Pipeline ===
+
 # Full MVP pipeline for a configured match (00 → 07, via subprocess fan-out)
 .venv/bin/python scripts/10_run_match_mvp.py --config configs/match_red_mvp.yaml
-
-# Workspace web app (stdlib http.server — NOT Flask). Serves the workspace UI.
-.venv/bin/python scripts/12_serve_analysis_app.py            # default port
 
 # Per-step pipeline (run individually for debugging)
 .venv/bin/python scripts/00_probe_video.py    --config configs/match_red_mvp.yaml

@@ -261,6 +261,31 @@
       <div class="readme-panel">
 
         <div class="readme-pane" data-readme-pane="ops">
+          <h4>启动这个工作台的三种方式</h4>
+          <div class="readme-callout feature">
+            <strong>① 一键 App(推荐,记住这个就够了)</strong>
+            <ul>
+              <li>第一次:在项目根跑一次 <code>.venv/bin/python scripts/build_launcher_app.py --reinstall</code>,会在 <code>~/Applications/</code> 生成 <strong>Football Analysis.app</strong>。</li>
+              <li>之后:Finder 双击 / 拖到 Dock 钉住 / Spotlight 搜"Football"。它会自动启动服务并打开浏览器。</li>
+              <li>从 Dock 退出 = 自动停服务,不留孤儿进程。</li>
+            </ul>
+          </div>
+          <div class="readme-callout">
+            <strong>② 项目根 <code>./run.sh</code></strong>(终端友好)
+            <ul>
+              <li>项目根敲 <code>./run.sh</code> 即可,会启动服务并打开浏览器,Ctrl+C 停服务。</li>
+              <li>换端口:<code>PORT=9090 ./run.sh</code> 或 <code>./run.sh --port=9090</code></li>
+              <li>不开浏览器:<code>./run.sh --no-open</code></li>
+            </ul>
+          </div>
+          <div class="readme-callout">
+            <strong>③ 直接命令</strong>(老办法)
+            <ul>
+              <li><code>.venv/bin/python scripts/12_serve_analysis_app.py</code></li>
+              <li>默认端口 <code>8765</code>,浏览器打开 <code>http://localhost:8765/</code></li>
+            </ul>
+          </div>
+
           <h4>常规分析流程(每场比赛)</h4>
           <ol>
             <li><strong>准备视频</strong>:每半场一个视频文件,各约 20 分钟。命名建议 <code>match_h1.mp4</code> / <code>match_h2.mp4</code>,放进 <code>videos/raw/&lt;match_id&gt;/</code>。</li>
@@ -299,6 +324,15 @@
         </div>
 
         <div class="readme-pane hidden" data-readme-pane="changelog">
+
+          <div class="readme-changelog-item">
+            <div><span class="badge">易用性</span><strong>2026-05-10 · 一键启动 App + run.sh</strong></div>
+            <ul>
+              <li>新增 <code>scripts/build_launcher_app.py</code>:在 <code>~/Applications/</code> 生成 <strong>Football Analysis.app</strong>,Finder 双击 / Dock 钉住即可启动服务并打开浏览器,Dock 退出会自动杀子进程,不留孤儿。</li>
+              <li>新增项目根 <code>run.sh</code>:<code>./run.sh</code> 即启动 + 打开浏览器,支持 <code>--port=N</code> / <code>--no-open</code>,Ctrl+C 停服务。</li>
+              <li>命令行老办法仍然有效;三种方式都用同一个 <code>scripts/12_serve_analysis_app.py</code>。</li>
+            </ul>
+          </div>
 
           <div class="readme-changelog-item">
             <div><span class="badge major">里程碑</span><strong>2026-05-10 · 自训练球检测器 ball_v1 上线</strong></div>
