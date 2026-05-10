@@ -104,14 +104,72 @@ def find_latest_report(match_dir: Path) -> Optional[Path]:
     return None
 
 
-def load_system_ball_points(match_dir: Path) -> Optional[pd.DataFrame]:
-    path = match_dir / "review" / "ball_review" / "ball_review_points.csv"
-    if not path.exists():
+def load_system_ball_points(match_dir: Path, source: str = "raw") -> Optional[pd.DataFrame]:
+    """Return system-side ball points for Layer B comparison.
+
+    source="raw":      YOLO's auto-detected ball boxes (pre human review).
+                       Loaded from the segment's tracks.csv filtered to
+                       class_name == "sports ball". This is the meaningful
+                       comparison against human-labeled gold.
+    source="reviewed": post human-review consolidated ball points. Useful for
+                       measuring the labeling effort, but NOT a measure of the
+                       model — the gold typically came from this same file.
+    """
+    if source == "reviewed":
+        path = match_dir / "review" / "ball_review" / "ball_review_points.csv"
+        if not path.exists():
+            return None
+        try:
+            df = pd.read_csv(path)
+        except Exception:
+            return None
+        # Normalize to (timestamp_sec, ball_in_play, field_x_m, field_y_m)
+        return df
+
+    # source == "raw"
+    detections_dir = _resolve_source_detections_dir(match_dir)
+    if detections_dir is None:
+        return None
+    tracks_csv = detections_dir / "tracks.csv"
+    if not tracks_csv.exists():
         return None
     try:
-        return pd.read_csv(path)
+        df = pd.read_csv(tracks_csv)
     except Exception:
         return None
+    if "class_name" not in df.columns:
+        return None
+    ball = df[df["class_name"].astype(str).str.lower() == "sports ball"].copy()
+    if ball.empty:
+        return ball  # empty df, eval will see 0 system points
+    # Conform to the columns the eval expects
+    ball["ball_in_play"] = ball.get("inside_play_area", True)
+    return ball[["timestamp_sec", "field_x_m", "field_y_m", "ball_in_play", "conf"]]
+
+
+def _resolve_source_detections_dir(match_dir: Path) -> Optional[Path]:
+    """Read latest_report.yaml's source_detections_dir; fall back to scanning."""
+    latest_yaml = match_dir / "reports" / "latest_report.yaml"
+    if latest_yaml.exists():
+        with latest_yaml.open("r", encoding="utf-8") as h:
+            data = yaml.safe_load(h) or {}
+        sdd = data.get("source_detections_dir")
+        if sdd:
+            cand = resolve_path(sdd)
+            if cand.exists():
+                return cand
+    # Fallback: pick the segment directory with the largest tracks.csv
+    detections_root = match_dir / "data" / "interim" / "detections"
+    if not detections_root.exists():
+        return None
+    candidates = [
+        d for d in detections_root.iterdir()
+        if d.is_dir() and (d / "tracks.csv").exists()
+    ]
+    if not candidates:
+        return None
+    candidates.sort(key=lambda d: (d / "tracks.csv").stat().st_size, reverse=True)
+    return candidates[0]
 
 
 def parse_tolerance_overrides(items: Optional[List[str]]) -> Dict[str, float]:
@@ -248,6 +306,7 @@ def evaluate_match(
     match_id_or_path: str,
     use_gold: bool,
     tolerance_overrides: Dict[str, float],
+    ball_source: str = "raw",
 ) -> Dict[str, Any]:
     match_dir = find_match_dir(match_id_or_path)
     match_id = match_dir.name
@@ -275,7 +334,7 @@ def evaluate_match(
             events_path = report_dir / "key_timestamps.csv"
             sys_tracks = pd.read_csv(tracks_path) if tracks_path.exists() else None
             sys_events = pd.read_csv(events_path) if events_path.exists() else None
-            sys_ball = load_system_ball_points(match_dir)
+            sys_ball = load_system_ball_points(match_dir, source=ball_source)
             layer_b = run_layer_b(
                 match_id=match_id,
                 gold=gold,
@@ -311,6 +370,12 @@ def main() -> int:
         help="override Layer B tolerances, e.g. player_position_m=2.0 (repeatable)",
     )
     parser.add_argument(
+        "--ball-source", choices=["raw", "reviewed"], default="raw",
+        help="raw = YOLO auto detections (default, the honest model comparison); "
+             "reviewed = post human-review consolidated points (circular if your gold "
+             "was extracted from the same file).",
+    )
+    parser.add_argument(
         "--output", default="",
         help="Output dir name under evals/runs/. Defaults to a timestamp.",
     )
@@ -322,7 +387,10 @@ def main() -> int:
     results: List[Dict[str, Any]] = []
     for raw in args.matches:
         try:
-            results.append(evaluate_match(raw, use_gold=use_gold, tolerance_overrides=tols))
+            results.append(evaluate_match(
+                raw, use_gold=use_gold, tolerance_overrides=tols,
+                ball_source=args.ball_source,
+            ))
         except FileNotFoundError as exc:
             print(f"error: {exc}", file=sys.stderr)
             return 2
@@ -354,6 +422,7 @@ def main() -> int:
         "eval_id": eval_id,
         "generated_at": datetime.now().astimezone().isoformat(timespec="seconds"),
         "tolerances_applied": tols,
+        "ball_source": args.ball_source,
         "matches": [
             {
                 "match_id": r["match_id"],

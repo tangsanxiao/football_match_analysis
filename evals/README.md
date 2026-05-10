@@ -98,6 +98,36 @@ Given gold + system output for the same match, the harness reports:
 
 Match tolerances (e.g. "system point within 1.5m and 1s of gold counts as a hit") live in `gold_schema_v1.yaml` under `match_tolerances`. Override per-run via CLI flags if needed.
 
+### `--ball-source` matters for honesty
+
+Ball-related metrics need a careful choice of system output:
+
+- **`--ball-source raw`** (default) — pre-human-review YOLO ball detections from `data/interim/detections/<segment>/tracks.csv` filtered to `class_name == "sports ball"`. **This is the meaningful comparison**: it measures the model alone, before manual correction.
+- **`--ball-source reviewed`** — post-human-review consolidated points from `matches/<id>/review/ball_review/ball_review_points.csv`. **Circular** if the gold was extracted from this same file (recall will appear 100%); use only to measure things like "did human review add new positive points" once the project tracks that.
+
+---
+
+## Current baseline (2026-05-10)
+
+First real gold landed: `evals/gold/中青赛_1_20260506_213657/` (window 78–138s, 30 in-play ball points).
+
+Layer B with default tolerances and `--ball-source raw`:
+
+| Metric | Value | Note |
+|---|---:|---|
+| `ball_recall` | **0.0%** (0/30) | YOLO11n produces 103 ball detections in this window, all clustered at one static field-mark (~2.7m, ~9.0m). None match the actual ball. |
+| `ball_position_error_m` | — | No matches → no error to compute. |
+
+Interpretation: the project's manual ball-review workflow is empirically **the only thing** producing usable ball positions on this footage. Even loose tolerances (5m / 3s) yield 0/30 — YOLO11n's ball head is not viable for 5-a-side amateur footage as-is.
+
+Improvements that should move this number up:
+- Switch to YOLO11s/m (more capacity for small-object detection).
+- Apply `analysis_detection_filters.filter_static_ball_false_positives` before the gold comparison (currently the `raw` path doesn't filter; consider adding `--ball-source filtered`).
+- Train a small-object specialized ball detector and ensemble.
+- Add optical-flow ball interpolation between detections.
+
+Each of those is now testable: run the eval before, change one thing, run again. The number is the merge gate.
+
 ---
 
 ## Layout

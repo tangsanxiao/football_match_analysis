@@ -1,0 +1,47 @@
+schema_version: 1
+match_id: 中青赛_1_20260506_213657
+
+window:
+  start_sec: 78.0
+  end_sec: 138.0
+
+labels:
+  tracks: false
+  ball_points: true
+  events: false
+
+sample_strategy: every_n_frames
+
+labeled_by: human (extracted from match's ball-review workflow)
+labeled_at: 2026-05-10T16:35:00+08:00
+
+notes: |
+  First real gold segment for this project's eval harness.
+
+  Source: this match's own ball-review workflow already produced human-
+  verified ball positions (matches/中青赛_1_20260506_213657/review/ball_review/
+  ball_review_points.csv, all rows with source=human). Those entries were
+  extracted into ball_points.csv with the gold-schema status mapping:
+    ball_visible=True,  ball_in_play=True   →  in_play (with field coords)
+    ball_visible=False, ball_in_play=False  →  invisible
+    ball_visible=True,  ball_in_play=False  →  out_of_play
+
+  Window: 78-138s. Picked because:
+    - 60-second contiguous active-play segment
+    - 30 in-play frames give a meaningful denominator for ball_recall
+    - System has 9 candidate events here (mostly pressing / high-speed runs)
+      so future events.csv labeling has scope
+
+  What this gold supports today:
+    - ball_recall              ✓ measurable
+    - ball_position_error_m    ✓ measurable
+
+  What it does not yet support:
+    - tracks.csv (player-position ground truth) - would need ~120 manual
+      annotations (one per second per visible player). High effort, low
+      first-cut ROI; defer until a model upgrade where player detection is
+      the suspected regression.
+    - events.csv (pass/shot/1v1/pressure ground truth) - the 9 system events
+      in this window are HEURISTIC CANDIDATES, not ground truth. Do not paste
+      them in. To extend: rewatch the 60-second window and write a fresh
+      events.csv with timestamps you can defend; aim for 5-15 events.

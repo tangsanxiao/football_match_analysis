@@ -145,6 +145,17 @@ The harness exits non-zero on any **fail**.
 Tolerances default per `evals/gold_schema_v1.yaml#match_tolerances`. The
 algorithms are locked by `TestEvalLayerA` and `TestEvalLayerB`.
 
+**`--ball-source` matters**: default `raw` reads YOLO's pre-human-review ball
+detections from `data/interim/detections/<segment>/tracks.csv` (filtered to
+`class_name == "sports ball"`). `reviewed` reads the post-human file and is
+circular if the gold was extracted from there.
+
+First baseline (2026-05-10) on `中青赛_1_20260506_213657` window 78–138s:
+**ball_recall = 0/30 (0%)** with `--ball-source raw`. YOLO11n's ball head is
+not usable on this footage without major intervention; manual ball review is
+empirically the only viable path until a model upgrade. See `evals/README.md`
+"Current baseline".
+
 To add a new gold segment, see `evals/README.md`. Investment per match is
 ~15 minutes (label 30s of footage); the harness will produce partial Layer B
 metrics from partial gold.
