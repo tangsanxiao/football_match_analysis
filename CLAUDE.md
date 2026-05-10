@@ -85,7 +85,12 @@ not part of the live codebase. Don't import from it. Don't put new work there.
 1. `00_probe_video` → `01_sample_frames` — get video metadata + sample frames.
 2. `02_calibrate_field` — turn pixel-coordinate calibration points into a homography.
    The picker UI lives in `create_point_picker.py` + `serve_point_picker.py`.
-3. `03_detect_track` — YOLO11n detection + ByteTrack on segments defined in match YAML.
+3. `03_detect_track` — YOLO11n + ByteTrack on segments defined in match YAML.
+   When `detection.ball_model` is set in `match.yaml` (recommended for new
+   matches), a second pass uses that single-class detector for the ball,
+   merging into the same `tracks.csv` with `class_name='sports ball'`. The
+   main model only does persons (class 32 is dropped). See
+   `docs/football-video-analysis-mvp/10-next-match-playbook.md` for the recipe.
 4. `04_summarize_tracklets` → `05_classify_tracklets` → `06_assign_identities` —
    build per-track summaries, classify by team color, bind to roster.
 5. `07_generate_report` — combine identity + ball annotations into the HTML/MD/CSV
@@ -340,8 +345,13 @@ Codebase" and "Design Checklist For Future AI Agents".
 - Process notes per phase → `docs/football-video-analysis-mvp/`
 - **Eval harness + YOLO ball baseline (2026-05-10)** →
   `docs/football-video-analysis-mvp/08-eval-harness-and-yolo-ball-baseline.md`
-  Read this before touching detection / ball-related code; it records what's
-  been ruled out (YOLO11n→11s upgrade, static-filter tuning) and the next
-  recommended path (custom-train ball head on existing labeled points).
-- Match config example → `configs/match_red_mvp.yaml`
+- **ball_v1 training record (0% → 83.3% recall)** →
+  `docs/football-video-analysis-mvp/09-custom-ball-head-v1.md`
+- **Next-match playbook (READ THIS BEFORE EACH NEW MATCH)** →
+  `docs/football-video-analysis-mvp/10-next-match-playbook.md`
+  Covers: video splitting (one half per file, ~20 min each), the dual-model
+  recipe to enable ball_v1, calibration reuse between halves, the merge step,
+  and the quality gate (Layer A must pass).
+- Match config example → `configs/match_red_mvp.yaml` (now includes a
+  commented `ball_model:` opt-in stanza)
 - Calibration points example → `configs/calibration_points_red_mvp.yaml`

@@ -270,6 +270,18 @@ def run_detection(config: Dict[str, Any], args: argparse.Namespace) -> Path:
     if not cap.isOpened():
         raise RuntimeError(f"Could not open video: {video_path}")
 
+    # When a dedicated ball model is configured, the main model should NOT
+    # also try to predict balls (its COCO ball head is ~100% false positives
+    # in this domain — see docs/08-eval-harness-and-yolo-ball-baseline.md).
+    main_classes = list(args.classes or [])
+    use_ball_model = bool(args.ball_model)
+    if use_ball_model:
+        main_classes = [c for c in main_classes if c != 32]
+        if not main_classes:
+            main_classes = [0]  # at minimum, detect persons
+        print(f"using ball model: {args.ball_model}")
+        print(f"main model classes (after dropping ball): {main_classes}")
+
     model = YOLO(args.model)
     homography = optional_calibration(config)
     rows: List[Dict[str, Any]] = []
@@ -290,7 +302,7 @@ def run_detection(config: Dict[str, Any], args: argparse.Namespace) -> Path:
                 imgsz=args.imgsz,
                 conf=args.conf,
                 iou=args.iou,
-                classes=class_filter(args.classes),
+                classes=class_filter(main_classes),
                 device=args.device,
                 verbose=False,
             )
@@ -307,6 +319,60 @@ def run_detection(config: Dict[str, Any], args: argparse.Namespace) -> Path:
             processed_frames += 1
     finally:
         cap.release()
+
+    # Second pass: dedicated ball detector. Iterates the same frames and writes
+    # rows into the same list with class_id=32, class_name='sports ball' so
+    # downstream filters (filter_static_ball_false_positives) and reports work
+    # without code changes. Track IDs offset by +100000 to avoid collision with
+    # the main model's IDs.
+    ball_summary: Dict[str, Any] = {"used": False}
+    if use_ball_model:
+        ball_cap = cv2.VideoCapture(str(video_path))
+        if not ball_cap.isOpened():
+            raise RuntimeError(f"Could not reopen video for ball pass: {video_path}")
+        ball_model = YOLO(args.ball_model)
+        ball_rows_added = 0
+        try:
+            for sample_no, frame_idx in enumerate(tqdm(indices, desc="ball-detection"), start=1):
+                ball_cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+                ok, frame = ball_cap.read()
+                if not ok or frame is None:
+                    continue
+                timestamp_sec = frame_idx / video_fps
+                ball_results = ball_model.track(
+                    frame,
+                    persist=True,
+                    tracker=args.tracker,
+                    imgsz=args.imgsz,
+                    conf=args.ball_conf,
+                    iou=args.iou,
+                    classes=[0],  # custom single-class model
+                    device=args.device,
+                    verbose=False,
+                )
+                if not ball_results:
+                    continue
+                ball_result = ball_results[0]
+                new_rows = extract_rows(ball_result, frame_idx, timestamp_sec, homography, config)
+                for row in new_rows:
+                    # Force COCO-compatible labeling so downstream code is unaware
+                    row["class_id"] = 32
+                    row["class_name"] = "sports ball"
+                    if isinstance(row.get("track_id"), int):
+                        row["track_id"] = row["track_id"] + 100000
+                rows.extend(new_rows)
+                ball_rows_added += len(new_rows)
+                # re-evaluate inside_play_area: extract_rows already used the
+                # ball-class anchor + homography, so this is correct
+        finally:
+            ball_cap.release()
+        ball_summary = {
+            "used": True,
+            "ball_model": str(args.ball_model),
+            "ball_conf": float(args.ball_conf),
+            "rows_added": ball_rows_added,
+        }
+        print(f"ball model added {ball_rows_added} rows at conf={args.ball_conf}")
 
     rows, filter_summary = filter_static_ball_false_positives(rows, config)
 
@@ -326,6 +392,7 @@ def run_detection(config: Dict[str, Any], args: argparse.Namespace) -> Path:
             "filters": {
                 "static_ball_false_positive": filter_summary,
             },
+            "ball_model_pass": ball_summary,
         }
     )
     with summary_json.open("w", encoding="utf-8") as handle:
@@ -359,6 +426,15 @@ def parser_with_config_defaults(config: Dict[str, Any]) -> argparse.ArgumentPars
     parser.add_argument("--conf", type=float, default=float(detection.get("conf", 0.18)))
     parser.add_argument("--iou", type=float, default=float(detection.get("iou", 0.5)))
     parser.add_argument("--imgsz", type=int, default=int(detection.get("imgsz", 1280)))
+    parser.add_argument("--ball-model", default=detection.get("ball_model") or None,
+                        help="Optional second-pass ball detector (e.g. runs/detect/ball_v1/weights/best.pt). "
+                             "When set, the main model only detects persons (class 32 is dropped) and the "
+                             "ball model handles ball detection. Output rows are merged into one tracks.csv "
+                             "with class_name='sports ball' so downstream filters/reports work unchanged.")
+    parser.add_argument("--ball-conf", type=float,
+                        default=float(detection.get("ball_conf", 0.05)),
+                        help="Confidence threshold for the ball model (default 0.05; lower than the main model "
+                             "because small-object detection benefits from a wider net).")
     parser.add_argument("--sample-fps", type=float, default=float(detection.get("sample_fps", 2.0)))
     parser.add_argument("--start-sec", type=float, default=float(smoke.get("start_sec", 120.0)))
     parser.add_argument("--duration-sec", type=float, default=float(smoke.get("duration_sec", 10.0)))

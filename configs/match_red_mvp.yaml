@@ -86,6 +86,16 @@ detection:
   iou: 0.5
   imgsz: 1280
   sample_fps: 2.0
+  # Optional second-pass ball detector. When set, the main YOLO model only
+  # detects persons (class 32 is dropped) and this dedicated single-class
+  # model handles ball detection at a lower conf threshold. Recommended for
+  # 5-a-side amateur footage where COCO ball detection is ~0% recall.
+  # Train via:
+  #   python scripts/prepare_ball_training_data.py --match <id> --output-name ball_v1
+  #   python scripts/train_ball_detector.py --data evals/training/ball_v1/data.yaml ...
+  # Then uncomment:
+  # ball_model: runs/detect/ball_v1/weights/best.pt
+  # ball_conf: 0.05
   smoke_test:
     start_sec: 120.0
     duration_sec: 10.0
