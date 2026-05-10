@@ -60,12 +60,14 @@ docs/football-video-analysis-mvp/   Process notes per work phase
 matches/<match_id>/        Per-match isolated project (config tracked, media gitignored)
 reports/                   Pilot report outputs (gitignored)
 scripts/
-  00_..16_*.py             Pipeline steps, numbered in execution order
+  00_..17_*.py             Pipeline steps, numbered in execution order
   analysis_app_*.py        Library modules reused by 12_serve_analysis_app.py
   analysis_detection_filters.py / analysis_metrics.py / analysis_report_runs.py
+  analysis_eval.py         Pure logic for the Layer A / Layer B eval harness
   create_point_picker.py / serve_point_picker.py    Calibration UI
   analysis_app_workspace.html       Frontend (vanilla HTML/JS, ~1.7K lines)
 reports/combined/<slug>/<ts>/      Combined reports from 16_merge_match_segments
+evals/                              Evaluation harness — see "Eval harness" below
 tests/test_analysis_core.py         Test suite (unittest)
 videos/raw/                Source footage (gitignored)
 design.md                  UX/UI source of truth — read before any UI change
@@ -98,6 +100,54 @@ not part of the live codebase. Don't import from it. Don't put new work there.
 10. `16_merge_match_segments` aggregates finalized reports from N match projects
     into one combined report (use case: upper-half + lower-half of one game). See
     "Multi-segment matches" below.
+11. `17_eval_against_gold` runs the eval harness (Layer A sanity + optional
+    Layer B accuracy vs `evals/gold/<match_id>/`). See "Eval harness" below.
+
+---
+
+## Eval harness (Layer A / Layer B)
+
+`evals/` is the project's measurement底座. Every detection / tracking /
+report-pipeline change should be evaluated against it before merging.
+
+```bash
+# Layer A only (sanity / schema / range checks). Always works.
+python scripts/17_eval_against_gold.py --match <match_id>
+
+# Layer A + Layer B (accuracy metrics) when evals/gold/<match_id>/ exists
+python scripts/17_eval_against_gold.py --match <match_id> --gold auto
+
+# Multi-match aggregation (regression suite)
+python scripts/17_eval_against_gold.py --match m1 --match m2 --output baseline_v1
+
+# Override match tolerances (e.g. tighter player-position window)
+python scripts/17_eval_against_gold.py --match <m> --tolerances player_position_m=2.0
+```
+
+Output: `evals/runs/<eval_id>/{report.md, report.html, layer_a.yaml, layer_b.yaml, manifest.yaml}`.
+
+**Layer A** (no gold needed) — runs on any finalized match:
+- Smoke: report.md/html + standard CSVs exist.
+- Schema: required columns present in `player_metrics.csv` / `key_timestamps.csv`.
+- Value ranges: `observed_coverage_pct ∈ [0,100]`, `rating ∈ [0,10]`,
+  `distance_per_min ∈ [0,500]`.
+- Confidence labels are from the legal set (see `analysis_eval.LEGAL_CONFIDENCE`).
+- Cross-table: every event's `player_id` appears in `player_metrics.csv`.
+
+The harness exits non-zero on any **fail**.
+
+**Layer B** (requires `evals/gold/<match_id>/manifest.yaml` per `evals/gold_schema_v1.yaml`):
+- `player_detection_recall` — % of gold (player, timestamp) rows the system captured (within `player_position_m` / `player_timestamp_sec`).
+- `identity_binding_accuracy` — among gold detections the system saw, % bound to the correct `player_id`.
+- `ball_recall` + `ball_position_error_m` — based on `matches/<id>/review/ball_review/ball_review_points.csv`.
+- Per-event-type recall + precision (greedy nearest-first match within `event_timestamp_sec` / `event_position_m`).
+
+Tolerances default per `evals/gold_schema_v1.yaml#match_tolerances`. The
+algorithms are locked by `TestEvalLayerA` and `TestEvalLayerB`.
+
+To add a new gold segment, see `evals/README.md`. Investment per match is
+~15 minutes (label 30s of footage); the harness will produce partial Layer B
+metrics from partial gold.
 
 ---
 

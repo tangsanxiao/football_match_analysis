@@ -29,6 +29,8 @@ merge_match_segments = importlib.util.module_from_spec(merge_spec)
 assert merge_spec and merge_spec.loader
 merge_spec.loader.exec_module(merge_match_segments)
 
+import analysis_eval  # noqa: E402
+
 
 def base_config(output_dir: Path | None = None, review_dir: Path | None = None) -> dict:
     return {
@@ -329,6 +331,223 @@ class TestMergeMatchSegments(unittest.TestCase):
         # df_b's first event got +600s offset, becoming 605s
         self.assertAlmostEqual(merged.iloc[2]["timestamp_sec"], 605.0)
         self.assertEqual(merged.iloc[2]["timestamp"], "10:05")
+
+
+class TestEvalLayerA(unittest.TestCase):
+    """Sanity / schema checks should detect missing files, bad values, wrong labels."""
+
+    @staticmethod
+    def _build_report(tmp: Path, *, with_files=True, player_rows=None, event_rows=None):
+        import pandas as pd
+
+        report_dir = tmp / "reports" / "runs" / "final_test"
+        if with_files:
+            report_dir.mkdir(parents=True)
+            (report_dir / "report.md").write_text("# r\n", encoding="utf-8")
+            (report_dir / "report.html").write_text("<html></html>", encoding="utf-8")
+        else:
+            report_dir.mkdir(parents=True)
+            # leave report files missing intentionally
+
+        # default player rows
+        if player_rows is None:
+            player_rows = [{
+                "player_id": "p1", "name": "ALPHA", "role": "defender",
+                "observed_frames": 100, "observed_seconds": 50.0,
+                "observed_coverage_pct": 50.0,
+                "distance_m": 200.0, "distance_per_min": 240.0,
+                "rating": 7.5, "confidence": "high",
+            }]
+        pd.DataFrame(player_rows).to_csv(report_dir / "player_metrics.csv", index=False)
+
+        if event_rows is None:
+            event_rows = [{
+                "timestamp_sec": 30.0, "player_id": "p1",
+                "event_type": "高速跑动", "confidence": "low",
+            }]
+        pd.DataFrame(event_rows).to_csv(report_dir / "key_timestamps.csv", index=False)
+
+        return report_dir
+
+    def test_smoke_passes_on_complete_report(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            report_dir = self._build_report(Path(tmp))
+            result = analysis_eval.run_layer_a("test_match", report_dir)
+            self.assertTrue(result.passed, msg=[f.message for f in result.findings])
+
+    def test_smoke_fails_when_report_files_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            empty_dir = Path(tmp) / "empty_report"
+            empty_dir.mkdir()
+            result = analysis_eval.run_layer_a("m", empty_dir)
+            self.assertFalse(result.passed)
+            codes = {f.code for f in result.findings}
+            self.assertIn("report_file_missing", codes)
+
+    def test_value_range_violation_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            report_dir = self._build_report(
+                Path(tmp),
+                player_rows=[{
+                    "player_id": "p1", "name": "A", "role": "defender",
+                    "observed_frames": 10, "observed_seconds": 5.0,
+                    "observed_coverage_pct": 50.0,
+                    "distance_m": 100.0, "distance_per_min": 800.0,  # > 500
+                    "rating": 11.0,  # > 10
+                    "confidence": "high",
+                }],
+            )
+            result = analysis_eval.run_layer_a("m", report_dir)
+            self.assertFalse(result.passed)
+            codes = {f.code for f in result.findings}
+            self.assertIn("value_above_range", codes)
+
+    def test_illegal_confidence_label_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            report_dir = self._build_report(
+                Path(tmp),
+                player_rows=[{
+                    "player_id": "p1", "name": "A", "role": "defender",
+                    "observed_frames": 10, "observed_seconds": 5.0,
+                    "observed_coverage_pct": 50.0,
+                    "distance_m": 100.0, "distance_per_min": 200.0,
+                    "rating": 7.0, "confidence": "totally_made_up",
+                }],
+            )
+            result = analysis_eval.run_layer_a("m", report_dir)
+            codes = {f.code for f in result.findings}
+            self.assertIn("illegal_confidence_label", codes)
+
+    def test_event_player_unknown_warns(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            report_dir = self._build_report(
+                Path(tmp),
+                event_rows=[{
+                    "timestamp_sec": 5.0, "player_id": "ghost_player",
+                    "event_type": "压迫候选", "confidence": "low",
+                }],
+            )
+            result = analysis_eval.run_layer_a("m", report_dir)
+            warn_codes = {f.code for f in result.findings if f.severity == "warn"}
+            self.assertIn("event_player_unknown", warn_codes)
+
+
+class TestEvalLayerB(unittest.TestCase):
+    """Accuracy metric math against synthetic gold + system data."""
+
+    @staticmethod
+    def _gold_tracks(rows):
+        import pandas as pd
+
+        return pd.DataFrame(rows, columns=["timestamp_sec", "player_id", "field_x_m", "field_y_m"])
+
+    @staticmethod
+    def _system_tracks(rows):
+        import pandas as pd
+
+        return pd.DataFrame(
+            rows,
+            columns=["timestamp_sec", "assigned_player_id", "field_x_m", "field_y_m"],
+        )
+
+    def test_player_detection_perfect_recall(self) -> None:
+        gold = self._gold_tracks([
+            (10.0, "p1", 20.0, 10.0),
+            (10.5, "p2", 25.0, 5.0),
+        ])
+        system = self._system_tracks([
+            (10.0, "p1", 20.1, 10.1),
+            (10.5, "p2", 25.05, 5.05),
+        ])
+        det, ident = analysis_eval.compute_player_detection_recall(
+            gold, system, pos_tol_m=1.0, ts_tol_sec=0.5,
+        )
+        self.assertEqual(det.value, 100.0)
+        self.assertEqual(ident.value, 100.0)
+
+    def test_player_detection_offset_too_far(self) -> None:
+        gold = self._gold_tracks([(10.0, "p1", 20.0, 10.0)])
+        # system labeled this player 10 meters away — outside tolerance
+        system = self._system_tracks([(10.0, "p1", 30.0, 10.0)])
+        det, ident = analysis_eval.compute_player_detection_recall(
+            gold, system, pos_tol_m=1.0, ts_tol_sec=0.5,
+        )
+        self.assertEqual(det.value, 0.0)
+        self.assertIsNone(ident.value)  # denominator was 0
+
+    def test_identity_binding_swap(self) -> None:
+        # Gold says p1 is here. System has someone here, but bound to p2.
+        gold = self._gold_tracks([(10.0, "p1", 20.0, 10.0)])
+        system = self._system_tracks([(10.0, "p2", 20.0, 10.0)])
+        det, ident = analysis_eval.compute_player_detection_recall(
+            gold, system, pos_tol_m=1.0, ts_tol_sec=0.5,
+        )
+        # Detection: gold rows that had a system track for the *same* player_id within tol.
+        self.assertEqual(det.value, 0.0)
+        # Identity denominator: 1 (system saw someone there). Hits: 0 (wrong identity).
+        self.assertEqual(ident.numerator, 0)
+        self.assertEqual(ident.denominator, 1)
+        self.assertEqual(ident.value, 0.0)
+
+    def test_event_metrics_perfect_match(self) -> None:
+        import pandas as pd
+
+        gold = pd.DataFrame([
+            {"timestamp_sec": 100.0, "event_type": "pass",
+             "field_x_m": 20.0, "field_y_m": 10.0},
+        ])
+        system = pd.DataFrame([
+            {"timestamp_sec": 101.0, "event_type": "pass",
+             "field_x_m": 20.5, "field_y_m": 10.5},
+        ])
+        out = analysis_eval.compute_event_metrics(
+            gold, system, ts_tol_sec=5.0, pos_tol_m=5.0,
+        )
+        self.assertIn("pass", out)
+        self.assertEqual(out["pass"]["recall"].value, 100.0)
+        self.assertEqual(out["pass"]["precision"].value, 100.0)
+
+    def test_event_metrics_extra_system_event_lowers_precision(self) -> None:
+        import pandas as pd
+
+        gold = pd.DataFrame([
+            {"timestamp_sec": 100.0, "event_type": "pass"},
+        ])
+        system = pd.DataFrame([
+            {"timestamp_sec": 100.5, "event_type": "pass"},  # match
+            {"timestamp_sec": 200.0, "event_type": "pass"},  # spurious
+            {"timestamp_sec": 300.0, "event_type": "pass"},  # spurious
+        ])
+        out = analysis_eval.compute_event_metrics(
+            gold, system, ts_tol_sec=2.0, pos_tol_m=5.0,
+        )
+        self.assertEqual(out["pass"]["recall"].value, 100.0)
+        # 1 match out of 3 system events
+        self.assertAlmostEqual(out["pass"]["precision"].value, 33.33, places=1)
+
+    def test_ball_metrics_recall_and_position_error(self) -> None:
+        import pandas as pd
+
+        gold = pd.DataFrame([
+            {"timestamp_sec": 5.0, "status": "in_play", "field_x_m": 10.0, "field_y_m": 5.0},
+            {"timestamp_sec": 6.0, "status": "in_play", "field_x_m": 12.0, "field_y_m": 5.0},
+            {"timestamp_sec": 7.0, "status": "invisible", "field_x_m": None, "field_y_m": None},
+        ])
+        system = pd.DataFrame([
+            {"timestamp_sec": 5.0, "ball_in_play": True,
+             "field_x_m": 10.5, "field_y_m": 5.0},
+            # second gold point not matched by system
+            {"timestamp_sec": 6.0, "ball_in_play": False,
+             "field_x_m": None, "field_y_m": None},
+        ])
+        recall, pos_err = analysis_eval.compute_ball_metrics(
+            gold, system, pos_tol_m=1.0, ts_tol_sec=0.5,
+        )
+        # Two in_play gold points, one matched
+        self.assertEqual(recall.numerator, 1)
+        self.assertEqual(recall.denominator, 2)
+        self.assertEqual(recall.value, 50.0)
+        self.assertAlmostEqual(pos_err.value, 0.5, places=2)
 
 
 if __name__ == "__main__":

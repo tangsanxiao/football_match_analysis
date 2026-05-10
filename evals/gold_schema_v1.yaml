@@ -1,0 +1,89 @@
+# Gold-segment schema v1
+#
+# Each `evals/gold/<match_id>/` directory must contain a `manifest.yaml` that
+# follows this schema. CSVs may be partial — only the columns listed below
+# under each label are required. The eval harness reads `manifest.yaml` and
+# only runs metrics whose corresponding label is `true`.
+#
+# Principle: a 30-second labeling sprint is still useful. Don't gate Layer B
+# on full-segment annotation.
+
+schema_version: 1
+
+# === manifest.yaml shape ===
+manifest:
+  match_id:
+    type: string
+    required: true
+    note: "Must match the match project under matches/<match_id>/."
+  window:
+    start_sec: { type: float, required: true }
+    end_sec:   { type: float, required: true }
+  labels:
+    tracks:       { type: bool, default: false }
+    ball_points:  { type: bool, default: false }
+    events:       { type: bool, default: false }
+  sample_strategy:
+    type: string
+    enum: [every_frame, every_n_frames, key_events_only, sparse]
+    default: sparse
+    note: "How densely the gold is labeled. Affects how recall is interpreted."
+  labeled_by:
+    type: string
+    note: "Who labeled this (human name / 'AI-assist + human verify')."
+  labeled_at:
+    type: string
+    format: ISO8601
+  notes:
+    type: string
+    note: "Free-form. Decisions, ambiguous cases, things to revisit."
+
+# === tracks.csv (player positions, when labels.tracks=true) ===
+tracks:
+  required_columns:
+    - frame_idx        # int, raw video frame index (or -1 if only timestamp known)
+    - timestamp_sec    # float, seconds within the match's source video
+    - player_id        # string, must match roster in matches/<match_id>/config/match.yaml
+    - field_x_m        # float, calibrated field x in meters
+    - field_y_m        # float, calibrated field y in meters
+  optional_columns:
+    - name             # string, human label for sanity (e.g. "JYN")
+    - role             # string, role hint (defender / center_forward / ...)
+
+# === ball_points.csv (when labels.ball_points=true) ===
+ball_points:
+  required_columns:
+    - timestamp_sec    # float
+    - status           # enum: in_play | invisible | out_of_play
+  optional_columns:
+    - field_x_m        # float, required when status=in_play
+    - field_y_m        # float, required when status=in_play
+    - frame_idx        # int
+
+# === events.csv (when labels.events=true) ===
+events:
+  required_columns:
+    - timestamp_sec    # float
+    - event_type       # enum: pass | shot | steal | one_v_one | pressure | space_creation | tackle | other
+  optional_columns:
+    - player_id            # who performed the event (matches roster)
+    - target_player_id     # for passes
+    - field_x_m
+    - field_y_m
+    - notes
+
+# === Match tolerances (used by Layer B; document defaults here) ===
+match_tolerances:
+  player_position_m:
+    default: 3.0
+    note: "Max field-distance for a system track to count as a hit on a gold player frame."
+  player_timestamp_sec:
+    default: 0.5
+  ball_position_m:
+    default: 1.5
+  ball_timestamp_sec:
+    default: 1.0
+  event_timestamp_sec:
+    default: 5.0
+  event_position_m:
+    default: 5.0
