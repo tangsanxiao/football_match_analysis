@@ -83,6 +83,14 @@ if [ ! -d "$PROJECT_DIR" ]; then
     exit 1
 fi
 
+# TCC probe: try a no-op read on the project. macOS blocks .app access to
+# ~/Documents by default, so the venv's symlinks can't be resolved at exec
+# time and the launcher silently fails. Detect and explain.
+if ! ls "$PROJECT_DIR/.venv/bin/" >/dev/null 2>&1; then
+    osascript -e "display dialog \"macOS 阻止了启动器访问项目目录(~/Documents 默认受 TCC 保护)。\\n\\n请二选一:\\n\\n① 打开\\\"系统设置 → 隐私与安全 → 完全磁盘访问权限\\\",把 Football Analysis.app 加进去并启用,然后再次双击它。\\n\\n② 使用项目根的 \\\"打开工作台.command\\\" 文件,它在 Terminal 里跑,不需要 TCC 授权。\" buttons {\"打开系统设置\", \"知道了\"} default button 1 with icon caution with title \"足球分析工作台\""  -e "if button returned of result is \"打开系统设置\" then do shell script \"open 'x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles'\""
+    exit 1
+fi
+
 cd "$PROJECT_DIR" || exit 1
 
 if [ ! -x ".venv/bin/python" ]; then
@@ -140,6 +148,56 @@ WEBLOC_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
 """
 
 
+# A .command file is a shell script with .command extension. macOS treats
+# it as "double-click to run in Terminal". Terminal has TCC access to
+# ~/Documents by default, so this bypasses the .app sandbox entirely.
+COMMAND_TEMPLATE = r"""#!/bin/bash
+# 双击在 Terminal 里启动工作台。Terminal 有 ~/Documents 访问权限,
+# 不会被 TCC 拦截。Ctrl+C 停服务,关 Terminal 窗口也行。
+
+PROJECT_DIR="__PROJECT_DIR__"
+PORT="__PORT__"
+URL="http://localhost:$PORT/"
+
+cd "$PROJECT_DIR" || { echo "项目目录不存在: $PROJECT_DIR"; read -p "回车退出..."; exit 1; }
+
+if [ ! -x ".venv/bin/python" ]; then
+    echo "❌ 未找到 .venv/bin/python"
+    echo "   请先在 $PROJECT_DIR 创建虚拟环境并安装依赖"
+    read -p "回车退出..."
+    exit 1
+fi
+
+# 已经在跑就直接打开浏览器
+if curl -sf "$URL" >/dev/null 2>&1; then
+    echo "✓ 服务已在 $URL 运行,直接打开浏览器。"
+    open "$URL"
+    read -p "(回车关闭此窗口,服务保持运行)"
+    exit 0
+fi
+
+echo "▶ 启动 workspace web 服务: $URL"
+echo "  (Ctrl+C 停止服务;关闭 Terminal 窗口也会停)"
+echo ""
+
+.venv/bin/python scripts/12_serve_analysis_app.py --port "$PORT" &
+SERVER_PID=$!
+trap 'kill "$SERVER_PID" 2>/dev/null; exit 0' INT TERM EXIT
+
+# 等就绪后开浏览器
+for i in $(seq 1 30); do
+    if curl -sf "$URL" >/dev/null 2>&1; then
+        open "$URL"
+        echo "✓ 浏览器已打开: $URL"
+        break
+    fi
+    sleep 0.5
+done
+
+wait "$SERVER_PID"
+"""
+
+
 def build_app(name: str, output_dir: Path, port: int, reinstall: bool) -> Path:
     app_path = output_dir / f"{name}.app"
     if app_path.exists():
@@ -179,6 +237,20 @@ def build_app(name: str, output_dir: Path, port: int, reinstall: bool) -> Path:
     return app_path, webloc_path
 
 
+def build_command_file(project_root: Path, port: int) -> Path:
+    """Generate a .command file at the project root that bypasses .app TCC
+    restrictions by launching in Terminal (which has ~/Documents access)."""
+    cmd_path = project_root / "打开工作台.command"
+    body = (
+        COMMAND_TEMPLATE
+        .replace("__PROJECT_DIR__", str(project_root.resolve()))
+        .replace("__PORT__", str(port))
+    )
+    cmd_path.write_text(body, encoding="utf-8")
+    cmd_path.chmod(0o755)
+    return cmd_path
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -205,20 +277,27 @@ def main() -> int:
               " 仍然会生成,但可能无法直接双击运行。", file=sys.stderr)
 
     app_path, webloc_path = build_app(args.name, output_dir, args.port, args.reinstall)
+    cmd_path = build_command_file(PROJECT_ROOT, args.port)
     url = f"http://localhost:{args.port}/"
 
-    print(f"✅ 启动器已生成:  {app_path}")
-    print(f"✅ 浏览器书签已生成: {webloc_path}")
-    print(f"   关联项目:    {PROJECT_ROOT}")
-    print(f"   工作台 URL:  {url}")
+    print(f"✅ macOS App 启动器:  {app_path}")
+    print(f"✅ 浏览器 URL 书签:   {webloc_path}")
+    print(f"✅ Terminal 启动文件: {cmd_path}")
+    print(f"   关联项目:        {PROJECT_ROOT}")
+    print(f"   工作台 URL:      {url}")
     print()
-    print("两枚图标分工(都建议拖到 Dock):")
-    print(f"   📱 {app_path.name}")
-    print(f"      → 启动 / 关闭服务")
+    print("使用建议:")
+    print(f"   📱 {app_path.name} (~/Applications/)")
+    print(f"      最 mac 原生。第一次双击 macOS 可能会问\"允许访问 Documents\",点允许。")
+    print(f"      如果遇到 TCC 拦截:系统设置 → 隐私与安全 → 完全磁盘访问权限,加进去。")
+    print()
+    print(f"   ⚡ {cmd_path.name} (项目根目录)")
+    print(f"      最稳。Finder 双击它会在 Terminal 里启动,不会被 macOS 隐私保护拦截。")
+    print(f"      关闭 Terminal 窗口或 Ctrl+C 即停服务。")
+    print(f"      第一次会问\"是否允许执行\",点允许。")
+    print()
     print(f"   🌐 {webloc_path.name}")
-    print(f"      → 服务已起来后再次打开页面(forgot the URL? 双击它就行)")
-    print()
-    print(f"立即试一下: open '{app_path}'")
+    print(f"      服务起来后双击,就回到 {url}。可拖到 Dock 钉住。")
     print()
     print("项目搬家了?重新跑 scripts/build_launcher_app.py 即可。")
     return 0

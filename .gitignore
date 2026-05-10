@@ -8,6 +8,7 @@ videos/raw/
 data/interim/
 data/launcher.log
 data/*.log
+打开工作台.command
 reports/
 runs/
 *.pt

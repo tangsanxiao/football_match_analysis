@@ -34,14 +34,25 @@ Python 3.9 venv lives at `.venv/`. Activate or call `.venv/bin/python` directly.
 # === Workspace web app — pick whichever you remember ===
 # URL is always http://localhost:8765/
 
-# (one-time setup) Generate ~/Applications/Football Analysis.app
-#                   + ~/Applications/Football Analysis（打开浏览器）.webloc
+# (one-time setup) Generate three launchers:
+#   ~/Applications/Football Analysis.app                    (.app, mac-native)
+#   ~/Applications/Football Analysis（打开浏览器）.webloc    (URL bookmark)
+#   <project root>/打开工作台.command                        (Terminal-based, TCC-safe)
 .venv/bin/python scripts/build_launcher_app.py --reinstall
 
-# (recommended daily use) Double-click the .app to start the server,
-#                          double-click the .webloc anytime to open the
-#                          browser at the right URL. Both can be dragged
-#                          to the Dock for one-click access.
+# (most reliable) Double-click 打开工作台.command at the project root.
+#                  Opens Terminal, runs server, opens browser. Doesn't
+#                  hit macOS TCC because Terminal already has Documents
+#                  access. Recommended when the project lives in ~/Documents.
+
+# (mac-native) Double-click ~/Applications/Football Analysis.app.
+#               First launch may need: System Settings → Privacy & Security
+#               → Full Disk Access → add the .app. After that, daily use is
+#               one click; Dock-quit kills the server.
+
+# (always works) ~/Applications/Football Analysis（打开浏览器）.webloc
+#                 Just opens the URL in the default browser. Drag to Dock
+#                 for one-click "back to the workspace tab".
 
 # (terminal) Convenience wrappers at project root
 ./run.sh                          # start server + open browser; Ctrl+C stops
