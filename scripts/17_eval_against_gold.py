@@ -105,7 +105,11 @@ def find_latest_report(match_dir: Path) -> Optional[Path]:
     return None
 
 
-def load_system_ball_points(match_dir: Path, source: str = "raw") -> Optional[pd.DataFrame]:
+def load_system_ball_points(
+    match_dir: Path,
+    source: str = "raw",
+    detections_dir_override: Optional[Path] = None,
+) -> Optional[pd.DataFrame]:
     """Return system-side ball points for Layer B comparison.
 
     source="raw":      YOLO's auto-detected ball boxes (pre any filter, pre
@@ -128,7 +132,11 @@ def load_system_ball_points(match_dir: Path, source: str = "raw") -> Optional[pd
         except Exception:
             return None
 
-    detections_dir = _resolve_source_detections_dir(match_dir)
+    detections_dir = (
+        detections_dir_override.resolve()
+        if detections_dir_override is not None
+        else _resolve_source_detections_dir(match_dir)
+    )
     if detections_dir is None:
         return None
     tracks_csv = detections_dir / "tracks.csv"
@@ -321,6 +329,8 @@ def evaluate_match(
     use_gold: bool,
     tolerance_overrides: Dict[str, float],
     ball_source: str = "raw",
+    detections_dir_override: Optional[Path] = None,
+    eval_label: str = "",
 ) -> Dict[str, Any]:
     match_dir = find_match_dir(match_id_or_path)
     match_id = match_dir.name
@@ -348,7 +358,10 @@ def evaluate_match(
             events_path = report_dir / "key_timestamps.csv"
             sys_tracks = pd.read_csv(tracks_path) if tracks_path.exists() else None
             sys_events = pd.read_csv(events_path) if events_path.exists() else None
-            sys_ball = load_system_ball_points(match_dir, source=ball_source)
+            sys_ball = load_system_ball_points(
+                match_dir, source=ball_source,
+                detections_dir_override=detections_dir_override,
+            )
             layer_b = run_layer_b(
                 match_id=match_id,
                 gold=gold,
@@ -391,6 +404,17 @@ def main() -> int:
              "reviewed = post human-review (circular if gold was extracted from same file).",
     )
     parser.add_argument(
+        "--detections-dir", default=None,
+        help="Override the detections directory (containing tracks.csv) for the "
+             "ball metric. Used by model-A/B experiments where you want to point "
+             "at an alternative detection run instead of latest_report.yaml's source.",
+    )
+    parser.add_argument(
+        "--eval-label", default="",
+        help="Free-form label written into manifest.yaml (e.g. 'yolo11s_60-160s'). "
+             "Helps when you have several runs side-by-side.",
+    )
+    parser.add_argument(
         "--output", default="",
         help="Output dir name under evals/runs/. Defaults to a timestamp.",
     )
@@ -400,11 +424,20 @@ def main() -> int:
     use_gold = args.gold == "auto"
 
     results: List[Dict[str, Any]] = []
+    detections_override: Optional[Path] = None
+    if args.detections_dir:
+        detections_override = resolve_path(args.detections_dir)
+        if not detections_override.exists():
+            print(f"error: --detections-dir does not exist: {detections_override}", file=sys.stderr)
+            return 2
+
     for raw in args.matches:
         try:
             results.append(evaluate_match(
                 raw, use_gold=use_gold, tolerance_overrides=tols,
                 ball_source=args.ball_source,
+                detections_dir_override=detections_override,
+                eval_label=args.eval_label,
             ))
         except FileNotFoundError as exc:
             print(f"error: {exc}", file=sys.stderr)
@@ -438,6 +471,10 @@ def main() -> int:
         "generated_at": datetime.now().astimezone().isoformat(timespec="seconds"),
         "tolerances_applied": tols,
         "ball_source": args.ball_source,
+        "detections_dir_override": (
+            project_relative(detections_override) if detections_override else None
+        ),
+        "eval_label": args.eval_label or None,
         "matches": [
             {
                 "match_id": r["match_id"],

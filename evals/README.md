@@ -124,13 +124,34 @@ Even at loose tolerances (5m / 3s), `raw` and `filtered` both stay at 0/30.
 
 **Diagnosis** — three findings, each measurable:
 
-1. **The bottleneck is the model, not the filter.** `filter_static_ball_false_positives` is doing its job (removed 63 rows in 3 static groups), but the surviving detections are *still* false positives. There are essentially zero true ball detections in this window.
-2. **The manual ball-review workflow is empirically the only viable ball pipeline today.** This is not over-conservatism — YOLO11n cannot see the ball in this footage.
-3. **Headroom from 0% to 100%** for any of the following improvements, each now testable as a single-change PR with a before/after number:
-   - Upgrade YOLO11n → YOLO11s / 11m (more parameter capacity for small objects)
-   - Train a small-object specialized ball detector and ensemble it with the main detector
-   - Add optical-flow ball interpolation between sparse detections
-   - Tighten `inside_play_area` polygon AND lower ball-class conf threshold (currently the global `conf=0.18`; ball class would benefit from ~0.05)
+1. **The bottleneck is the model, not the filter.** `filter_static_ball_false_positives` is doing its job (removed 63 rows in 3 static groups), but the surviving detections are *still* false positives.
+2. **The manual ball-review workflow is empirically the only viable ball pipeline today.**
+3. **Model size alone does not help** — see the YOLO11s A/B below.
+
+### YOLO11s A/B (2026-05-10)
+
+Same gold, same window, same params (`conf=0.18`, `imgsz=1280`, `sample-fps=2.0`, ByteTrack). Re-ran detection on the 60–160s window with both 11n and 11s into separate detection dirs (`segment_0060_0100_2fps_yolo11n` / `_yolo11s`) and ran the eval with `--detections-dir`.
+
+| Model | Ball detections in window | Frame coverage | Tracks | `ball_recall` (default tol) | `recall@10m` |
+|---|---:|---:|---:|---:|---:|
+| YOLO11n (2.6M params) | 92 raw → 66 filtered | 42.8% | 3 | 0/30 (0%) | 0/30 (0%) |
+| **YOLO11s** (9.4M params) | **268 raw** → 176 filtered | **87.6%** | **7** | **0/30 (0%)** | **0/30 (0%)** |
+
+**11s detects ~3× more "balls" but none of them are the actual ball.** The 176 surviving 11s detections all cluster at (3m, 21m), (6m, 24m), (9m, 21m) — sideline / advertising-board / spectator regions. The actual ball is at x∈[26, 38], y∈[-0.4, 8.8]. Nearest 11s detection to any gold point: 25.8m. Even at 10m tolerance: still 0/30.
+
+**Verdict: bigger COCO-trained YOLO is not the path.** Both nano and small models are detecting non-ball objects (round/white things at the field perimeter) and missing the actual ball. The COCO `sports ball` class was trained on close-up footage of clear balls, not 5–10 pixel white blobs in 5-a-side amateur footage. **Custom training on this domain or a specialized small-object detector is required.**
+
+### Improvement directions still on the table
+
+Now ruled out by data:
+- ❌ Upgrade YOLO11n → YOLO11s (this PR's experiment)
+
+Still untested but worth measuring:
+- Upgrade to YOLO11m / 11l (probably same outcome — fundamental class-mismatch issue, but cheap to verify)
+- **Custom-train a YOLO ball head** on the 84 marked human ball points already in `matches/中青赛_1_20260506_213657/review/ball_review/ball_review_points.csv`. Each labeled frame_idx + position can be back-projected into a YOLO bbox. ~84 positives is small but the class is well-defined.
+- Add aggressive `inside_play_area` cropping at the IMAGE level (run YOLO only on the field rectangle, not the whole 4K frame).
+- Lower ball-class `conf` to 0.05 AND require the detection to lie within the play polygon. Currently `conf=0.18` global; ball-class survives the first cut but gets dumped by the play-area filter.
+- Optical-flow ball interpolation between sparse detections (only useful if at least *some* detections are in the right place, which today's data says they are not).
 
 The number is the merge gate: any "I improved ball detection" PR must show this metric move.
 

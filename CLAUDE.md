@@ -151,14 +151,17 @@ algorithms are locked by `TestEvalLayerA` and `TestEvalLayerB`.
 - `reviewed` — post-human (circular if your gold was extracted from there)
 
 First baseline (2026-05-10) on `中青赛_1_20260506_213657` window 78–138s:
-- **ball_recall = 0/30 (0%) for both `raw` and `filtered`** at default tolerances.
-- 103 raw "ball" detections are all on one static field-mark; the 3-group
-  static filter removes them, but the 66 remaining are all off-field
-  (`inside_play_area=False`).
-- Diagnosis: the bottleneck is **the model**, not the filter. Manual ball
-  review is empirically the only viable ball pipeline today. See
-  `evals/README.md` "Current baseline" for the full A/B and the four
-  testable improvement directions.
+- **YOLO11n: ball_recall = 0/30 (0%)** at default tolerances; both raw and filtered.
+- **YOLO11s: ball_recall = 0/30 (0%)** at default; **0/30 even at 10m tolerance**.
+  3× more detections than 11n (87.6% vs 42.8% frame coverage) but they
+  cluster at sidelines / advertising boards, never on the actual ball.
+- Diagnosis: the COCO `sports ball` class is mismatched to 5-a-side
+  amateur footage (~5–10 px white blobs). **Bigger COCO-trained YOLO
+  ≠ better ball detection** — domain-specific training or specialized
+  small-object detector is required. Manual ball review remains the
+  only viable ball pipeline today. See `evals/README.md` "Current
+  baseline" + "YOLO11s A/B" for full numbers and the still-on-the-table
+  directions.
 
 To add a new gold segment, see `evals/README.md`. Investment per match is
 ~15 minutes (label 30s of footage); the harness will produce partial Layer B
