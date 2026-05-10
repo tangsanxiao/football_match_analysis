@@ -261,59 +261,6 @@
       <div class="readme-panel">
 
         <div class="readme-pane" data-readme-pane="ops">
-          <h4>记住这一行就够了</h4>
-          <div class="readme-callout feature" style="font-size: 14px;">
-            <strong>工作台地址</strong>:<code style="font-size: 14px;">http://localhost:8765/</code>
-            <br>
-            页面关掉了想再开?直接复制这个 URL 到浏览器,或双击 Dock 上的 <strong>"Football Analysis(打开浏览器)"</strong> 书签。
-          </div>
-
-          <h4>启动这个工作台的方式(按"再也不用记"排序)</h4>
-          <div class="readme-callout feature">
-            <strong>⚡ 项目根 <code>打开工作台.command</code>(最稳,不被 TCC 拦)</strong>
-            <ul>
-              <li>Finder 进项目根,双击 <code>打开工作台.command</code> 即可。会开 Terminal 跑服务并自动开浏览器。</li>
-              <li>这个走 Terminal 启动,不会被 macOS 隐私保护(TCC)拦截。</li>
-              <li>第一次双击 macOS 会问"是否允许执行",点允许。</li>
-              <li>关 Terminal 或 Ctrl+C 即停服务。</li>
-            </ul>
-          </div>
-          <div class="readme-callout">
-            <strong>📱 <code>~/Applications/Football Analysis.app</code>(最 mac 原生,但首次需要授权)</strong>
-            <ul>
-              <li>双击 .app 时若超时退出 → 项目在 <code>~/Documents/</code> 下,被 macOS TCC 拦截。</li>
-              <li>修复:系统设置 → 隐私与安全 → <strong>完全磁盘访问权限</strong> → 把 Football Analysis.app 加进去。</li>
-              <li>授权一次后,以后双击就直接启动。Dock 退出 = 自动停服务。</li>
-            </ul>
-          </div>
-          <div class="readme-callout">
-            <strong>🌐 <code>~/Applications/Football Analysis(打开浏览器).webloc</code></strong>
-            <ul>
-              <li>服务已经在跑,关掉了浏览器标签想再开?双击它即可。</li>
-              <li>拖到 Dock 钉住:一键回到 <code>http://localhost:8765/</code>,再也不用记 URL。</li>
-            </ul>
-          </div>
-          <div class="readme-callout">
-            <strong>终端 <code>./run.sh</code> / <code>./open.sh</code></strong>
-            <ul>
-              <li><code>./run.sh</code>:启动服务并打开浏览器(Ctrl+C 停);<code>PORT=9090 ./run.sh</code> 换端口;<code>--no-open</code> 不开浏览器。</li>
-              <li><code>./open.sh</code>:服务在跑,只想再次打开浏览器标签。</li>
-            </ul>
-          </div>
-          <div class="readme-callout">
-            <strong>直接命令</strong>(原生方式)
-            <ul>
-              <li><code>.venv/bin/python scripts/12_serve_analysis_app.py</code></li>
-              <li>默认端口 <code>8765</code>,浏览器打开 <code>http://localhost:8765/</code></li>
-            </ul>
-          </div>
-
-          <h4>第一次启用前的准备(只跑一次)</h4>
-          <ul>
-            <li><code>.venv/bin/python scripts/build_launcher_app.py --reinstall</code></li>
-            <li>会同时生成:.app(~/Applications/)+ .webloc(~/Applications/)+ <code>打开工作台.command</code>(项目根)。</li>
-          </ul>
-
           <h4>常规分析流程(每场比赛)</h4>
           <ol>
             <li><strong>准备视频</strong>:每半场一个视频文件,各约 20 分钟。命名建议 <code>match_h1.mp4</code> / <code>match_h2.mp4</code>,放进 <code>videos/raw/&lt;match_id&gt;/</code>。</li>
@@ -354,24 +301,12 @@
         <div class="readme-pane hidden" data-readme-pane="changelog">
 
           <div class="readme-changelog-item">
-            <div><span class="badge">易用性</span><strong>2026-05-10(下午) · TCC 兼容修复:<code>打开工作台.command</code></strong></div>
+            <div><span class="badge">易用性</span><strong>2026-05-10 · 终端启动快捷脚本</strong></div>
             <ul>
-              <li>问题:.app 双击后超时,日志里 <code>realpath: .venv/bin/: Operation not permitted</code> — macOS 默认不让 .app 读 ~/Documents 下的文件(TCC 隐私保护)。</li>
-              <li>修复 1:.app 启动器现在能检测 TCC 拦截,弹清晰对话框引导去"系统设置 → 完全磁盘访问权限"授权。</li>
-              <li>修复 2(更稳):新增项目根 <code>打开工作台.command</code>(Finder 双击在 Terminal 跑),不需要任何 TCC 授权,适合所有放在 <code>~/Documents/</code> 下的项目。</li>
-              <li>build_launcher_app.py 现在一次生成三件套:.app + .webloc + .command。</li>
-            </ul>
-          </div>
-
-          <div class="readme-changelog-item">
-            <div><span class="badge">易用性</span><strong>2026-05-10 · 一键启动 App + 浏览器书签 + 命令行快捷</strong></div>
-            <ul>
-              <li><strong>📱 Football Analysis.app</strong>(<code>~/Applications/</code>):双击启动服务 + 打开浏览器,Dock 退出自动停服务。启动时 macOS 通知里会带 URL,看一眼就知道在哪。</li>
-              <li><strong>🌐 Football Analysis(打开浏览器).webloc</strong>(<code>~/Applications/</code>):服务起来后双击就能再次打开标签页;拖到 Dock 一键回到工作台。**不用再记 <code>localhost:8765</code> 了**。</li>
-              <li><code>./run.sh</code>(项目根):启动 + 自动开浏览器,Ctrl+C 干净停。</li>
-              <li><code>./open.sh</code>(项目根):服务在跑,只想再次打开浏览器标签。</li>
-              <li>命令行原生方式仍可用;所有方式都走同一个 <code>scripts/12_serve_analysis_app.py</code>。</li>
-              <li>第一次准备:<code>.venv/bin/python scripts/build_launcher_app.py --reinstall</code>(只跑一次)。</li>
+              <li><code>./run.sh</code>(项目根):启动服务 + 自动开浏览器,Ctrl+C 干净停;支持 <code>PORT=N ./run.sh</code> 换端口、<code>--no-open</code> 不开浏览器。</li>
+              <li><code>./open.sh</code>(项目根):服务还在跑,只想再次打开浏览器标签。</li>
+              <li>命令行原生方式仍可用:<code>.venv/bin/python scripts/12_serve_analysis_app.py</code>(默认端口 8765)。</li>
+              <li>(macOS .app/.webloc/.command 启动器代码也存在于 <code>scripts/build_launcher_app.py</code>,但实践中 ~/Documents 下的项目会被 TCC 拦截,日常用 <code>./run.sh</code> 更省心。)</li>
             </ul>
           </div>
 
