@@ -183,6 +183,30 @@
       .form-grid, .metrics-grid, .history-row, .history-tools, .ball-workspace { grid-template-columns: 1fr; }
       .match-context { grid-template-columns: 1fr; }
     }
+    /* Readme module */
+    .readme-tabbar { display: inline-flex; gap: 4px; }
+    .readme-tab { background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 4px 14px; font-size: 12px; color: var(--muted); cursor: pointer; }
+    .readme-tab.active { background: var(--accent-soft); border-color: var(--primary); color: var(--primary); font-weight: 500; }
+    .readme-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 18px 20px; line-height: 1.65; font-size: 13px; }
+    .readme-pane.hidden { display: none; }
+    .readme-pane h4 { margin: 16px 0 6px; font-size: 13px; color: var(--ink); font-weight: 600; }
+    .readme-pane h4:first-child { margin-top: 0; }
+    .readme-pane ol, .readme-pane ul { margin: 4px 0 8px; padding-left: 22px; }
+    .readme-pane li { margin-bottom: 4px; }
+    .readme-pane code { background: #eef1ed; padding: 1px 6px; border-radius: 3px; font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .readme-pane a { color: var(--primary); text-decoration: none; }
+    .readme-pane a:hover { text-decoration: underline; }
+    .readme-callout { border-left: 3px solid var(--line); padding: 10px 14px; margin: 12px 0; border-radius: 0 6px 6px 0; background: #fafbf8; }
+    .readme-callout.warning { border-left-color: #d39d2c; background: #fff8e6; }
+    .readme-callout.feature { border-left-color: var(--primary); background: var(--accent-soft); }
+    .readme-callout strong { color: var(--ink); }
+    .readme-changelog-item { padding: 10px 0; border-bottom: 1px dashed var(--line); }
+    .readme-changelog-item:last-child { border-bottom: 0; }
+    .readme-changelog-item .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #eef1ed; color: var(--muted); margin-right: 6px; vertical-align: middle; }
+    .readme-changelog-item .badge.major { background: var(--primary); color: #fff; }
+    .readme-changelog-item .meta { font-size: 11px; color: var(--muted); }
+    .readme-numbers { display: inline-flex; gap: 18px; margin: 6px 0; padding: 8px 12px; background: #eef1ed; border-radius: 6px; font-size: 12px; }
+    .readme-numbers strong { color: var(--primary); font-size: 14px; }
   </style>
 </head>
 <body>
@@ -226,6 +250,116 @@
         <button id="refreshHome" class="soft">刷新</button>
       </div>
       <div id="homeActiveMatch" class="active-match hidden"></div>
+
+      <div class="section-title">
+        <h3>📖 使用说明</h3>
+        <div class="readme-tabbar">
+          <button class="readme-tab active" data-readme-tab="ops">操作指引</button>
+          <button class="readme-tab" data-readme-tab="changelog">更新说明</button>
+        </div>
+      </div>
+      <div class="readme-panel">
+
+        <div class="readme-pane" data-readme-pane="ops">
+          <h4>常规分析流程(每场比赛)</h4>
+          <ol>
+            <li><strong>准备视频</strong>:每半场一个视频文件,各约 20 分钟。命名建议 <code>match_h1.mp4</code> / <code>match_h2.mp4</code>,放进 <code>videos/raw/&lt;match_id&gt;/</code>。</li>
+            <li><strong>上半场</strong>:<em>+ 新建比赛</em> → 填写名单/球队 → 标定场地 → 跑流水线 → 球员身份 + 球点人工校验 → 生成报告。</li>
+            <li><strong>下半场</strong>:同上,但若机位未动可直接复制上半场的 <code>data/interim/calibration/calibration.json</code> 跳过标定。名单也可直接复用上半场 <code>match.yaml</code> 的 teams 节。</li>
+            <li><strong>合并报告</strong>(命令行):<code>python scripts/16_merge_match_segments.py --match &lt;id&gt;_h1 --label 上半场 --match &lt;id&gt;_h2 --label 下半场 --output &lt;id&gt;</code>。产出在 <code>reports/combined/&lt;id&gt;/</code>。</li>
+            <li><strong>质量护栏</strong>(命令行,可选):<code>python scripts/17_eval_against_gold.py --match &lt;id&gt;_h1 --match &lt;id&gt;_h2</code>。Layer A 必须 PASS。</li>
+          </ol>
+
+          <h4>下一场分析之前的关键提醒</h4>
+          <div class="readme-callout warning">
+            <strong>视频切分:每半场一段。</strong>不要合在一起做(中场休息会让 ByteTrack ID 必断),也不要切成 5/10 分钟小段(跨段会把同一球员判成不同人)。
+          </div>
+          <div class="readme-callout feature">
+            <strong>启用自训练球检测器 ball_v1。</strong>新比赛的 <code>matches/&lt;id&gt;/config/match.yaml</code> 在 <code>detection:</code> 节加上:
+            <ul>
+              <li><code>ball_model: runs/detect/ball_v1/weights/best.pt</code></li>
+              <li><code>ball_conf: 0.05</code></li>
+            </ul>
+            可把球检测召回从 0% 提升到 ~83%,人工球点复核工作量预计从 30-60 分钟降到 5-10 分钟。
+          </div>
+          <div class="readme-callout">
+            <strong>Layer B 数字异常时怎么办。</strong>新比赛标 30 秒金标后跑 Layer B,若 <code>ball_recall@1.5m</code> 跌到 40% 以下,先检查 calibration(可能机位变化大);稳定低召回则需要把当前比赛的标注加进训练数据训 <strong>ball_v2</strong>。诊断表见 <code>docs/football-video-analysis-mvp/10-next-match-playbook.md</code>。
+          </div>
+          <div class="readme-callout">
+            <strong>不放心 ball_v1 时随时回退。</strong>把 <code>ball_model:</code> 字段注释掉即可走老流程,不会破坏任何已生成数据。
+          </div>
+
+          <h4>更详细的资料</h4>
+          <ul>
+            <li><strong>下一场操作手册(完整,推荐每场前看一眼)</strong>:<code>docs/football-video-analysis-mvp/10-next-match-playbook.md</code></li>
+            <li>评估底座说明:<code>evals/README.md</code></li>
+            <li>设计真理(UX):<code>design.md</code></li>
+            <li>项目根上下文(给协作 AI):<code>CLAUDE.md</code></li>
+          </ul>
+        </div>
+
+        <div class="readme-pane hidden" data-readme-pane="changelog">
+
+          <div class="readme-changelog-item">
+            <div><span class="badge major">里程碑</span><strong>2026-05-10 · 自训练球检测器 ball_v1 上线</strong></div>
+            <div class="meta">commits: <code>d2d7e52</code>, <code>618ad71</code>, <code>5589295</code></div>
+            <div class="readme-numbers">
+              <span>球检测召回:0% → <strong>83.3%</strong></span>
+              <span>位置误差:— → <strong>0.86m 中位</strong></span>
+              <span>人工复核:~45 分钟 → <strong>~7 分钟</strong>(预期)</span>
+            </div>
+            <ul>
+              <li>用现有 <code>ball_review_points.csv</code> 里 84 个真人标注 + 36 个无球帧训出单类 YOLO 球检测器(67 train / 17 val 正样本)。</li>
+              <li>双模型集成:<code>03_detect_track.py</code> 加 <code>--ball-model</code>;主 YOLO 只跑 person,球用 ball_v1 低 conf 跑,合到同一 <code>tracks.csv</code>,下游不需要改动。</li>
+              <li>启用方式:在 <code>match.yaml</code> 的 <code>detection:</code> 加 <code>ball_model:</code> 字段。完全向后兼容。</li>
+              <li>详细记录:<code>docs/football-video-analysis-mvp/09-custom-ball-head-v1.md</code></li>
+            </ul>
+          </div>
+
+          <div class="readme-changelog-item">
+            <div><span class="badge">基础设施</span><strong>2026-05-10 · 评估底座(Layer A + Layer B)</strong></div>
+            <div class="meta">commits: <code>0e4d0bc</code>, <code>03e999e</code>, <code>1454998</code>, <code>405dc1e</code>, <code>5c1b946</code></div>
+            <ul>
+              <li>新增 <code>scripts/17_eval_against_gold.py</code> + <code>scripts/analysis_eval.py</code>(纯逻辑库)。</li>
+              <li>Layer A:任何完成态比赛跑文件存在 / schema / 值域 / 跨表一致性等无需金标的 sanity 检查。</li>
+              <li>Layer B:有金标时计算球员检测召回、身份绑定准确率、球点召回与位置误差、事件 precision/recall。</li>
+              <li>第一段真实金标已落地(<code>evals/gold/中青赛_1_20260506_213657/</code>),从已有人工球点提取,不是 AI 编造。</li>
+              <li>三种 <code>--ball-source</code>(raw / filtered / reviewed)避免循环验证。</li>
+              <li>设计记录:<code>docs/football-video-analysis-mvp/08-eval-harness-and-yolo-ball-baseline.md</code></li>
+            </ul>
+          </div>
+
+          <div class="readme-changelog-item">
+            <div><span class="badge">基础设施</span><strong>2026-05-10 · 多段比赛合并报告</strong></div>
+            <div class="meta">commit: <code>60045a6</code></div>
+            <ul>
+              <li>新增 <code>scripts/16_merge_match_segments.py</code>:把 N 场已完成的 match 项目合并成一份报告(典型用法:上半场 + 下半场 → 全场)。</li>
+              <li>球员级指标按 <code>observed_frames</code> 加权平均,距离/帧数累加,事件时间戳带各段偏移,置信度取最保守。</li>
+              <li>测试覆盖:<code>tests/test_analysis_core.py::TestMergeMatchSegments</code> 锁定核心算术。</li>
+            </ul>
+          </div>
+
+          <div class="readme-changelog-item">
+            <div><span class="badge">文档</span><strong>2026-05-10 · 项目根上下文 + 设计文档归档</strong></div>
+            <div class="meta">commits: <code>75c02f8</code>, <code>5c1b946</code>, <code>5589295</code></div>
+            <ul>
+              <li>新增 <code>CLAUDE.md</code>(每会话自动加载,含运行命令、目录布局、约定、当前重构阶段)。</li>
+              <li>新增 <code>docs/football-video-analysis-mvp/08~10</code> 三份设计记录,把"做了什么、为什么这么做、排除了什么、还能做什么"写成可追溯凭据。</li>
+              <li>下一场比赛操作手册(<code>docs/10-next-match-playbook.md</code>)是协助新比赛分析的主要参考。</li>
+            </ul>
+          </div>
+
+          <div class="readme-changelog-item">
+            <div><span class="badge">修复</span><strong>2026-05-10 · 03_detect_track argparse 前缀匹配 bug</strong></div>
+            <div class="meta">commit: <code>618ad71</code></div>
+            <ul>
+              <li><code>--conf</code> 之前被 argparse 当成 <code>--config</code> 的前缀,导致 conf 值被错误地塞进 config 路径。已用 <code>allow_abbrev=False</code> 修复。</li>
+              <li>影响范围:任何显式传 <code>--conf 0.X</code> 的命令(本轮做 conf 扫描时发现)。</li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
     </section>
 
     <section id="setupView" class="view hidden">
@@ -1553,12 +1687,23 @@ function closeFeedback() {
   $('feedbackModal').setAttribute('aria-hidden', 'true');
 }
 
+function bindReadmeTabs() {
+  const tabs = document.querySelectorAll('[data-readme-tab]');
+  const panes = document.querySelectorAll('[data-readme-pane]');
+  tabs.forEach(btn => btn.addEventListener('click', () => {
+    const target = btn.dataset.readmeTab;
+    tabs.forEach(t => t.classList.toggle('active', t === btn));
+    panes.forEach(p => p.classList.toggle('hidden', p.dataset.readmePane !== target));
+  }));
+}
+
 function bindEvents() {
   document.querySelectorAll('[data-view-target]').forEach(btn => btn.addEventListener('click', () => showView(btn.dataset.viewTarget)));
   $('headerNewMatch').addEventListener('click', () => { resetForm(); showView('setup'); });
   $('homeNewMatch').addEventListener('click', () => { resetForm(); showView('setup'); });
   $('homeHistory').addEventListener('click', () => showView('history'));
   $('refreshHome').addEventListener('click', loadHome);
+  bindReadmeTabs();
   $('refreshHistory').addEventListener('click', loadHistory);
   $('historySearch').addEventListener('input', renderHistoryRows);
   document.querySelectorAll('.filter-chip').forEach(btn => btn.addEventListener('click', () => {
