@@ -288,5 +288,10 @@ Codebase" and "Design Checklist For Future AI Agents".
 
 - UX truth → `design.md`
 - Process notes per phase → `docs/football-video-analysis-mvp/`
+- **Eval harness + YOLO ball baseline (2026-05-10)** →
+  `docs/football-video-analysis-mvp/08-eval-harness-and-yolo-ball-baseline.md`
+  Read this before touching detection / ball-related code; it records what's
+  been ruled out (YOLO11n→11s upgrade, static-filter tuning) and the next
+  recommended path (custom-train ball head on existing labeled points).
 - Match config example → `configs/match_red_mvp.yaml`
 - Calibration points example → `configs/calibration_points_red_mvp.yaml`
